@@ -277,7 +277,7 @@ function find(v,save=true){
  const row=document.querySelector('tr[data-id="'+CSS.escape(norm(base.id))+'"]');if(row)row.classList.add('me');
  try{const cvs=out.querySelector('.me3d');if(cvs){const S=new Island3D.Scene();S.box(0,-0.2,0,2.2,0.2,2.2,'#7CCB5B');S.box(0,-0.45,0,2.3,0.25,2.3,'#C9A36B');
   const taken=new Set();let L=null;for(const x of D.residents.slice(0,80)){const l=Island3D.lookFor(x.platform+':'+norm(x.id),taken);if(x===base)L=l}if(!L)L=Island3D.lookFor(base.platform+':'+norm(base.id));
-  Island3D.villager(S,0,0,0,1,Math.PI+0.35,L);const img=Island3D.render(S,{pos:[0.9,1.4,-3.2],target:[0,0.85,0],fov:40},216,270,{ss:1,skyTop:'#BDE8FF',skyBot:'#FFF4D6'});cvs.getContext('2d').putImageData(new ImageData(img.data,216,270),0,0)}}catch(e){}
+  Island3D.villager(S,0,0,0,1,-0.35,L);const img=Island3D.render(S,{pos:[0.9,1.4,-3.2],target:[0,0.85,0],fov:40},216,270,{ss:1,skyTop:'#BDE8FF',skyBot:'#FFF4D6'});cvs.getContext('2d').putImageData(new ImageData(img.data,216,270),0,0)}}catch(e){}
 }
 function linkBox(r){
  const other=r.platform==='yt'?'インスタ':'YouTube';
