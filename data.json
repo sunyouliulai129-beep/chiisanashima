@@ -201,6 +201,12 @@
    "by": "島のオーナー",
    "text": "非常食用ひよこ",
    "status": "採用（2日目で決定）"
+  },
+  {
+   "day": 1,
+   "by": "しゅんと",
+   "text": "この島のリーダーになる",
+   "status": "候補"
   }
  ],
  "timeline": [
@@ -499,18 +505,19 @@
    "id": "@しゅんと-u5o",
    "platform": "yt",
    "name": "しゅんと",
-   "points": 2,
-   "level": 1,
+   "points": 3,
+   "level": 2,
    "job": "つりざおで魚をつる練習中",
    "wish": "魚を売ってスマホを買いたい",
    "history": [
     "1日目：投票B",
-    "1日目：アイデア「魚を釣って売ってスマホを買う」"
+    "1日目：アイデア「魚を釣って売ってスマホを買う」",
+    "1日目（あそび方）：アイデア「この島のリーダーになる」"
    ],
    "since_day": 1,
    "work": null,
    "work_days": 0,
-   "coins": 2,
+   "coins": 3,
    "icon": "shell",
    "frame": "wood",
    "owned": [],
@@ -614,10 +621,11 @@
    "wish": "魚を釣って水槽に入れたい",
    "history": [
     "1日目：投票B",
-    "1日目：アイデア「お魚をたくさん釣って水槽に入れたい」"
+    "1日目：アイデア「お魚をたくさん釣って水槽に入れたい」",
+    "1日目：しごと「漁師」"
    ],
    "since_day": 1,
-   "work": null,
+   "work": "漁師",
    "work_days": 0,
    "coins": 2,
    "icon": "palm",
@@ -723,6 +731,48 @@
    ],
    "since_day": 1,
    "work": null,
+   "work_days": 0,
+   "coins": 0,
+   "icon": "palm",
+   "frame": "wood",
+   "owned": [],
+   "appeared": 0,
+   "rewarded_level": 0
+  },
+  {
+   "id": "hamduck.gwa98",
+   "platform": "ig",
+   "name": "hamduck.gwa98",
+   "points": 0,
+   "level": 1,
+   "job": null,
+   "wish": null,
+   "history": [
+    "1日目：しごと「畑係」"
+   ],
+   "since_day": 1,
+   "work": "畑係",
+   "work_days": 0,
+   "coins": 0,
+   "icon": "fish",
+   "frame": "wood",
+   "owned": [],
+   "appeared": 0,
+   "rewarded_level": 0
+  },
+  {
+   "id": "yuton_7359",
+   "platform": "ig",
+   "name": "yuton_7359",
+   "points": 0,
+   "level": 1,
+   "job": null,
+   "wish": null,
+   "history": [
+    "1日目：しごと「木こり」"
+   ],
+   "since_day": 1,
+   "work": "木こり",
    "work_days": 0,
    "coins": 0,
    "icon": "palm",
@@ -924,6 +974,6 @@
   "every": 5,
   "rule": "Lv5ごとに、そのレベルと同じ数のコイン（Lv5→5枚、Lv10→10枚…Lv100→100枚）"
  },
- "last_sync": "2026-11-25 06:58",
+ "last_sync": "2026-11-25 07:59",
  "events_rule": "YouTubeのチャンネル登録者だけで数える。節目と名前は events.js（20,30,50,70,100,150,200,300,500,700,1000…と終わりなし）"
 }
