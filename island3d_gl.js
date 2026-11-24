@@ -48,16 +48,17 @@ void main(){
     vec3 base = vC;
     if (vK > 4.5) {
       float r = length(vW.xz); float shallow = 1.0 - smoothstep(uShore * 0.98, uShore * 1.3, r);
-      base = mix(vec3(0.16, 0.52, 0.80), vec3(0.42, 0.84, 0.90), shallow);
+      base = mix(vec3(0.10, 0.40, 0.66), vec3(0.30, 0.70, 0.78), shallow);
       float edge = smoothstep(uPlate * 0.97, uPlate, max(abs(vW.x), abs(vW.z) * 1.15));
       base = mix(base, vec3(0.14, 0.45, 0.72), edge);
     }
-    c = base * (amb * 0.62 + dif * sh * vec3(1.0, 0.95, 0.85) * 0.72);
+    c = base * (amb * 0.52 + dif * sh * vec3(1.0, 0.94, 0.84) * 0.74);
     if (vK > 4.5) { vec3 h = normalize(v + uSun); float sp = pow(max(dot(n, h), 0.0), 80.0) * 0.9 * sh;
       float fr = pow(1.0 - max(dot(n, v), 0.0), 4.0); c = mix(c, uSky, fr * 0.45) + vec3(sp); }
   }
   float d = length(uEye - vW); float f = 1.0 - exp(-d * uFogD);
   c = mix(c, uFog, clamp(f, 0.0, 0.8));
+  c = pow(clamp(c, 0.0, 1.0), vec3(1.06)) * 1.04;
   o = vec4(c, 1.0);
 }`;
   const SVS = `#version 300 es
@@ -195,10 +196,10 @@ precision mediump float; out vec4 o; void main(){ o = vec4(1.0); }`;
       // main pass
       gl.bindFramebuffer(gl.FRAMEBUFFER, null); gl.viewport(0, 0, W, H); gl.useProgram(P);
       const asp = W / H, V = M4.look(cam.pos, cam.target), Pm = M4.persp((cam.fov || 45) * Math.PI / 180, asp, 0.3, 400); VP = M4.mul(Pm, V);
-      gl.clearColor(...fog, 1); gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+      if (opt.transparent) gl.clearColor(0, 0, 0, 0); else gl.clearColor(...fog, 1); gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
       gl.uniformMatrix4fv(U('uVP'), false, VP); gl.uniformMatrix4fv(U('uLVP'), false, LVP); gl.uniform1f(U('uT'), t);
       gl.uniform3fv(U('uSun'), sun); gl.uniform3fv(U('uSky'), sky); gl.uniform3fv(U('uGround'), ground); gl.uniform3fv(U('uFog'), fog); gl.uniform3fv(U('uEye'), cam.pos);
-      gl.uniform1f(U('uFogD'), opt.fogD ?? 0.0055); gl.uniform1f(U('uShore'), R.shore); gl.uniform1f(U('uPlate'), R.plate);
+      gl.uniform1f(U('uFogD'), opt.fogD ?? 0.0032); gl.uniform1f(U('uShore'), R.shore); gl.uniform1f(U('uPlate'), R.plate);
       gl.activeTexture(gl.TEXTURE0); gl.bindTexture(gl.TEXTURE_2D, shTex); gl.uniform1i(U('uSh'), 0);
       drawAll(U('uM'), false);
       gl.uniformMatrix4fv(U('uM'), false, M4.id()); gl.bindVertexArray(R.water.vao); gl.drawArrays(gl.TRIANGLES, 0, R.water.count);
