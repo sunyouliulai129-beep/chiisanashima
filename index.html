@@ -144,7 +144,7 @@ footer a{color:#ffd29a}
    <h2>コインで<em>アイコンをアンロック</em></h2>
    <p class="lead">ポイントがもらえるたびに、同じ数のコインももらえます。コインでアイコンやわくを手に入れて、自分の島民カードをかざろう。コインは使っても、ポイントとレベルは減りません。</p>
    <div class="card"><div class="shopbar" id="shopBar">上の「島民カード」で自分をさがすと、ここでこうかんできます。</div><div id="tradeBox" aria-live="polite"></div><b>アイコン</b><div class="shop" id="shopIcons"></div><b>わく</b><div class="shop" id="shopFrames"></div>
-   <p class="muted">こうかんの仕方：島民カードで自分をさがす → 自分だけの「島民コード」を入れてひらく → ほしいものの「こうかんする」を押す → 出てきた文をインスタのDMで送る（YouTubeの人は最新の動画のコメントに書く）。押したらすぐ自分の画面のカードが変わって、次の更新で正式にこうかんされます。島民コードは本人にだけDMで届くので、ほかの人はあなたのカードのこうかん画面をひらけません。さらに正式なこうかんは「本人のアカウントから届いた申しこみ」だけなので、かってに変えられることはありません。島民コードはだれにも教えないでね。</p></div>
+   <p class="muted">こうかんの仕方：島民カードで自分をさがす → 自分だけの「あいことば」を入れてひらく → ほしいものの「こうかんする」を押す → 出てきた文を最新の動画にコメントする。押したらすぐ自分の画面のカードが変わって、次の更新で正式にこうかんされます。あいことばは自分で決めて、とうろく番号を自分のアカウントからコメントするしくみなので、ほかの人はあなたのカードのこうかん画面をひらけません。さらに正式なこうかんは「本人のアカウントから届いた申しこみ」だけなので、かってに変えられることはありません。あいことばはだれにも教えないでね。</p></div>
   </section>
   <section id="vote">
    <h2>今日のお題の<em>途中経過</em></h2>
@@ -157,7 +157,7 @@ footer a{color:#ffd29a}
   </section>
   <section id="ideas">
    <h2>みんなの<em>アイデア</em></h2>
-   <p class="lead">「島でこれをやりたい」「こんな島民になりたい」をコメントやDMで送ってね。毎回いくつか採用して、本当に動画にします。採用はレベルに関係なし。</p>
+   <p class="lead">「島でこれをやりたい」「こんな島民になりたい」をコメントで送ってね。毎回いくつか採用して、本当に動画にします。採用はレベルに関係なし。</p>
    <div class="ideas" id="ideaBox"></div>
   </section>
   <section id="rules">
@@ -167,7 +167,7 @@ footer a{color:#ffd29a}
      <ul>
       <li>お題への投票コメント：1ポイント（1本の動画につき1回）</li>
       <li>しごとをして働く：1ポイント（しごとをえらんだ人が、その動画にコメントした日）</li>
-      <li>アイデアのコメント・DM：1ポイント</li>
+      <li>アイデアのコメント：1ポイント</li>
       <li>アイデアが採用される：＋5ポイント</li>
       <li>インスタの「いいね」：1ポイント（1本の動画につき1回）</li>
       <li>インスタのストーリーズでメンション：3ポイント（1人1回まで）</li>
@@ -291,7 +291,8 @@ let CUR=null;
 const UK=r=>'cs_unlock_'+norm(r.id);
 const unlocked=r=>{try{return sessionStorage.getItem(UK(r))==='1'}catch(e){return false}};
 async function sha(t){const b=await crypto.subtle.digest('SHA-256',new TextEncoder().encode(t));return [...new Uint8Array(b)].map(x=>x.toString(16).padStart(2,'0')).join('')}
-async function tryCode(r,code){const c=String(code||'').toUpperCase().replace(/[^A-Z0-9]/g,'');if(!r.code_hash||c.length<8)return false;const h=await sha(r.code_salt+':'+c);if(h===r.code_hash){try{sessionStorage.setItem(UK(r),'1')}catch(e){}return true}return false}
+const regOf=async(r,w)=>(await sha('cs:'+norm(r.id)+':'+String(w).trim())).slice(0,12);
+async function tryCode(r,w){if(!r.code_reg||String(w).trim().length<4)return false;if(await regOf(r,w)===r.code_reg){try{sessionStorage.setItem(UK(r),'1')}catch(e){}return true}return false}
 const PK=r=>'cs_pend_'+norm(r.id);
 const pend=r=>{try{return JSON.parse(localStorage.getItem(PK(r))||'[]')}catch(e){return []}};
 const setPend=(r,a)=>{try{localStorage.setItem(PK(r),JSON.stringify(a))}catch(e){}};
@@ -316,14 +317,15 @@ function renderShop(){
  $('shopFrames').innerHTML=ALL().filter(x=>x.kind==='f').map(item).join('');
  $('shopBar').innerHTML=v?avatar(v,44)+'<span class="who">'+esc(v.name)+'さん</span><span class="coin">コイン '+v.coins+'枚</span>'+(pend(CUR).length?'<span class="pend">申しこみ中 '+pend(CUR).length+'件</span> <button class="btn" style="min-height:36px;padding:0 12px;font-size:13px" id="undo">申しこみを取り消す</button>':''):(CUR?lockForm(CUR):'上の「島民カード」で自分をさがすと、ここでこうかんできます。');
 }
-function lockForm(r){return '<span>'+esc(r.name)+'さんのカードは<b>持ち主だけ</b>がこうかんできます。</span><form id="codeForm" style="display:flex;gap:6px;flex-wrap:wrap"><input id="code" autocomplete="off" inputmode="text" placeholder="島民コード（8文字）" aria-label="島民コード" style="font:inherit;font-size:16px;padding:8px 10px;border-radius:10px;border:2px solid var(--or);width:12em"><button class="btn" style="min-height:40px">ひらく</button></form><span class="muted" id="codeMsg">'+(r.code_hash?'コードをわすれたら、インスタのDMで「コードください」と送ってね。':'まだコードがありません。インスタのDMで「コードください」と送ると、本人にだけ届きます（YouTubeの人はインスタのDMで、YouTubeの名前も書いてね）。')+'</span>'}
+function lockForm(r){return '<span>'+esc(r.name)+'さんのカードは<b>持ち主だけ</b>がこうかんできます。</span>'+(r.code_reg?'<form id="codeForm" style="display:flex;gap:6px;flex-wrap:wrap"><input id="code" type="password" autocomplete="off" placeholder="あいことば" aria-label="あいことば" style="font:inherit;font-size:16px;padding:8px 10px;border-radius:10px;border:2px solid var(--or);width:12em"><button class="btn" style="min-height:40px">ひらく</button></form><span class="muted" id="codeMsg">あいことばをわすれたら、下で作りなおしてね。</span>':'<span class="muted" id="codeMsg">まだ「あいことば」がありません。下で作ってね。</span>')+'<details style="width:100%"><summary style="cursor:pointer;font-weight:800">あいことばを作る・作りなおす</summary><p class="muted" style="margin:6px 0">自分だけが知っている言葉（4文字以上）を決めて入れてね。言葉はこのスマホから外に出ません。出てきた「とうろく番号」を、<b>自分のアカウントから</b>最新の動画にコメントすると、次の更新で使えるようになります。</p><form id="regForm" style="display:flex;gap:6px;flex-wrap:wrap"><input id="regWord" type="password" autocomplete="off" placeholder="あいことばを決める" aria-label="あいことばを決める" style="font:inherit;font-size:16px;padding:8px 10px;border-radius:10px;border:2px solid var(--or);width:12em"><button class="btn" style="min-height:40px">番号を作る</button></form><div id="regOut"></div></details>'}
 function tradeMsg(r,x,type){
  const word=type==='buy'?'こうかん':'つける';
  const msg=word+'：'+x.name+'（'+(r.platform==='yt'?'YouTube ':'インスタ ')+r.id+'）';
- $('tradeBox').innerHTML='<div class="trade"><b>'+(type==='buy'?esc(x.name)+'をこうかんしました（申しこみ中）':esc(x.name)+'に付けかえました（申しこみ中）')+'</b><div>この文を<b>自分のアカウントから</b>送ると、次の更新で正式に反映されます。いま変わったのは、このスマホの画面だけです。ほかの人の名前で送られた申しこみは反映されません。</div><div class="msg">'+esc(msg)+'</div><div class="row2"><button class="btn" id="cp">文をコピー</button>'+(r.platform==='yt'?'<a class="btn" href="'+esc(D.links.youtube)+'">YouTubeの最新動画にコメント</a>':'<a class="btn" href="https://ig.me/m/chiisanashima_sekai">インスタのDMをひらく</a>')+'</div></div>';
+ $('tradeBox').innerHTML='<div class="trade"><b>'+(type==='buy'?esc(x.name)+'をこうかんしました（申しこみ中）':esc(x.name)+'に付けかえました（申しこみ中）')+'</b><div>この文を<b>自分のアカウントから</b>送ると、次の更新で正式に反映されます。いま変わったのは、このスマホの画面だけです。ほかの人の名前で送られた申しこみは反映されません。</div><div class="msg">'+esc(msg)+'</div><div class="row2"><button class="btn" id="cp">文をコピー</button>'+(r.platform==='yt'?'<a class="btn" href="'+esc(D.links.youtube)+'">YouTubeの最新動画にコメント</a>':'<a class="btn" href="'+esc(D.links.instagram)+'">インスタの最新リールにコメント</a>')+'</div></div>';
  $('cp').addEventListener('click',e=>{navigator.clipboard?.writeText(msg).then(()=>{e.target.textContent='コピーしました'},()=>{e.target.textContent='長おしでコピーしてね'}).catch(()=>{e.target.textContent='長おしでコピーしてね'})});
 }
-document.getElementById('shop').addEventListener('submit',async e=>{if(e.target.id!=='codeForm')return;e.preventDefault();const ok=await tryCode(CUR,$('code').value);if(ok){$('tradeBox').textContent='ひらきました。このページを閉じるまで、こうかんできます。';refreshMe()}else{$('codeMsg').textContent='コードがちがうみたい。もう一度たしかめてね。'}});
+document.getElementById('shop').addEventListener('submit',async e=>{if(e.target.id==='regForm'){e.preventDefault();const w=$('regWord').value;if(w.trim().length<4){$('regOut').textContent='4文字以上にしてね。';return}const n=await regOf(CUR,w);const msg='とうろく：'+n;$('regOut').innerHTML='<div class="trade" style="margin-top:8px"><b>この文を、自分のアカウントから最新の動画にコメントしてね</b><div class="msg">'+esc(msg)+'</div><div class="row2"><button type="button" class="btn" id="cpReg">文をコピー</button></div><div class="muted">あいことばはだれにも教えないでね。番号だけ見ても、あいことばはわかりません。</div></div>';$('cpReg').addEventListener('click',ev=>{navigator.clipboard?.writeText(msg).then(()=>{ev.target.textContent='コピーしました'},()=>{ev.target.textContent='長おしでコピーしてね'}).catch(()=>{ev.target.textContent='長おしでコピーしてね'})});return}
+ if(e.target.id!=='codeForm')return;e.preventDefault();const ok=await tryCode(CUR,$('code').value);if(ok){$('tradeBox').textContent='ひらきました。このページを閉じるまで、こうかんできます。';refreshMe()}else{$('codeMsg').textContent='あいことばがちがうみたい。もう一度たしかめてね。'}});
 document.getElementById('shop').addEventListener('click',e=>{
  if(e.target.id==='undo'){setPend(CUR,[]);$('tradeBox').textContent='申しこみを取り消しました。';refreshMe();return}
  const b=e.target.closest('button[data-k]');if(!b||!CUR||!unlocked(CUR))return;
