@@ -11,6 +11,7 @@
 //   cams: { name: {pos,target,fov}, ... },           // as many as you like (Island3D.BIG_CAMS + your own)
 //   lines: [[cam, '字幕（／で改行、1行22字まで、2行まで）', mode, '声の文（省略可）'], ...],
 //          // mode: null | 'chapter'（大きな章タイトル。字幕が章名になる） | 'hud'（島民と次のイベントを大きく） | 'card'（EP.cards[n] を出す: mode 'card:0'）
+//   worlds: { birth1: () => Island3D.bigWorld({stage:0.3}) },   // optional extra worlds; use with cams[k].world = 'birth1'
 //   cards: [{ title: '投票結果', rows: ['A オノ 3票', 'B つりざお 7票'] }, ...],   // optional info panels
 //   file: 'chiisanashima_long01.mp4'
 // }
@@ -29,9 +30,9 @@
       const ab = await fetch(`${V}/synthesis?speaker=31`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(q) }).then(r => r.arrayBuffer());
       CS.BUFS.push(await CS.AC.decodeAudioData(ab));
     }
-    const w = (EP.buildWorld || Island3D.bigWorld)({});
+    const w = (EP.buildWorld || Island3D.bigWorld)({}), WS = {};   // a cam may say world:'name' to use EP.worlds[name]() (e.g. the island's birth stages)
     CS.STILLS = {};
-    for (const k in EP.cams) { const img = Island3D.render(w.S, EP.cams[k], W, H, { ss: 1, skyTop: '#7FD1FF', skyBot: '#FFF4D6' }); CS.STILLS[k] = await createImageBitmap(new ImageData(img.data, W, H)); }
+    for (const k in EP.cams) { const cam = EP.cams[k], ww = cam.world ? (WS[cam.world] = WS[cam.world] || EP.worlds[cam.world]()) : w; const img = Island3D.render(ww.S, cam, W, H, { ss: 1, skyTop: cam.skyTop || '#7FD1FF', skyBot: cam.skyBot || '#FFF4D6' }); CS.STILLS[k] = await createImageBitmap(new ImageData(img.data, W, H)); }
     CS.CV = document.createElement('canvas'); CS.CV.width = W; CS.CV.height = H;
     return { voice: CS.BUFS.reduce((a, b) => a + b.duration, 0).toFixed(1), scenes: EP.lines.length };
   };
@@ -107,7 +108,8 @@
     const rec = new MediaRecorder(stream, { mimeType: 'video/mp4;codecs=avc1.640028,mp4a.40.2', videoBitsPerSecond: 4000000, audioBitsPerSecond: 160000 });
     const chunks = []; rec.ondataavailable = e => { if (e.data.size) chunks.push(e.data); };
     CS.OUT = null; CS.REC_STATE = 'recording'; CS.UP_STATE = 'waiting'; CS.FC = 0;
-    rec.onstop = () => { CS.OUT = new Blob(chunks, { type: 'video/mp4' }); CS.REC_STATE = 'done';
+    CS.upload = () => { try { const inp = document.querySelector('input[type=file]'); const dt = new DataTransfer(); dt.items.add(new File([CS.OUT], EP.file, { type: 'video/mp4' })); inp.files = dt.files; inp.dispatchEvent(new Event('change', { bubbles: true })); CS.UP_STATE = 'sent'; } catch (e) { CS.UP_STATE = 'err ' + e.message; } return CS.UP_STATE; };
+    rec.onstop = () => { CS.OUT = new Blob(chunks, { type: 'video/mp4' }); CS.REC_STATE = 'done'; if (EP.holdUpload) return;   // holdUpload: keep the file (CS.OUT) and call CS.upload() later
       try { const inp = document.querySelector('input[type=file]'); const dt = new DataTransfer(); dt.items.add(new File([CS.OUT], EP.file, { type: 'video/mp4' })); inp.files = dt.files; inp.dispatchEvent(new Event('change', { bubbles: true })); CS.UP_STATE = 'sent'; } catch (e) { CS.UP_STATE = 'err ' + e.message; } };
     let started = false, stopped = false;
     CS.iv = setInterval(() => { const now = AC.currentTime - T0; if (!started && now >= -0.05) { started = true; rec.start(2000); } if (!started) return;

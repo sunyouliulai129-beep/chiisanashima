@@ -231,7 +231,14 @@
   }
   function bigWorld(opt = {}) {
     const S = new Scene();
-    const hAt = buildIsland(S, { radius: BIG.radius, seed: opt.seed || 11, grid: opt.grid || 112, plate: 1.4, heightFn: bigHeight, colorFn: bigColor });
+    // opt.stage (0..1): the island's birth. <1 = rising out of the sea, early stages are bare volcanic rock.
+    const st = opt.stage ?? 1;
+    const hFn = st >= 1 ? bigHeight : (x, z, n) => { const h = bigHeight(x, z, n); const pk = Math.max(0, 1 - Math.hypot(x - 9, z - 13) / 26); return (h + 2.2) * (0.15 + 0.85 * st) * (st < 0.5 ? 0.4 + 0.6 * pk : 1) - 2.2 - (1 - st) * 1.2; };
+    const cFn = st >= 0.75 ? bigColor : (h, x, z, n) => { if (st < 0.5) return h > 2.5 && Math.hypot(x - 9, z - 13) < 4 ? '#E2453C' : (n(x * 0.7, z * 0.7) > 0.5 ? '#5A4A42' : '#4A3C36'); if (h < 0.5) return '#E8D394'; return h > 4 ? '#7A6A60' : (n(x * 0.5, z * 0.5) > 0.6 ? '#7CCB5B' : '#8A7A6E'); };
+    const hAt = buildIsland(S, { radius: BIG.radius, seed: opt.seed || 11, grid: opt.grid || 112, plate: 1.4, heightFn: hFn, colorFn: cFn });
+    if (st < 1) { if (st >= 0.75) for (let k = 0, n = 0, R2 = rng(9); k < 800 && n < 25; k++) { const x = (R2() - 0.5) * 40, z = (R2() - 0.5) * 40, y = hAt(x, z); if (y < 0.8 || y > 4) continue; tree(S, x, y - 0.05, z, 0.6 + R2() * 0.3, k); n++; }
+      if (st < 0.5) for (let k = 0; k < 6; k++) S.ico(9 + Math.sin(k) * 1.5, hAt(9, 13) + 2 + k * 1.6, 13 + Math.cos(k * 2) * 1.2, 1.2 + k * 0.35, k % 2 ? '#9A9A9A' : '#BDBDBD', k);
+      return { S, hAt, big: BIG }; }
     const R = rng(5), near = (x, z, c, d) => Math.hypot(x - c[0], z - c[1]) < d;
     for (let k = 0, n = 0; k < 3000 && n < 90; k++) { // forest
       const x = BIG.forest[0] + (R() - 0.5) * 16, z = BIG.forest[1] + (R() - 0.5) * 16, y = hAt(x, z);
