@@ -87,6 +87,17 @@ tr.me td{background:light-dark(#fff0e0,#3a2c1e)}
 .av{display:block;margin:0 auto}
 .coin{display:inline-flex;align-items:center;gap:4px;font-weight:800;color:#8a5a00;background:#ffe27a;border-radius:99px;padding:1px 10px;white-space:nowrap}
 td .av{display:inline-block;vertical-align:middle;margin-right:6px}
+.item button{margin-top:6px;width:100%;min-height:40px;border-radius:10px;border:0;background:var(--or);color:#fff;font:800 14px/1 inherit;cursor:pointer}
+.item button.ghost{background:transparent;color:var(--or2);border:2px solid var(--or)}
+.item button:disabled{background:var(--sand2);color:var(--soft);cursor:default}
+.shopbar{display:flex;flex-wrap:wrap;gap:10px;align-items:center;background:var(--sand2);border-radius:14px;padding:10px 12px;margin:6px 0 4px}
+.shopbar .who{font-weight:800}
+#tradeBox{margin-top:12px}
+.trade{border:3px solid var(--or);border-radius:16px;padding:14px;background:light-dark(#fff8ef,#2c241b)}
+.trade .msg{font:800 18px/1.4 inherit;background:light-dark(#fff,#1a262e);border-radius:10px;padding:10px 12px;margin:8px 0;overflow-wrap:anywhere}
+.trade .row2{display:flex;flex-wrap:wrap;gap:8px}
+.trade a.btn{display:inline-flex;align-items:center;text-decoration:none}
+.pend{font-size:12px;font-weight:800;color:#fff;background:#5b7cfa;border-radius:99px;padding:1px 8px}
 .rules{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:12px}
 .rules ul{margin:0;padding-left:20px}.rules li{margin:4px 0}
 .lvl{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}.lvl span{font-size:13px;background:var(--sand2);border-radius:8px;padding:2px 8px;white-space:nowrap}
@@ -132,8 +143,8 @@ footer a{color:#ffd29a}
   <section id="shop">
    <h2>コインで<em>アイコンをアンロック</em></h2>
    <p class="lead">ポイントがもらえるたびに、同じ数のコインももらえます。コインでアイコンやわくを手に入れて、自分の島民カードをかざろう。コインは使っても、ポイントとレベルは減りません。</p>
-   <div class="card"><b>アイコン</b><div class="shop" id="shopIcons"></div><b>わく</b><div class="shop" id="shopFrames"></div>
-   <p class="muted">こうかんの仕方：最新の動画のコメントかインスタのDMに「こうかん：クジラ」「こうかん：金のわく」のように書いてね。次の更新でカードに反映されます。手に入れたものは「つける：さかな」でいつでも付けかえられます。</p></div>
+   <div class="card"><div class="shopbar" id="shopBar">上の「島民カード」で自分をさがすと、ここでこうかんできます。</div><div id="tradeBox" aria-live="polite"></div><b>アイコン</b><div class="shop" id="shopIcons"></div><b>わく</b><div class="shop" id="shopFrames"></div>
+   <p class="muted">こうかんの仕方：島民カードで自分をさがす → ほしいものの「こうかんする」を押す → 出てきた文をインスタのDMで送る（YouTubeの人は最新の動画のコメントに書く）。押したらすぐ自分のカードが変わって、次の更新で正式にこうかんされます。</p></div>
   </section>
   <section id="vote">
    <h2>今日のお題の<em>途中経過</em></h2>
@@ -209,8 +220,7 @@ function render(){
  $('rankBody').innerHTML=R.map(r=>'<tr data-id="'+esc(norm(r.id))+'"><td class="rank">'+r.rank+'</td><td>'+esc(r.name)+'<span class="pf">'+(r.platform==='yt'?'YouTube':'インスタ')+'</span></td><td class="hide-sm">'+esc(r.work?r.work+'・'+r.job:r.job)+'</td><td class="r"><span class="lv">Lv'+r.level+'</span></td><td class="r">'+r.points+'</td></tr>').join('');
  $('ideaBox').innerHTML=D.ideas.length?D.ideas.map(x=>'<div class="note"><small>'+esc(x.day+'日目・'+x.by+'さん')+'</small>'+esc(x.text)+' <span class="st">'+esc(x.status)+'</span></div>').join(''):'<p class="muted">まだアイデアはありません。最初のひとりになってね。</p>';
  $('lvlBox').innerHTML=D.levels.map((t,i)=>'<span>Lv'+(i+1)+' '+esc((D.titles||[])[i]||'')+'：'+t+'pt〜</span>').join('');
- const item=(x,kind)=>'<div class="item">'+(kind==='i'?avatar({icon:x.key,frame:'wood'},64):avatar({icon:'__',frame:x.key},64))+'<b>'+esc(x.name)+'</b><span class="c">'+(x.cost?'コイン'+x.cost+'枚':'さいしょから')+'</span></div>';
- $('shopIcons').innerHTML=D.shop.icons.map(x=>item(x,'i')).join('');$('shopFrames').innerHTML=D.shop.frames.map(x=>item(x,'f')).join('');
+ renderShop();
  const cnt={};D.residents.forEach(r=>{if(r.work)cnt[r.work]=(cnt[r.work]||0)+1});
  $('jobBox').innerHTML=(D.jobs||[]).map(j=>'<div class="job"><span class="ic" aria-hidden="true">'+esc(j.icon)+'</span><b>'+esc(j.key)+'</b><span>'+esc(j.does)+'</span><span class="who">いま '+(cnt[j.key]||0)+'人がこのしごと</span><span class="res">島の'+esc(j.res)+'：'+((D.resources||{})[j.res]||0)+'</span><button type="button" data-c="しごと：'+esc(j.key)+'">コメント文をコピー</button></div>').join('');
  $('tl').innerHTML=D.timeline.map(t=>'<li><b>'+t.day+'日目</b>　'+esc(t.text)+'</li>').join('');
@@ -220,17 +230,18 @@ function find(v,save=true){
  const k=norm(v);const out=$('cardOut');
  document.querySelectorAll('tr.me').forEach(t=>t.classList.remove('me'));
  if(!k){out.textContent='';return}
- const r=D.residents.find(x=>norm(x.id)===k||norm(x.name)===k);
- if(!r){out.innerHTML='<p>「'+esc(v)+'」さんは、まだ島民リストにいないみたい。<br>最新の動画にコメントすると、次の更新で島にやってきます。</p>';return}
+ let r=D.residents.find(x=>norm(x.id)===k||norm(x.name)===k);
+  if(!r){CUR=null;renderShop();out.innerHTML='<p>「'+esc(v)+'」さんは、まだ島民リストにいないみたい。<br>最新の動画にコメントすると、次の更新で島にやってきます。</p>';return}
  try{if(save)localStorage.setItem('cs_me',v)}catch(e){}
+ const base=r;CUR=base;renderShop();r=view(base);
  const L=D.levels,nx=nextLv(r.points,L),cur=L[r.level-1]||0;
  const pct=nx?((r.points-cur)/(nx-cur)*100):100;
  const own=new Set([...(r.owned||[]),...D.shop.icons.filter(x=>!x.cost).map(x=>x.key),...D.shop.frames.filter(x=>!x.cost).map(x=>x.key)]);
  out.innerHTML='<div class="pcard"><div>'+avatar(r,108)+'<div style="text-align:center;font-weight:800;margin-top:4px">Lv'+r.level+'</div></div><div><h3>'+esc(r.name)+'<span class="pf">'+(r.platform==='yt'?'YouTube':'インスタ')+'</span></h3>'
   +'<div>'+r.points+'ポイント・'+(nx?'次のレベルまで あと'+(nx-r.points)+'ポイント':'最高レベル')+'</div><div class="bar" style="background:var(--sand2)"><i style="width:'+pct.toFixed(0)+'%"></i></div>'
-  +'<div class="title">'+esc((D.titles||[])[r.level-1]||'')+'</div> <span class="coin">コイン '+(r.coins||0)+'枚</span>'+'<p class="now">いま島で：'+esc(r.job)+'</p>'+'<div>しごと：'+(r.work?esc(r.work)+'（'+(r.work_days||0)+'日はたらいた）':'まだえらんでいません。コメントに「しごと：木こり」のように書いてね')+'</div>'+(r.wish?'<div class="muted">なりたいもの：'+esc(r.wish)+'</div>':'')
+  +'<div class="title">'+esc((D.titles||[])[r.level-1]||'')+'</div> <span class="coin">コイン '+(r.coins||0)+'枚</span>'+(pend(base).length?' <span class="pend">申しこみ中</span>':'')+' <a href="#shop">アイコンをかえる</a>'+'<p class="now">いま島で：'+esc(r.job)+'</p>'+'<div>しごと：'+(r.work?esc(r.work)+'（'+(r.work_days||0)+'日はたらいた）':'まだえらんでいません。コメントに「しごと：木こり」のように書いてね')+'</div>'+(r.wish?'<div class="muted">なりたいもの：'+esc(r.wish)+'</div>':'')
   +'<div class="muted" style="margin-top:6px">もっているもの：'+esc([...D.shop.icons,...D.shop.frames].filter(x=>own.has(x.key)).map(x=>x.name).join('・'))+'</div>'+'<ul class="hist">'+r.history.map(h=>'<li>'+esc(h)+'</li>').join('')+'</ul></div></div>';
- const row=document.querySelector('tr[data-id="'+CSS.escape(norm(r.id))+'"]');if(row)row.classList.add('me');
+ const row=document.querySelector('tr[data-id="'+CSS.escape(norm(base.id))+'"]');if(row)row.classList.add('me');
 }
 $('jobBox').addEventListener('click',e=>{const b=e.target.closest('button[data-c]');if(!b)return;const t=b.dataset.c;navigator.clipboard?.writeText(t).then(()=>{b.textContent='コピーしました：'+t},()=>{b.textContent='「'+t+'」と書いてね'}).catch(()=>{b.textContent='「'+t+'」と書いてね'})});
 $('findForm').addEventListener('submit',e=>{e.preventDefault();find($('q').value)});
@@ -262,6 +273,48 @@ function avatar(r,size){
   rainbow:'<circle cx="40" cy="40" r="36" fill="none" stroke="url(#'+id+'r)" stroke-width="9"/><path d="M12 8 L14 12 L18 14 L14 16 L12 20 L10 16 L6 14 L10 12Z M68 62 L70 66 L74 68 L70 70 L68 74 L66 70 L62 68 L66 66Z" fill="#fff"/>'}[fr]||'';
  return '<svg class="av" width="'+size+'" height="'+size+'" viewBox="0 0 80 80" role="img" aria-label="アイコン">'+defs+'<circle cx="40" cy="40" r="33" fill="#e9f7ff"/><g transform="translate(8 8)">'+ic+'</g>'+ring+'</svg>';
 }
+
+
+/* ---- shop & trades (button → DM text, applied on next update) ---- */
+let CUR=null;
+const PK=r=>'cs_pend_'+norm(r.id);
+const pend=r=>{try{return JSON.parse(localStorage.getItem(PK(r))||'[]')}catch(e){return []}};
+const setPend=(r,a)=>{try{localStorage.setItem(PK(r),JSON.stringify(a))}catch(e){}};
+const ALL=()=>[...D.shop.icons.map(x=>({...x,kind:'i'})),...D.shop.frames.map(x=>({...x,kind:'f'}))];
+function view(r){ // resident as it will look after pending trades
+ const v={...r,owned:[...(r.owned||[])],coins:r.coins||0};
+ for(const k of pend(r)){const x=ALL().find(y=>y.key===k.key);if(!x)continue;
+  if(k.type==='buy'&&!v.owned.includes(x.key)&&x.cost<=v.coins){v.coins-=x.cost;v.owned.push(x.key)}
+  if(k.type==='buy'||k.type==='wear'){if(x.kind==='i')v.icon=x.key;else v.frame=x.key}}
+ return v;
+}
+function renderShop(){
+ const v=CUR?view(CUR):null;
+ const has=x=>!x.cost||(v&&v.owned.includes(x.key));
+ const item=x=>{let b='';
+  if(v){const on=(x.kind==='i'?v.icon:v.frame)===x.key;
+   if(on)b='<button disabled>つけている</button>';
+   else if(has(x))b='<button class="ghost" data-k="'+esc(x.key)+'" data-t="wear">つける</button>';
+   else b='<button data-k="'+esc(x.key)+'" data-t="buy"'+(x.cost>v.coins?' disabled':'')+'>'+(x.cost>v.coins?'あと'+(x.cost-v.coins)+'枚':'こうかんする')+'</button>'}
+  return '<div class="item'+(v&&has(x)?' have':'')+'">'+(x.kind==='i'?avatar({icon:x.key,frame:'wood'},64):avatar({icon:'__',frame:x.key},64))+'<b>'+esc(x.name)+'</b><span class="c">'+(x.cost?'コイン'+x.cost+'枚':'さいしょから')+'</span>'+b+'</div>'};
+ $('shopIcons').innerHTML=ALL().filter(x=>x.kind==='i').map(item).join('');
+ $('shopFrames').innerHTML=ALL().filter(x=>x.kind==='f').map(item).join('');
+ $('shopBar').innerHTML=v?avatar(v,44)+'<span class="who">'+esc(v.name)+'さん</span><span class="coin">コイン '+v.coins+'枚</span>'+(pend(CUR).length?'<span class="pend">申しこみ中 '+pend(CUR).length+'件</span> <button class="btn" style="min-height:36px;padding:0 12px;font-size:13px" id="undo">申しこみを取り消す</button>':''):'上の「島民カード」で自分をさがすと、ここでこうかんできます。';
+}
+function tradeMsg(r,x,type){
+ const word=type==='buy'?'こうかん':'つける';
+ const msg=word+'：'+x.name+'（'+(r.platform==='yt'?'YouTube ':'インスタ ')+r.id+'）';
+ $('tradeBox').innerHTML='<div class="trade"><b>'+(type==='buy'?esc(x.name)+'をこうかんしました（申しこみ中）':esc(x.name)+'に付けかえました（申しこみ中）')+'</b><div>この文を送ると、次の更新で正式に反映されます。</div><div class="msg">'+esc(msg)+'</div><div class="row2"><button class="btn" id="cp">文をコピー</button>'+(r.platform==='yt'?'<a class="btn" href="'+esc(D.links.youtube)+'">YouTubeの最新動画にコメント</a>':'<a class="btn" href="https://ig.me/m/chiisanashima_sekai">インスタのDMをひらく</a>')+'</div></div>';
+ $('cp').addEventListener('click',e=>{navigator.clipboard?.writeText(msg).then(()=>{e.target.textContent='コピーしました'},()=>{e.target.textContent='長おしでコピーしてね'}).catch(()=>{e.target.textContent='長おしでコピーしてね'})});
+}
+document.getElementById('shop').addEventListener('click',e=>{
+ if(e.target.id==='undo'){setPend(CUR,[]);$('tradeBox').textContent='申しこみを取り消しました。';refreshMe();return}
+ const b=e.target.closest('button[data-k]');if(!b||!CUR)return;
+ const x=ALL().find(y=>y.key===b.dataset.k);const t=b.dataset.t;
+ const a=pend(CUR).filter(p=>!(p.type==='wear'&&ALL().find(y=>y.key===p.key)?.kind===x.kind));a.push({type:t,key:x.key});setPend(CUR,a);
+ tradeMsg(CUR,x,t);refreshMe();
+});
+function refreshMe(){renderShop();if(CUR)find(CUR.id,false)}
 
 /* ---- 3D island ---- */
 const cv=$('cv'),fig=$('fig'),ctx=cv.getContext('2d');
