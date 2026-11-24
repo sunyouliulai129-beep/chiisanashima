@@ -230,18 +230,26 @@ precision mediump float; out vec4 o; void main(){ o = vec4(1.0); }`;
     (EP.fires || []).forEach(f => R.addFire(f));
     const out = document.createElement('canvas'); out.width = W; out.height = H; const ctx = out.getContext('2d');
     const FONT = "'Yu Gothic UI','Yu Gothic','Meiryo',sans-serif";
+    // clearView(['camKey',...], r): remove trees/props of the static island between each camera and its target (ground stays)
+    const clearView = (keys, r = 2.6) => {
+      const segs = keys.map(k => EP.cams[k]).filter(Boolean).map(c => [c.pos[0], c.pos[2], c.target[0], c.target[2]]);
+      const dseg = (px, pz, [ax, az, bx, bz]) => { const vx = bx - ax, vz = bz - az, l = vx * vx + vz * vz || 1, t = Math.max(0, Math.min(1.25, ((px - ax) * vx + (pz - az) * vz) / l)); return Math.hypot(px - ax - vx * t, pz - az - vz * t); };
+      w.S.tris = w.S.tris.filter(t => { if (t[5] || t[4] === 4) return true; const cx = (t[0][0] + t[1][0] + t[2][0]) / 3, cz = (t[0][2] + t[1][2] + t[2][2]) / 3; return !segs.some(sg => dseg(cx, cz, sg) < r); });
+      R.setWorld(w, 'main'); R.use('main');
+    };
     return {
-      R, world: w,
+      R, world: w, clearView,
       frame(cam, p, t) {
         R.use(cam.world || 'main');
+      const allCh = R.chars; if (cam.solo) R.chars = allCh.slice(0, 1);   // solo: only the hero
         const o = cam.orbit ?? 0.12, dl = cam.dolly ?? 0.07, a = o * (p - 0.5), k = 1 - dl * p;
         const dx = cam.pos[0] - cam.target[0], dz = cam.pos[2] - cam.target[2], dy = cam.pos[1] - cam.target[1];
         const c = { pos: [cam.target[0] + (dx * Math.cos(a) - dz * Math.sin(a)) * k, cam.target[1] + dy * k, cam.target[2] + (dx * Math.sin(a) + dz * Math.cos(a)) * k], target: cam.target, fov: cam.fov };
         const g = ctx.createLinearGradient(0, 0, 0, H); g.addColorStop(0, cam.skyTop || '#6EC3F5'); g.addColorStop(0.55, cam.skyBot || '#CFE9F7'); g.addColorStop(1, '#F3F7F2');
         ctx.fillStyle = g; ctx.fillRect(0, 0, W, H);
-        ctx.drawImage(R.render(c, t), 0, 0);
+        ctx.drawImage(R.render(c, t), 0, 0); R.chars = allCh;
         if (EP.tags !== false && !cam.noTags) {
-          const L = R.labels().filter(l => l.d < (cam.tagDist || 22) && l.x > 0 && l.x < W && l.y > 0 && l.y < H).sort((a, b) => b.d - a.d);
+          const L = (cam.solo ? [] : R.labels()).filter(l => l.d < (cam.tagDist || 22) && l.x > 0 && l.x < W && l.y > 0 && l.y < H).sort((a, b) => b.d - a.d);
           for (const l of L) { const fs = Math.max(18, Math.min(34, 520 / l.d)); ctx.font = `800 ${fs}px ${FONT}`; const tw = ctx.measureText(l.name).width + fs * 1.1, th = fs * 1.5;
             ctx.globalAlpha = Math.min(1, (cam.tagDist || 22) - l.d); ctx.fillStyle = 'rgba(255,252,240,0.92)'; ctx.strokeStyle = 'rgba(90,56,28,0.8)'; ctx.lineWidth = 2;
             ctx.beginPath(); ctx.roundRect(l.x - tw / 2, l.y - th, tw, th, th / 2); ctx.fill(); ctx.stroke();
