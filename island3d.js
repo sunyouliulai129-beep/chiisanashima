@@ -70,18 +70,20 @@
   }
   function buildIsland(S, opt) {
     const noise = makeNoise(opt.seed || 7), N = opt.grid || 40, size = opt.radius * 1.35, step = (size * 2) / N;
+    const hf = opt.heightFn ? (x, z) => opt.heightFn(x, z, noise) : (x, z) => islandHeight(x, z, noise, opt);
     const H = [];
-    for (let i = 0; i <= N; i++) { H.push([]); for (let j = 0; j <= N; j++) { const x = -size + i * step, z = -size + j * step; H[i].push(islandHeight(x, z, noise, opt)); } }
-    const col = (h) => h < 0.35 ? '#F2DFA7' : h < 0.6 ? '#E8D394' : h < 2.8 ? '#7CCB5B' : h < 4.4 ? '#5DB24B' : '#8FA27A';
+    for (let i = 0; i <= N; i++) { H.push([]); for (let j = 0; j <= N; j++) { const x = -size + i * step, z = -size + j * step; H[i].push(hf(x, z)); } }
+    const col0 = (h) => h < 0.35 ? '#F2DFA7' : h < 0.6 ? '#E8D394' : h < 2.8 ? '#7CCB5B' : h < 4.4 ? '#5DB24B' : '#8FA27A';
     for (let i = 0; i < N; i++) for (let j = 0; j < N; j++) {
       const P = (a, b) => { const h = H[a][b]; return [-size + a * step, Math.max(h, -0.6), -size + b * step]; };
       const a = P(i, j), b = P(i + 1, j), c = P(i + 1, j + 1), d = P(i, j + 1);
       if (Math.max(a[1], b[1], c[1], d[1]) < -0.05) continue;
       const m1 = (a[1] + b[1] + c[1]) / 3, m2 = (a[1] + c[1] + d[1]) / 3;
-      S.tri(a, b, c, col(m1)); S.tri(a, c, d, col(m2));
+      const col = opt.colorFn ? (h, t) => opt.colorFn(h, (t[0][0] + t[1][0] + t[2][0]) / 3, (t[0][2] + t[1][2] + t[2][2]) / 3, noise) : (h) => col0(h);
+      S.tri(a, b, c, col(m1, [a, b, c])); S.tri(a, c, d, col(m2, [a, c, d]));
     }
     // sea plate (hexagon) with a visible side (diorama look)
-    const R = opt.radius * 1.75, top = 0.0, bot = -1.6, n = 6, center = [0, top, 0];
+    const R = opt.radius * (opt.plate || 1.75), top = 0.0, bot = -1.6, n = 6, center = [0, top, 0];
     for (let k = 0; k < n; k++) {
       const a0 = (k / n) * Math.PI * 2 + Math.PI / 6, a1 = ((k + 1) / n) * Math.PI * 2 + Math.PI / 6;
       const p0 = [Math.cos(a0) * R, top, Math.sin(a0) * R], p1 = [Math.cos(a1) * R, top, Math.sin(a1) * R];
@@ -94,7 +96,7 @@
       const a0 = (k / 24) * Math.PI * 2, a1 = ((k + 1) / 24) * Math.PI * 2, r0 = opt.radius * 1.02, r1 = opt.radius * 1.22;
       S.quad([Math.cos(a0) * r0, 0.02, Math.sin(a0) * r0], [Math.cos(a1) * r0, 0.02, Math.sin(a1) * r0], [Math.cos(a1) * r1, 0.02, Math.sin(a1) * r1], [Math.cos(a0) * r1, 0.02, Math.sin(a0) * r1], '#7FD6EE');
     }
-    return (x, z) => islandHeight(x, z, noise, opt);
+    return hf;
   }
 
   // ---------- props ----------
@@ -125,6 +127,15 @@
     B(0, 1.5, 0, 0.52, 0.14, 0.48, '#FF7A1A');                   // bandana
     B(0.1 * s, 1.5, 0.27 * s, 0.12, 0.12, 0.14, '#FF7A1A');      // knot
     B(-0.1 * s, 1.36, -0.225 * s, 0.07, 0.09, 0.02, '#222'); B(0.1 * s, 1.36, -0.225 * s, 0.07, 0.09, 0.02, '#222');
+  }
+  function cactus(S, x, y, z, s) {
+    S.cyl(x, y, z, 0.22 * s, 1.6 * s, 6, '#3E9B4F');
+    S.box(x + 0.3 * s, y + 0.6 * s, z, 0.4 * s, 0.18 * s, 0.18 * s, '#3E9B4F'); S.box(x + 0.45 * s, y + 0.6 * s, z, 0.18 * s, 0.6 * s, 0.18 * s, '#3E9B4F');
+    S.box(x - 0.28 * s, y + 0.9 * s, z, 0.36 * s, 0.16 * s, 0.16 * s, '#3E9B4F'); S.box(x - 0.42 * s, y + 0.9 * s, z, 0.16 * s, 0.45 * s, 0.16 * s, '#3E9B4F');
+  }
+  function pine(S, x, y, z, s, seed) {
+    S.cyl(x, y, z, 0.16 * s, 0.7 * s, 5, '#7A4E2A');
+    S.cone(x, y + 0.6 * s, z, 0.9 * s, 1.4 * s, 7, seed % 2 ? '#2F7D45' : '#36894D'); S.cone(x, y + 1.4 * s, z, 0.65 * s, 1.2 * s, 7, '#3C9555');
   }
   function signpost(S, x, y, z) { S.box(x, y, z, 0.15, 1.3, 0.15, '#7A4E2A'); S.box(x, y + 1.0, z - 0.02, 1.3, 0.55, 0.1, '#C98B4E'); }
 
@@ -195,6 +206,69 @@
     return { S, hAt, spots: { A: [-1.5, 0, -6.8], B: [1.0, 0, -2.8], C: [2.5, 0, 3.5] } };
   }
 
-  const api = { Scene, render, dayOneWorld, hero, tree, palm, rock, boat, signpost, buildIsland };
+  // ---------- big world: forest / mountains / desert / lake / beach ----------
+  const BIG = { radius: 24, forest: [-12, 5], mountain: [9, 12], desert: [13, -6], lake: [-2, 6], beach: [-3, -22.6] };
+  function bigHeight(x, z, noise) {
+    const a = Math.atan2(z, x), rr = BIG.radius * (1 + (noise(Math.cos(a) * 2 + 40, Math.sin(a) * 2 + 40) - 0.5) * 0.35);
+    const r = Math.hypot(x, z) / rr;
+    let h = (1 - r * r) * 2.6 + (noise(x * 0.12 + 10, z * 0.12) - 0.5) * 1.4;
+    for (const [px, pz, ph, k] of [[9, 13, 11, 0.85], [14, 7, 8, 0.9], [4, 16, 7.5, 0.9], [12, 17, 6, 1]]) h += Math.max(0, ph - Math.hypot(x - px, z - pz) * k) * (0.8 + 0.4 * noise(x * 0.5, z * 0.5));
+    const dd = Math.hypot(x - BIG.desert[0], z - BIG.desert[1]); if (dd < 9) h = h * (0.55 + 0.45 * dd / 9) + Math.sin(x * 0.9 + z * 0.4) * 0.25 * (1 - dd / 9);
+    const ld = Math.hypot(x - BIG.lake[0], z - BIG.lake[1]); if (ld < 4.5) h = Math.min(h, -0.4 + (ld / 4.5) ** 2 * 1.6);
+    return h;
+  }
+  function bigColor(h, x, z, noise) {
+    if (h < 0.35) return '#F2DFA7'; if (h < 0.6) return '#E8D394';
+    if (h > 8.2) return '#F4F7FA'; if (h > 5.2) return h > 6.6 ? '#A8A39A' : '#8E8A80';
+    const dd = Math.hypot(x - BIG.desert[0], z - BIG.desert[1]) + (noise(x * 0.4, z * 0.4) - 0.5) * 3;
+    if (dd < 8) return h > 2 ? '#E0B868' : '#EAC67C';
+    const fd = Math.hypot(x - BIG.forest[0], z - BIG.forest[1]) + (noise(x * 0.4 + 5, z * 0.4) - 0.5) * 3;
+    if (fd < 8) return '#3F9A4C';
+    if (h > 3.6) return '#6FAE58';
+    return h < 2.8 ? '#7CCB5B' : '#5DB24B';
+  }
+  function bigWorld(opt = {}) {
+    const S = new Scene();
+    const hAt = buildIsland(S, { radius: BIG.radius, seed: opt.seed || 11, grid: 84, plate: 1.4, heightFn: bigHeight, colorFn: bigColor });
+    const R = rng(5), near = (x, z, c, d) => Math.hypot(x - c[0], z - c[1]) < d;
+    for (let k = 0, n = 0; k < 3000 && n < 90; k++) { // forest
+      const x = BIG.forest[0] + (R() - 0.5) * 16, z = BIG.forest[1] + (R() - 0.5) * 16, y = hAt(x, z);
+      if (!near(x, z, BIG.forest, 8) || y < 0.7 || y > 5) continue;
+      (k % 3 ? tree : pine)(S, x, y - 0.05, z, 0.9 + R() * 0.6, k); n++;
+    }
+    for (let k = 0, n = 0; k < 2000 && n < 28; k++) { // scattered trees on grassland
+      const x = (R() - 0.5) * 40, z = (R() - 0.5) * 40, y = hAt(x, z);
+      if (y < 0.8 || y > 4.5 || near(x, z, BIG.desert, 10) || near(x, z, BIG.forest, 9) || near(x, z, BIG.beach, 5)) continue;
+      tree(S, x, y - 0.05, z, 0.8 + R() * 0.4, k); n++;
+    }
+    for (let k = 0, n = 0; k < 2000 && n < 24; k++) { // pines on mountain slopes
+      const x = BIG.mountain[0] + (R() - 0.5) * 20, z = BIG.mountain[1] + (R() - 0.5) * 16, y = hAt(x, z);
+      if (y < 3 || y > 6.2) continue; pine(S, x, y - 0.05, z, 0.8 + R() * 0.3, k); n++;
+    }
+    for (let k = 0, n = 0; k < 2000 && n < 12; k++) { // desert cacti
+      const x = BIG.desert[0] + (R() - 0.5) * 12, z = BIG.desert[1] + (R() - 0.5) * 12, y = hAt(x, z);
+      if (!near(x, z, BIG.desert, 6) || y < 0.6) continue; cactus(S, x, y - 0.05, z, 0.9 + R() * 0.5); n++;
+    }
+    for (let k = 0, n = 0; k < 2000 && n < 14; k++) { // rocks on mountains
+      const x = BIG.mountain[0] + (R() - 0.5) * 18, z = BIG.mountain[1] + (R() - 0.5) * 14, y = hAt(x, z);
+      if (y < 4.5) continue; rock(S, x, y - 0.1, z, 1.2 + R(), k); n++;
+    }
+    for (const [x, z] of [[-8, -19.5], [1.5, -21], [-12, -16], [5, -19]]) palm(S, x, hAt(x, z) - 0.05, z, 1.0, 3);
+    for (const [x, z, s] of [[-6, -21.5, 0.9], [3.5, -22, 0.7]]) rock(S, x, Math.max(hAt(x, z), 0), z, s, 9);
+    const hb = BIG.beach; boat(S, hb[0] + 4.5, 0.05, hb[1] - 2.2, 0.35);
+    if (opt.hero !== false) hero(S, hb[0], Math.max(hAt(hb[0], hb[1]), 0.05) + 0.02, hb[1], opt.heroScale || 1.3, opt.heroRot ?? -0.55);
+    return { S, hAt, big: BIG };
+  }
+  const BIG_CAMS = {
+    wide:     { pos: [-58, 62, -80], target: [0, 1, 2], fov: 46 },
+    top:      { pos: [-12, 95, -38], target: [0, 0, 0], fov: 50 },
+    side:     { pos: [38, 22, -40], target: [4, 4, 6], fov: 50 },
+    beach:    { pos: [-8.5, 3.6, -30], target: [-3, 1.5, -22], fov: 42 },
+    forest:   { pos: [-20, 9, -8], target: [-11, 2.5, 5], fov: 50 },
+    mountain: { pos: [-4, 10, -6], target: [10, 7, 13], fov: 50 },
+    desert:   { pos: [4, 5, -18], target: [13, 1.2, -6], fov: 50 },
+  };
+
+  const api = { Scene, render, dayOneWorld, bigWorld, BIG_CAMS, cactus, pine, hero, tree, palm, rock, boat, signpost, buildIsland };
   if (typeof module !== "undefined" && module.exports) module.exports = api; (typeof window !== "undefined" ? window : globalThis).Island3D = api;
 })(this);
