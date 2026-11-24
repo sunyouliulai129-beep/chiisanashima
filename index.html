@@ -98,6 +98,8 @@ td .av{display:inline-block;vertical-align:middle;margin-right:6px}
 .trade .row2{display:flex;flex-wrap:wrap;gap:8px}
 .trade a.btn{display:inline-flex;align-items:center;text-decoration:none}
 .pend{font-size:12px;font-weight:800;color:#fff;background:#5b7cfa;border-radius:99px;padding:1px 8px}
+.howto{margin-top:12px;background:light-dark(#fff8e6,#2a2418);border-radius:14px;padding:12px 14px}
+.howto ol{margin:6px 0;padding-left:22px}.howto li{margin:6px 0}.howto p{margin:6px 0}
 .rules{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:12px}
 .rules ul{margin:0;padding-left:20px}.rules li{margin:4px 0}
 .lvl{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}.lvl span{font-size:13px;background:var(--sand2);border-radius:8px;padding:2px 8px;white-space:nowrap}
@@ -144,7 +146,16 @@ footer a{color:#ffd29a}
    <h2>コインで<em>アイコンをアンロック</em></h2>
    <p class="lead">ポイントがもらえるたびに、同じ数のコインももらえます。コインでアイコンやわくを手に入れて、自分の島民カードをかざろう。コインは使っても、ポイントとレベルは減りません。</p>
    <div class="card"><div class="shopbar" id="shopBar">上の「島民カード」で自分をさがすと、ここでこうかんできます。</div><div id="tradeBox" aria-live="polite"></div><b>アイコン</b><div class="shop" id="shopIcons"></div><b>わく</b><div class="shop" id="shopFrames"></div>
-   <p class="muted">こうかんの仕方：島民カードで自分をさがす → 自分だけの「あいことば」を入れてひらく → ほしいものの「こうかんする」を押す → 出てきた文を最新の動画にコメントする。押したらすぐ自分の画面のカードが変わって、次の更新で正式にこうかんされます。あいことばは自分で決めて、とうろく番号を自分のアカウントからコメントするしくみなので、ほかの人はあなたのカードのこうかん画面をひらけません。さらに正式なこうかんは「本人のアカウントから届いた申しこみ」だけなので、かってに変えられることはありません。あいことばはだれにも教えないでね。</p></div>
+   <div class="howto"><b>あいことばって？</b>
+     <p>自分のカードを「自分だけ」が使えるようにする、ひみつの言葉です。メールアドレスもいりません。</p>
+     <ol>
+      <li><b>じぶんをさがす</b>：いちばん上の「島民カード」に、自分のインスタのIDかYouTubeの名前を入れて「さがす」。</li>
+      <li><b>あいことばを決める</b>：この下の箱に、自分だけが知っている言葉（4文字以上。例：すきな食べもの＋数字）を入れて「このあいことばにする」。</li>
+      <li><b>コメントする</b>：「とうろく ○○○○○○」という文が出るので、「コピーして動画をひらく」を押して、<b>自分のアカウントから</b>最新の動画にそのままコメント。</li>
+      <li><b>つぎの更新から使える</b>：あいことばを入れて「ひらく」を押すと、こうかんできます。一度ひらいたスマホは、次からは入れなくてOK。</li>
+     </ol>
+     <p class="muted">なんで安全なの？…「とうろく」のコメントは本人のアカウントからしか送れないし、番号を見てもあいことばはわかりません。だから、ほかの人があなたのカードでこうかんすることはできません。あいことばはだれにも教えないでね。わすれたら、同じやり方で作りなおせます。</p>
+     <p class="muted">こうかんのやり方：あいことばでひらく → ほしいものの「こうかんする」→ 出てきた「こうかん：○○」の文を最新の動画にコメント。押したらすぐ自分の画面が変わって、次の更新で正式にこうかんされます。</p></div></div>
   </section>
   <section id="vote">
    <h2>今日のお題の<em>途中経過</em></h2>
@@ -317,7 +328,7 @@ function renderShop(){
  $('shopFrames').innerHTML=ALL().filter(x=>x.kind==='f').map(item).join('');
  $('shopBar').innerHTML=v?avatar(v,44)+'<span class="who">'+esc(v.name)+'さん</span><span class="coin">コイン '+v.coins+'枚</span>'+(pend(CUR).length?'<span class="pend">申しこみ中 '+pend(CUR).length+'件</span> <button class="btn" style="min-height:36px;padding:0 12px;font-size:13px" id="undo">申しこみを取り消す</button>':''):(CUR?lockForm(CUR):'上の「島民カード」で自分をさがすと、ここでこうかんできます。');
 }
-function lockForm(r){return '<div style="width:100%"><b>'+esc(r.name)+'さんのカードは、持ち主だけがこうかんできます</b></div><form id="codeForm" style="display:flex;gap:6px;flex-wrap:wrap;width:100%"><input id="code" type="password" autocomplete="off" placeholder="あいことば（4文字以上）" aria-label="あいことば" style="flex:1 1 10em;font:inherit;font-size:16px;padding:10px;border-radius:10px;border:2px solid var(--or);background:light-dark(#fff,#1a262e);color:var(--ink)">'+(r.code_reg?'<button class="btn" style="min-height:44px">ひらく</button>':'')+'<button type="button" class="btn" id="regBtn" style="min-height:44px;background:#5b7cfa">'+(r.code_reg?'作りなおす':'このあいことばにする')+'</button></form><span class="muted" id="codeMsg">'+(r.code_reg?'一度ひらいたスマホでは、次からは入れなくてOK。':'はじめての人：好きなあいことばを入れて「このあいことばにする」→ 出てきた文をコメントするだけ。')+'</span><div id="regOut" style="width:100%"></div>'}
+function lockForm(r){return '<div style="width:100%"><b>'+esc(r.name)+'さんのカードは、持ち主だけがこうかんできます</b></div><form id="codeForm" style="display:flex;gap:6px;flex-wrap:wrap;width:100%"><input id="code" type="password" autocomplete="off" placeholder="あいことば（4文字以上）" aria-label="あいことば" style="flex:1 1 10em;font:inherit;font-size:16px;padding:10px;border-radius:10px;border:2px solid var(--or);background:light-dark(#fff,#1a262e);color:var(--ink)">'+(r.code_reg?'<button class="btn" style="min-height:44px">ひらく</button>':'')+'<button type="button" class="btn" id="regBtn" style="min-height:44px;background:#5b7cfa">'+(r.code_reg?'作りなおす':'このあいことばにする')+'</button></form><span class="muted" id="codeMsg">'+(r.code_reg?'一度ひらいたスマホでは、次からは入れなくてOK。':'はじめての人：好きなあいことばを入れて「このあいことばにする」→ 出てきた文をコメントするだけ（くわしくは下の「あいことばって？」）。')+'</span><div id="regOut" style="width:100%"></div>'}
 function tradeMsg(r,x,type){
  const word=type==='buy'?'こうかん':'つける';
  const msg=word+'：'+x.name+'（'+(r.platform==='yt'?'YouTube ':'インスタ ')+r.id+'）';
