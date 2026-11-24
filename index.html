@@ -144,7 +144,7 @@ footer a{color:#ffd29a}
    <h2>コインで<em>アイコンをアンロック</em></h2>
    <p class="lead">ポイントがもらえるたびに、同じ数のコインももらえます。コインでアイコンやわくを手に入れて、自分の島民カードをかざろう。コインは使っても、ポイントとレベルは減りません。</p>
    <div class="card"><div class="shopbar" id="shopBar">上の「島民カード」で自分をさがすと、ここでこうかんできます。</div><div id="tradeBox" aria-live="polite"></div><b>アイコン</b><div class="shop" id="shopIcons"></div><b>わく</b><div class="shop" id="shopFrames"></div>
-   <p class="muted">こうかんの仕方：島民カードで自分をさがす → ほしいものの「こうかんする」を押す → 出てきた文をインスタのDMで送る（YouTubeの人は最新の動画のコメントに書く）。押したらすぐ自分の画面のカードが変わって、次の更新で正式にこうかんされます。正式なこうかんは「その人のアカウントから届いた申しこみ」だけなので、ほかの人がかってにあなたのアイコンを変えることはできません。</p></div>
+   <p class="muted">こうかんの仕方：島民カードで自分をさがす → 自分だけの「島民コード」を入れてひらく → ほしいものの「こうかんする」を押す → 出てきた文をインスタのDMで送る（YouTubeの人は最新の動画のコメントに書く）。押したらすぐ自分の画面のカードが変わって、次の更新で正式にこうかんされます。島民コードは本人にだけDMで届くので、ほかの人はあなたのカードのこうかん画面をひらけません。さらに正式なこうかんは「本人のアカウントから届いた申しこみ」だけなので、かってに変えられることはありません。島民コードはだれにも教えないでね。</p></div>
   </section>
   <section id="vote">
    <h2>今日のお題の<em>途中経過</em></h2>
@@ -235,13 +235,13 @@ function find(v,save=true){
  let r=D.residents.find(x=>norm(x.id)===k||norm(x.name)===k);
   if(!r){CUR=null;renderShop();out.innerHTML='<p>「'+esc(v)+'」さんは、まだ島民リストにいないみたい。<br>最新の動画にコメントすると、次の更新で島にやってきます。</p>';return}
  try{if(save)localStorage.setItem('cs_me',v)}catch(e){}
- const base=r;CUR=base;renderShop();r=view(base);
+ const base=r;CUR=base;renderShop();r=unlocked(base)?view(base):base;
  const L=D.levels,nx=nextLv(r.points,L),cur=L[r.level-1]||0;
  const pct=nx?((r.points-cur)/(nx-cur)*100):100;
  const own=new Set([...(r.owned||[]),...D.shop.icons.filter(x=>!x.cost).map(x=>x.key),...D.shop.frames.filter(x=>!x.cost).map(x=>x.key)]);
  out.innerHTML='<div class="pcard"><div>'+avatar(r,108)+'<div style="text-align:center;font-weight:800;margin-top:4px">Lv'+r.level+'</div></div><div><h3>'+esc(r.name)+'<span class="pf">'+(r.platform==='yt'?'YouTube':'インスタ')+'</span></h3>'
   +'<div>'+r.points+'ポイント・'+(nx?'次のレベルまで あと'+(nx-r.points)+'ポイント':'最高レベル')+'</div><div class="bar" style="background:var(--sand2)"><i style="width:'+pct.toFixed(0)+'%"></i></div>'
-  +'<div class="title">'+esc((D.titles||[])[r.level-1]||'')+'</div> <span class="coin">コイン '+(r.coins||0)+'枚</span>'+(pend(base).length?' <span class="pend">申しこみ中</span>':'')+' <a href="#shop">アイコンをかえる</a>'+'<p class="now">いま島で：'+esc(r.job)+'</p>'+'<div>しごと：'+(r.work?esc(r.work)+'（'+(r.work_days||0)+'日はたらいた）':'まだえらんでいません。コメントに「しごと：木こり」のように書いてね')+'</div>'+(r.wish?'<div class="muted">なりたいもの：'+esc(r.wish)+'</div>':'')
+  +'<div class="title">'+esc((D.titles||[])[r.level-1]||'')+'</div> <span class="coin">コイン '+(r.coins||0)+'枚</span>'+(unlocked(base)&&pend(base).length?' <span class="pend">申しこみ中</span>':'')+' <a href="#shop">アイコンをかえる</a>'+'<p class="now">いま島で：'+esc(r.job)+'</p>'+'<div>しごと：'+(r.work?esc(r.work)+'（'+(r.work_days||0)+'日はたらいた）':'まだえらんでいません。コメントに「しごと：木こり」のように書いてね')+'</div>'+(r.wish?'<div class="muted">なりたいもの：'+esc(r.wish)+'</div>':'')
   +'<div class="muted" style="margin-top:6px">もっているもの：'+esc([...D.shop.icons,...D.shop.frames].filter(x=>own.has(x.key)).map(x=>x.name).join('・'))+'</div>'+'<ul class="hist">'+r.history.map(h=>'<li>'+esc(h)+'</li>').join('')+'</ul></div></div>';
  const row=document.querySelector('tr[data-id="'+CSS.escape(norm(base.id))+'"]');if(row)row.classList.add('me');
 }
@@ -279,6 +279,10 @@ function avatar(r,size){
 
 /* ---- shop & trades (button → DM text, applied on next update) ---- */
 let CUR=null;
+const UK=r=>'cs_unlock_'+norm(r.id);
+const unlocked=r=>{try{return sessionStorage.getItem(UK(r))==='1'}catch(e){return false}};
+async function sha(t){const b=await crypto.subtle.digest('SHA-256',new TextEncoder().encode(t));return [...new Uint8Array(b)].map(x=>x.toString(16).padStart(2,'0')).join('')}
+async function tryCode(r,code){const c=String(code||'').toUpperCase().replace(/[^A-Z0-9]/g,'');if(!r.code_hash||c.length<8)return false;const h=await sha(r.code_salt+':'+c);if(h===r.code_hash){try{sessionStorage.setItem(UK(r),'1')}catch(e){}return true}return false}
 const PK=r=>'cs_pend_'+norm(r.id);
 const pend=r=>{try{return JSON.parse(localStorage.getItem(PK(r))||'[]')}catch(e){return []}};
 const setPend=(r,a)=>{try{localStorage.setItem(PK(r),JSON.stringify(a))}catch(e){}};
@@ -291,7 +295,7 @@ function view(r){ // resident as it will look after pending trades
  return v;
 }
 function renderShop(){
- const v=CUR?view(CUR):null;
+ const v=CUR&&unlocked(CUR)?view(CUR):null;
  const has=x=>!x.cost||(v&&v.owned.includes(x.key));
  const item=x=>{let b='';
   if(v){const on=(x.kind==='i'?v.icon:v.frame)===x.key;
@@ -301,17 +305,19 @@ function renderShop(){
   return '<div class="item'+(v&&has(x)?' have':'')+'">'+(x.kind==='i'?avatar({icon:x.key,frame:'wood'},64):avatar({icon:'__',frame:x.key},64))+'<b>'+esc(x.name)+'</b><span class="c">'+(x.cost?'コイン'+x.cost+'枚':'さいしょから')+'</span>'+b+'</div>'};
  $('shopIcons').innerHTML=ALL().filter(x=>x.kind==='i').map(item).join('');
  $('shopFrames').innerHTML=ALL().filter(x=>x.kind==='f').map(item).join('');
- $('shopBar').innerHTML=v?avatar(v,44)+'<span class="who">'+esc(v.name)+'さん</span><span class="coin">コイン '+v.coins+'枚</span>'+(pend(CUR).length?'<span class="pend">申しこみ中 '+pend(CUR).length+'件</span> <button class="btn" style="min-height:36px;padding:0 12px;font-size:13px" id="undo">申しこみを取り消す</button>':''):'上の「島民カード」で自分をさがすと、ここでこうかんできます。';
+ $('shopBar').innerHTML=v?avatar(v,44)+'<span class="who">'+esc(v.name)+'さん</span><span class="coin">コイン '+v.coins+'枚</span>'+(pend(CUR).length?'<span class="pend">申しこみ中 '+pend(CUR).length+'件</span> <button class="btn" style="min-height:36px;padding:0 12px;font-size:13px" id="undo">申しこみを取り消す</button>':''):(CUR?lockForm(CUR):'上の「島民カード」で自分をさがすと、ここでこうかんできます。');
 }
+function lockForm(r){return '<span>'+esc(r.name)+'さんのカードは<b>持ち主だけ</b>がこうかんできます。</span><form id="codeForm" style="display:flex;gap:6px;flex-wrap:wrap"><input id="code" autocomplete="off" inputmode="text" placeholder="島民コード（8文字）" aria-label="島民コード" style="font:inherit;font-size:16px;padding:8px 10px;border-radius:10px;border:2px solid var(--or);width:12em"><button class="btn" style="min-height:40px">ひらく</button></form><span class="muted" id="codeMsg">'+(r.code_hash?'コードをわすれたら、インスタのDMで「コードください」と送ってね。':'まだコードがありません。インスタのDMで「コードください」と送ると、本人にだけ届きます（YouTubeの人はインスタのDMで、YouTubeの名前も書いてね）。')+'</span>'}
 function tradeMsg(r,x,type){
  const word=type==='buy'?'こうかん':'つける';
  const msg=word+'：'+x.name+'（'+(r.platform==='yt'?'YouTube ':'インスタ ')+r.id+'）';
  $('tradeBox').innerHTML='<div class="trade"><b>'+(type==='buy'?esc(x.name)+'をこうかんしました（申しこみ中）':esc(x.name)+'に付けかえました（申しこみ中）')+'</b><div>この文を<b>自分のアカウントから</b>送ると、次の更新で正式に反映されます。いま変わったのは、このスマホの画面だけです。ほかの人の名前で送られた申しこみは反映されません。</div><div class="msg">'+esc(msg)+'</div><div class="row2"><button class="btn" id="cp">文をコピー</button>'+(r.platform==='yt'?'<a class="btn" href="'+esc(D.links.youtube)+'">YouTubeの最新動画にコメント</a>':'<a class="btn" href="https://ig.me/m/chiisanashima_sekai">インスタのDMをひらく</a>')+'</div></div>';
  $('cp').addEventListener('click',e=>{navigator.clipboard?.writeText(msg).then(()=>{e.target.textContent='コピーしました'},()=>{e.target.textContent='長おしでコピーしてね'}).catch(()=>{e.target.textContent='長おしでコピーしてね'})});
 }
+document.getElementById('shop').addEventListener('submit',async e=>{if(e.target.id!=='codeForm')return;e.preventDefault();const ok=await tryCode(CUR,$('code').value);if(ok){$('tradeBox').textContent='ひらきました。このページを閉じるまで、こうかんできます。';refreshMe()}else{$('codeMsg').textContent='コードがちがうみたい。もう一度たしかめてね。'}});
 document.getElementById('shop').addEventListener('click',e=>{
  if(e.target.id==='undo'){setPend(CUR,[]);$('tradeBox').textContent='申しこみを取り消しました。';refreshMe();return}
- const b=e.target.closest('button[data-k]');if(!b||!CUR)return;
+ const b=e.target.closest('button[data-k]');if(!b||!CUR||!unlocked(CUR))return;
  const x=ALL().find(y=>y.key===b.dataset.k);const t=b.dataset.t;
  const a=pend(CUR).filter(p=>!(p.type==='wear'&&ALL().find(y=>y.key===p.key)?.kind===x.kind));a.push({type:t,key:x.key});setPend(CUR,a);
  tradeMsg(CUR,x,t);refreshMe();
