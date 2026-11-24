@@ -225,11 +225,13 @@
     const fd = Math.hypot(x - BIG.forest[0], z - BIG.forest[1]) + (noise(x * 0.4 + 5, z * 0.4) - 0.5) * 3;
     if (fd < 8) return '#3F9A4C';
     if (h > 3.6) return '#6FAE58';
-    return h < 2.8 ? '#7CCB5B' : '#5DB24B';
+    const v = noise(x * 0.9 + 3, z * 0.9 + 7);
+    if (h < 2.8) return v < 0.3 ? '#74C255' : v > 0.75 ? '#86D365' : '#7CCB5B';
+    return v < 0.4 ? '#58AB47' : '#5DB24B';
   }
   function bigWorld(opt = {}) {
     const S = new Scene();
-    const hAt = buildIsland(S, { radius: BIG.radius, seed: opt.seed || 11, grid: 84, plate: 1.4, heightFn: bigHeight, colorFn: bigColor });
+    const hAt = buildIsland(S, { radius: BIG.radius, seed: opt.seed || 11, grid: opt.grid || 112, plate: 1.4, heightFn: bigHeight, colorFn: bigColor });
     const R = rng(5), near = (x, z, c, d) => Math.hypot(x - c[0], z - c[1]) < d;
     for (let k = 0, n = 0; k < 3000 && n < 90; k++) { // forest
       const x = BIG.forest[0] + (R() - 0.5) * 16, z = BIG.forest[1] + (R() - 0.5) * 16, y = hAt(x, z);
@@ -253,7 +255,44 @@
       const x = BIG.mountain[0] + (R() - 0.5) * 18, z = BIG.mountain[1] + (R() - 0.5) * 14, y = hAt(x, z);
       if (y < 4.5) continue; rock(S, x, y - 0.1, z, 1.2 + R(), k); n++;
     }
-    for (const [x, z] of [[-8, -19.5], [1.5, -21], [-12, -16], [5, -19]]) palm(S, x, hAt(x, z) - 0.05, z, 1.0, 3);
+    for (const [x, z] of [[-8, -19.5], [1.5, -21], [-12, -16], [5, -19], [-15, -12], [9, -17]]) palm(S, x, hAt(x, z) - 0.05, z, 1.0, 3);
+    if (opt.detail !== false) {
+      const FL = ['#FF6B8A', '#FFD23F', '#FFFFFF', '#B07CFF', '#FF9A3D'];
+      for (let k = 0, n = 0; k < 6000 && n < 160; k++) { // flowers & grass tufts on grassland
+        const x = (R() - 0.5) * 44, z = (R() - 0.5) * 44, y = hAt(x, z);
+        if (y < 0.7 || y > 3.6 || near(x, z, BIG.desert, 9) || near(x, z, BIG.lake, 5)) continue;
+        if (n % 3) { S.cone(x, y - 0.02, z, 0.14, 0.32, 4, n % 2 ? '#4FA640' : '#6CC24E'); } else { S.cyl(x, y, z, 0.03, 0.22, 3, '#3E8E3A'); S.ico(x, y + 0.26, z, 0.11, FL[n % FL.length], k); }
+        n++;
+      }
+      for (let k = 0, n = 0; k < 3000 && n < 40; k++) { // bushes
+        const x = (R() - 0.5) * 42, z = (R() - 0.5) * 42, y = hAt(x, z);
+        if (y < 0.8 || y > 4 || near(x, z, BIG.desert, 9) || near(x, z, BIG.beach, 3)) continue;
+        S.ico(x, y + 0.15, z, 0.35 + R() * 0.25, R() < 0.5 ? '#3F9A4C' : '#4DB86A', k); n++;
+      }
+      for (let k = 0, n = 0; k < 2000 && n < 14; k++) { // mushrooms in the forest
+        const x = BIG.forest[0] + (R() - 0.5) * 14, z = BIG.forest[1] + (R() - 0.5) * 14, y = hAt(x, z);
+        if (!near(x, z, BIG.forest, 7) || y < 0.7) continue;
+        S.cyl(x, y, z, 0.05, 0.18, 4, '#F4E9D8'); S.cone(x, y + 0.16, z, 0.16, 0.12, 6, n % 2 ? '#E2453C' : '#C9853E'); n++;
+      }
+      for (let a = 0; a < Math.PI * 2; a += 0.35) { // reeds around the lake
+        const r = 4.3 + R() * 0.6, x = BIG.lake[0] + Math.cos(a) * r, z = BIG.lake[1] + Math.sin(a) * r, y = hAt(x, z);
+        if (y < -0.1) continue; S.cyl(x, Math.max(y, 0), z, 0.03, 0.6, 3, '#6E9F3A'); S.cyl(x + 0.15, Math.max(y, 0), z + 0.1, 0.03, 0.45, 3, '#7FB244');
+      }
+      for (let k = 0, n = 0; k < 2000 && n < 16; k++) { // desert rocks & dead bushes
+        const x = BIG.desert[0] + (R() - 0.5) * 14, z = BIG.desert[1] + (R() - 0.5) * 14, y = hAt(x, z);
+        if (!near(x, z, BIG.desert, 7) || y < 0.5) continue;
+        if (n % 2) S.ico(x, y + 0.1, z, 0.3 + R() * 0.3, '#C9A06A', k); else { S.cyl(x, y, z, 0.05, 0.5, 3, '#8A6A3C'); S.cyl(x + 0.1, y + 0.3, z, 0.03, 0.3, 3, '#8A6A3C'); }
+        n++;
+      }
+      for (let k = 0, n = 0; k < 2000 && n < 18; k++) { // shells & pebbles on the beach
+        const a = R() * Math.PI * 2, r = BIG.radius * (0.92 + R() * 0.12), x = Math.cos(a) * r, z = Math.sin(a) * r, y = hAt(x, z);
+        if (y < 0.05 || y > 0.6) continue; S.ico(x, y + 0.04, z, 0.12, n % 3 ? '#FFE1D6' : '#D9D2C5', k); n++;
+      }
+      for (let k = 0, n = 0; k < 2000 && n < 12; k++) { // snowy boulders high up
+        const x = BIG.mountain[0] + (R() - 0.5) * 14, z = BIG.mountain[1] + (R() - 0.5) * 12, y = hAt(x, z);
+        if (y < 7) continue; S.ico(x, y, z, 0.6 + R() * 0.5, '#E6ECF0', k); n++;
+      }
+    }
     for (const [x, z, s] of [[-6, -21.5, 0.9], [3.5, -22, 0.7]]) rock(S, x, Math.max(hAt(x, z), 0), z, s, 9);
     const hb = BIG.beach; boat(S, hb[0] + 4.5, 0.05, hb[1] - 2.2, 0.35);
     if (opt.hero !== false) hero(S, hb[0], Math.max(hAt(hb[0], hb[1]), 0.05) + 0.02, hb[1], opt.heroScale || 1.3, opt.heroRot ?? -0.55);
@@ -269,6 +308,57 @@
     desert:   { pos: [4, 5, -18], target: [13, 1.2, -6], fov: 50 },
   };
 
-  const api = { Scene, render, dayOneWorld, bigWorld, BIG_CAMS, cactus, pine, hero, tree, palm, rock, boat, signpost, buildIsland };
+  // ---------- villagers: every resident gets a different look ----------
+  const SKIN = ['#F6CFA8', '#E9B88E', '#D39A6A', '#A86F45', '#7A4B2C', '#FFE0C4'];
+  const HAIR = ['#2B1D14', '#5A3A22', '#8B5A2B', '#D9A441', '#C0392B', '#E8E3D9', '#3B5BA9', '#7D3C98', '#1E8C6E', '#F08CB4'];
+  const SHIRT = ['#E85D75', '#5B7CFA', '#2BB3A0', '#F2B134', '#9B6BD6', '#EF7D3C', '#3BAF4A', '#E2E2E2', '#2C3E50', '#FF8FB1', '#00A8E8', '#B5651D'];
+  const PANTS = ['#33415C', '#6B4F2A', '#2E5E3A', '#7A1F2B', '#3D3D3D', '#C9B37A', '#1F4E79'];
+  const HAT = ['none', 'cap', 'straw', 'beanie', 'band', 'hood', 'flower', 'tophat'];
+  const ACC = ['none', 'glasses', 'scarf', 'pack', 'none', 'cape'];
+  function hashStr(t) { let h = 2166136261 >>> 0; for (const c of String(t)) { h ^= c.codePointAt(0); h = Math.imul(h, 16777619) >>> 0; } return h; }
+  function lookFor(id, taken) { // taken: Set of keys already used (pass the same Set for all residents)
+    let h = hashStr(String(id).toLowerCase());
+    for (let t = 0; t < 64; t++, h = Math.imul(h ^ (h >>> 15), 2246822519) >>> 0) {
+      const L = { skin: h % SKIN.length, hair: (h >>> 3) % HAIR.length, shirt: (h >>> 7) % SHIRT.length, pants: (h >>> 11) % PANTS.length, hat: (h >>> 14) % HAT.length, acc: (h >>> 17) % ACC.length, hatCol: (h >>> 20) % SHIRT.length, tall: 0.9 + ((h >>> 24) % 5) * 0.05 };
+      const key = [L.skin, L.hair, L.shirt, L.pants, L.hat, L.acc, L.hatCol].join('.');
+      if (!taken || !taken.has(key)) { if (taken) taken.add(key); L.key = key; return L; }
+    }
+    return { skin: 0, hair: 0, shirt: 0, pants: 0, hat: 0, acc: 0, hatCol: 0, tall: 1, key: 'fallback' };
+  }
+  function villager(S, x, y, z, s = 1, rot = 0, L = lookFor('x')) {
+    s *= L.tall || 1; const c = Math.cos(rot), sn = Math.sin(rot);
+    const B = (dx, dy, dz, sx, sy, sz, col) => S.box(x + (dx * c - dz * sn) * s, y + dy * s, z + (dx * sn + dz * c) * s, sx * s, sy * s, sz * s, col, rot);
+    const sk = SKIN[L.skin], hr = HAIR[L.hair], sh = SHIRT[L.shirt], pa = PANTS[L.pants], hc = SHIRT[L.hatCol];
+    B(-0.11, 0, 0, 0.18, 0.5, 0.22, pa); B(0.11, 0, 0, 0.18, 0.5, 0.22, pa);
+    B(0, 0.5, 0, 0.5, 0.55, 0.3, sh); B(-0.32, 0.55, 0, 0.14, 0.45, 0.18, sh); B(0.32, 0.55, 0, 0.14, 0.45, 0.18, sh);
+    B(-0.32, 0.47, 0, 0.12, 0.1, 0.14, sk); B(0.32, 0.47, 0, 0.12, 0.1, 0.14, sk);
+    B(0, 1.05, 0, 0.44, 0.42, 0.4, sk);
+    B(0, 1.42, 0.02, 0.48, 0.12, 0.44, hr); B(0, 1.2, 0.2, 0.46, 0.3, 0.06, hr);
+    B(-0.1, 1.1, -0.205, 0.06, 0.08, 0.02, '#222'); B(0.1, 1.1, -0.205, 0.06, 0.08, 0.02, '#222');
+    const hat = HAT[L.hat];
+    if (hat === 'cap') { B(0, 1.48, 0, 0.5, 0.12, 0.46, hc); B(0, 1.48, -0.3, 0.42, 0.04, 0.2, hc); }
+    if (hat === 'straw') { B(0, 1.46, 0, 0.8, 0.05, 0.8, '#E8C872'); B(0, 1.5, 0, 0.44, 0.16, 0.42, '#E8C872'); B(0, 1.5, 0, 0.45, 0.05, 0.43, hc); }
+    if (hat === 'beanie') { B(0, 1.48, 0, 0.5, 0.2, 0.46, hc); B(0, 1.7, 0, 0.12, 0.1, 0.12, '#fff'); }
+    if (hat === 'band') { B(0, 1.32, 0, 0.47, 0.07, 0.43, hc); }
+    if (hat === 'hood') { B(0, 1.25, 0.04, 0.52, 0.5, 0.46, sh); B(0, 1.05, -0.21, 0.36, 0.34, 0.02, sk); }
+    if (hat === 'flower') { B(0.16, 1.5, -0.1, 0.12, 0.12, 0.12, '#FF6B8A'); B(0.16, 1.5, -0.1, 0.05, 0.05, 0.14, '#FFD23F'); }
+    if (hat === 'tophat') { B(0, 1.48, 0, 0.6, 0.04, 0.56, '#222'); B(0, 1.52, 0, 0.36, 0.34, 0.34, '#222'); B(0, 1.55, 0, 0.37, 0.06, 0.35, hc); }
+    const acc = ACC[L.acc];
+    if (acc === 'glasses') { B(-0.1, 1.1, -0.215, 0.13, 0.11, 0.02, '#1E2A3A'); B(0.1, 1.1, -0.215, 0.13, 0.11, 0.02, '#1E2A3A'); }
+    if (acc === 'scarf') { B(0, 0.98, 0, 0.5, 0.1, 0.36, hc); B(0.12, 0.8, -0.18, 0.1, 0.25, 0.04, hc); }
+    if (acc === 'pack') { B(0, 0.55, 0.22, 0.36, 0.4, 0.14, '#8B5A2B'); }
+    if (acc === 'cape') { B(0, 0.45, 0.18, 0.5, 0.6, 0.04, hc); }
+  }
+  // place residents around the beach and meadow (same spots on the site and in videos)
+  function placeVillagers(w, ids, opt = {}) {
+    const taken = new Set(), R = rng(opt.seed || 77), spots = [];
+    for (let k = 0; spots.length < ids.length && k < 4000; k++) {
+      const a = -1.9 + k * 0.47, r = 9 + (k % 7) * 1.6, x = Math.cos(a) * r - 2, z = Math.sin(a) * r - 8, y = w.hAt(x, z);
+      if (y < 0.6 || y > 3.2) continue; if (spots.some(p => Math.hypot(p[0] - x, p[2] - z) < 1.1)) continue; spots.push([x, y, z]);
+    }
+    ids.forEach((id, i) => { const p = spots[i]; if (!p) return; villager(w.S, p[0], p[1], p[2], opt.scale || 0.9, R() * 6.28, lookFor(id, taken)); });
+    return spots;
+  }
+  const api = { Scene, render, dayOneWorld, bigWorld, villager, lookFor, placeVillagers, BIG_CAMS, cactus, pine, hero, tree, palm, rock, boat, signpost, buildIsland };
   if (typeof module !== "undefined" && module.exports) module.exports = api; (typeof window !== "undefined" ? window : globalThis).Island3D = api;
 })(this);

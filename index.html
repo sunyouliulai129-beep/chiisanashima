@@ -270,11 +270,14 @@ function find(v,save=true){
  const L=D.levels,nx=nextLv(r.points,L),cur=L[r.level-1]||0;
  const pct=nx?((r.points-cur)/(nx-cur)*100):100;
  const own=new Set([...(r.owned||[]),...D.shop.icons.filter(x=>!x.cost&&!x.limited).map(x=>x.key),...D.shop.frames.filter(x=>!x.cost&&!x.limited).map(x=>x.key)]);
- out.innerHTML='<div class="pcard"><div>'+avatar(r,108)+'<div style="text-align:center;font-weight:800;margin-top:4px">Lv'+r.level+'</div></div><div><h3>'+esc(r.name)+'<span class="pf">'+(r.platform==='yt'?'YouTube':'インスタ')+'</span></h3>'
+ out.innerHTML='<div class="pcard"><div>'+avatar(r,108)+'<div style="text-align:center;font-weight:800;margin-top:4px">Lv'+r.level+'</div><canvas class="me3d" width="216" height="270" aria-label="島でのすがた" style="width:108px;height:135px;display:block;margin-top:6px;border-radius:12px"></canvas><div class="muted" style="text-align:center;font-size:12px">島でのすがた</div></div><div><h3>'+esc(r.name)+'<span class="pf">'+(r.platform==='yt'?'YouTube':'インスタ')+'</span></h3>'
   +'<div>'+r.points+'ポイント・'+(nx?'次のレベルまで あと'+(nx-r.points)+'ポイント':'最高レベル')+(r.level<100?'・Lv'+(Math.floor(r.level/5)*5+5)+'でコイン'+(Math.floor(r.level/5)*5+5)+'枚もらえる':'')+'</div><div class="bar" style="background:var(--sand2)"><i style="width:'+pct.toFixed(0)+'%"></i></div>'
   +'<div class="title">'+esc(titleOf(r.level))+'</div> <span class="coin">コイン '+(r.coins||0)+'枚</span>'+(unlocked(base)&&pend(base).length?' <span class="pend">申しこみ中</span>':'')+' <a href="#shop">アイコンをかえる</a>'+'<p class="now">いま島で：'+esc(r.job)+'</p>'+'<div>しごと：'+(r.work?esc(r.work)+'（'+(r.work_days||0)+'日はたらいた）':'まだえらんでいません。コメントに「しごと：木こり」のように書いてね')+'</div>'+(r.wish?'<div class="muted">なりたいもの：'+esc(r.wish)+'</div>':'')
   +'<div class="muted" style="margin-top:6px">もっているもの：'+esc([...D.shop.icons,...D.shop.frames].filter(x=>own.has(x.key)).map(x=>x.name).join('・'))+'</div>'+'<ul class="hist">'+r.history.map(h=>'<li>'+esc(h)+'</li>').join('')+'</ul>'+linkBox(base)+'</div></div>';
  const row=document.querySelector('tr[data-id="'+CSS.escape(norm(base.id))+'"]');if(row)row.classList.add('me');
+ try{const cvs=out.querySelector('.me3d');if(cvs){const S=new Island3D.Scene();S.box(0,-0.2,0,2.2,0.2,2.2,'#7CCB5B');S.box(0,-0.45,0,2.3,0.25,2.3,'#C9A36B');
+  const taken=new Set();let L=null;for(const x of D.residents.slice(0,80)){const l=Island3D.lookFor(x.platform+':'+norm(x.id),taken);if(x===base)L=l}if(!L)L=Island3D.lookFor(base.platform+':'+norm(base.id));
+  Island3D.villager(S,0,0,0,1,Math.PI+0.35,L);const img=Island3D.render(S,{pos:[0.9,1.4,-3.2],target:[0,0.85,0],fov:40},216,270,{ss:1,skyTop:'#BDE8FF',skyBot:'#FFF4D6'});cvs.getContext('2d').putImageData(new ImageData(img.data,216,270),0,0)}}catch(e){}
 }
 function linkBox(r){
  const other=r.platform==='yt'?'インスタ':'YouTube';
@@ -383,10 +386,7 @@ const cv=$('cv'),fig=$('fig'),ctx=cv.getContext('2d');
 let W0=null,ang=-2.2,dist=78,elev=0.8,drag=null,timer=0,lowres=false;
 function buildWorld(){
  const w=Island3D.bigWorld();
- const n=Math.min(60,D.residents.length),cols=['#e85d75','#5b7cfa','#2bb3a0','#f2b134','#9b6bd6','#ef7d3c'];
- for(let i=0,k=0;i<n&&k<600;k++){const a=-1.9+k*0.47,r=9+(k%7)*1.6,x=Math.cos(a)*r-2,z=Math.sin(a)*r-8,y=w.hAt(x,z);if(y<0.6||y>3.2)continue;
-  const c=cols[i%cols.length],s=0.8+0.06*Math.min(6,D.residents[i].level);
-  w.S.box(x,y,z,0.42*s,0.6*s,0.3*s,c);w.S.box(x,y+0.6*s,z,0.36*s,0.36*s,0.34*s,'#F6CFA8');i++}
+ Island3D.placeVillagers(w,D.residents.slice(0,80).map(r=>r.platform+':'+norm(r.id)));
  return w;
 }
 function draw(){
