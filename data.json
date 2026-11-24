@@ -93,7 +93,12 @@
    ],
    "since_day": 1,
    "work": null,
-   "work_days": 0
+   "work_days": 0,
+   "coins": 3,
+   "icon": "palm",
+   "frame": "wood",
+   "owned": [],
+   "appeared": 0
   },
   {
    "id": "ik_0415",
@@ -109,7 +114,12 @@
    ],
    "since_day": 1,
    "work": null,
-   "work_days": 0
+   "work_days": 0,
+   "coins": 2,
+   "icon": "shell",
+   "frame": "wood",
+   "owned": [],
+   "appeared": 0
   },
   {
    "id": "horse.6315152",
@@ -125,7 +135,12 @@
    ],
    "since_day": 1,
    "work": null,
-   "work_days": 0
+   "work_days": 0,
+   "coins": 2,
+   "icon": "fish",
+   "frame": "wood",
+   "owned": [],
+   "appeared": 0
   },
   {
    "id": "yy368313",
@@ -141,7 +156,12 @@
    ],
    "since_day": 1,
    "work": null,
-   "work_days": 0
+   "work_days": 0,
+   "coins": 2,
+   "icon": "palm",
+   "frame": "wood",
+   "owned": [],
+   "appeared": 0
   },
   {
    "id": "m_q1e.5",
@@ -157,7 +177,12 @@
    ],
    "since_day": 1,
    "work": null,
-   "work_days": 0
+   "work_days": 0,
+   "coins": 2,
+   "icon": "shell",
+   "frame": "wood",
+   "owned": [],
+   "appeared": 0
   },
   {
    "id": "aist.ory751",
@@ -173,7 +198,12 @@
    ],
    "since_day": 1,
    "work": null,
-   "work_days": 0
+   "work_days": 0,
+   "coins": 2,
+   "icon": "fish",
+   "frame": "wood",
+   "owned": [],
+   "appeared": 0
   },
   {
    "id": "@ビッパ色違い",
@@ -189,7 +219,12 @@
    ],
    "since_day": 1,
    "work": null,
-   "work_days": 0
+   "work_days": 0,
+   "coins": 2,
+   "icon": "palm",
+   "frame": "wood",
+   "owned": [],
+   "appeared": 0
   },
   {
    "id": "mizuki_tennis12",
@@ -204,7 +239,12 @@
    ],
    "since_day": 1,
    "work": null,
-   "work_days": 0
+   "work_days": 0,
+   "coins": 1,
+   "icon": "shell",
+   "frame": "wood",
+   "owned": [],
+   "appeared": 0
   },
   {
    "id": "@いと-f7v",
@@ -219,7 +259,12 @@
    ],
    "since_day": 1,
    "work": null,
-   "work_days": 0
+   "work_days": 0,
+   "coins": 1,
+   "icon": "fish",
+   "frame": "wood",
+   "owned": [],
+   "appeared": 0
   },
   {
    "id": "go20141224",
@@ -234,7 +279,12 @@
    ],
    "since_day": 1,
    "work": null,
-   "work_days": 0
+   "work_days": 0,
+   "coins": 1,
+   "icon": "palm",
+   "frame": "wood",
+   "owned": [],
+   "appeared": 0
   },
   {
    "id": "kizuna._.potato",
@@ -249,7 +299,12 @@
    ],
    "since_day": 1,
    "work": null,
-   "work_days": 0
+   "work_days": 0,
+   "coins": 1,
+   "icon": "shell",
+   "frame": "wood",
+   "owned": [],
+   "appeared": 0
   },
   {
    "id": "sasukeeeeeee412",
@@ -264,7 +319,12 @@
    ],
    "since_day": 1,
    "work": null,
-   "work_days": 0
+   "work_days": 0,
+   "coins": 1,
+   "icon": "fish",
+   "frame": "wood",
+   "owned": [],
+   "appeared": 0
   },
   {
    "id": "tyhw__z09",
@@ -279,7 +339,12 @@
    ],
    "since_day": 1,
    "work": null,
-   "work_days": 0
+   "work_days": 0,
+   "coins": 1,
+   "icon": "palm",
+   "frame": "wood",
+   "owned": [],
+   "appeared": 0
   }
  ],
  "links": {
@@ -336,5 +401,101 @@
   "島の守り神",
   "伝説の島民",
   "島そのもの"
- ]
+ ],
+ "shop": {
+  "icons": [
+   {
+    "key": "palm",
+    "name": "ヤシの木",
+    "cost": 0
+   },
+   {
+    "key": "shell",
+    "name": "貝がら",
+    "cost": 0
+   },
+   {
+    "key": "fish",
+    "name": "さかな",
+    "cost": 0
+   },
+   {
+    "key": "turtle",
+    "name": "カメ",
+    "cost": 3
+   },
+   {
+    "key": "crab",
+    "name": "カニ",
+    "cost": 3
+   },
+   {
+    "key": "boat",
+    "name": "小舟",
+    "cost": 4
+   },
+   {
+    "key": "starfish",
+    "name": "ヒトデ",
+    "cost": 6
+   },
+   {
+    "key": "sun",
+    "name": "たいよう",
+    "cost": 6
+   },
+   {
+    "key": "moon",
+    "name": "つき",
+    "cost": 8
+   },
+   {
+    "key": "whale",
+    "name": "クジラ",
+    "cost": 10
+   },
+   {
+    "key": "lighthouse",
+    "name": "灯台",
+    "cost": 12
+   },
+   {
+    "key": "treasure",
+    "name": "たからばこ",
+    "cost": 15
+   }
+  ],
+  "frames": [
+   {
+    "key": "wood",
+    "name": "木のわく",
+    "cost": 0
+   },
+   {
+    "key": "rope",
+    "name": "なわのわく",
+    "cost": 3
+   },
+   {
+    "key": "shells",
+    "name": "貝がらのわく",
+    "cost": 5
+   },
+   {
+    "key": "silver",
+    "name": "銀のわく",
+    "cost": 8
+   },
+   {
+    "key": "gold",
+    "name": "金のわく",
+    "cost": 12
+   },
+   {
+    "key": "rainbow",
+    "name": "にじのわく",
+    "cost": 20
+   }
+  ]
+ }
 }
