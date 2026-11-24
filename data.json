@@ -566,6 +566,12 @@
     "key": "treasure",
     "name": "たからばこ",
     "cost": 15
+   },
+   {
+    "key": "bridge",
+    "name": "かけ橋の島",
+    "cost": 0,
+    "limited": "げんてい：つなぐ"
    }
   ],
   "frames": [

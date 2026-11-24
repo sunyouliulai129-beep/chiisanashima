@@ -106,6 +106,8 @@ td .av{display:inline-block;vertical-align:middle;margin-right:6px}
 footer{background:var(--wood2);color:#f3e6cf;padding:24px 0 36px;font-size:14px}
 footer a{color:#ffd29a}
 .muted{color:var(--soft);font-size:14px}
+.ytcta{display:flex;flex-wrap:wrap;gap:10px;align-items:center;justify-content:space-between;background:#c4302b;color:#fff;border-radius:16px;padding:12px 16px;margin:14px 0 0}.ytcta b{font-size:17px}.ytcta a{background:#fff;color:#c4302b;font-weight:900;border-radius:99px;padding:10px 18px;text-decoration:none;min-height:44px;display:inline-flex;align-items:center}
+.linkbox{margin-top:10px;background:light-dark(#eef4ff,#1c2433);border:2px dashed #5b7cfa;border-radius:14px;padding:10px 12px}
 @media(max-width:600px){.stats{grid-template-columns:repeat(3,minmax(0,1fr));gap:6px}.stat{padding:8px}.stat span{font-size:12px}.pcard{grid-template-columns:1fr}.vote .row{grid-template-columns:2.2em minmax(0,5em) minmax(0,1fr) 2.6em}.hide-sm{display:none}}
 @media(prefers-reduced-motion:reduce){*{transition:none!important}}
 </style>
@@ -124,6 +126,7 @@ footer a{color:#ffd29a}
    <span class="hint">ドラッグで島を回せます</span>
    <div class="zoom"><button id="zin" aria-label="近づく">＋</button><button id="zout" aria-label="はなれる">－</button></div>
   </div>
+  <div class="ytcta"><div><b>YouTubeチャンネルもよろしく！</b><br><span style="font-size:14px">毎日の島の動画はYouTubeでも見られます。登録しておくと、新しい回を見のがしません。</span></div><a id="ytSub" href="https://www.youtube.com/@chiisanashima_sekai?sub_confirmation=1">チャンネル登録</a></div>
  </div>
 </header>
 <main>
@@ -182,6 +185,7 @@ footer a{color:#ffd29a}
       <li>アイデアが採用される：＋5ポイント</li>
       <li>インスタの「いいね」：1ポイント（1本の動画につき1回）</li>
       <li>インスタのストーリーズでメンション：3ポイント（1人1回まで）</li>
+      <li>インスタとYouTubeのカードを「つなぐ」：コイン5枚＋限定アイコン（1人1回。島民カードの下に出る文をコメント）</li>
       <li><b>友だちに島をシェアして、つれてくる：1人につき3ポイント</b>（ちがう人なら何人でもOK）</li>
      </ul>
      <p class="muted">シェアは「だれがしたか」がアプリで見えないので、つれてこられた人が初めてのコメントに「しょうかい：○○（シェアしてくれた人のID）」と書いたら、○○さんに3ポイント。同じ人を2回つれてきても1回分だけ。1人がしょうかいできるのは1人だけです。</p>
@@ -251,13 +255,23 @@ function find(v,save=true){
  const base=r;CUR=base;renderShop();r=unlocked(base)?view(base):base;
  const L=D.levels,nx=nextLv(r.points,L),cur=L[r.level-1]||0;
  const pct=nx?((r.points-cur)/(nx-cur)*100):100;
- const own=new Set([...(r.owned||[]),...D.shop.icons.filter(x=>!x.cost).map(x=>x.key),...D.shop.frames.filter(x=>!x.cost).map(x=>x.key)]);
+ const own=new Set([...(r.owned||[]),...D.shop.icons.filter(x=>!x.cost&&!x.limited).map(x=>x.key),...D.shop.frames.filter(x=>!x.cost&&!x.limited).map(x=>x.key)]);
  out.innerHTML='<div class="pcard"><div>'+avatar(r,108)+'<div style="text-align:center;font-weight:800;margin-top:4px">Lv'+r.level+'</div></div><div><h3>'+esc(r.name)+'<span class="pf">'+(r.platform==='yt'?'YouTube':'インスタ')+'</span></h3>'
   +'<div>'+r.points+'ポイント・'+(nx?'次のレベルまで あと'+(nx-r.points)+'ポイント':'最高レベル')+(r.level<100?'・Lv'+(Math.floor(r.level/5)*5+5)+'でコイン'+(Math.floor(r.level/5)*5+5)+'枚もらえる':'')+'</div><div class="bar" style="background:var(--sand2)"><i style="width:'+pct.toFixed(0)+'%"></i></div>'
   +'<div class="title">'+esc(titleOf(r.level))+'</div> <span class="coin">コイン '+(r.coins||0)+'枚</span>'+(unlocked(base)&&pend(base).length?' <span class="pend">申しこみ中</span>':'')+' <a href="#shop">アイコンをかえる</a>'+'<p class="now">いま島で：'+esc(r.job)+'</p>'+'<div>しごと：'+(r.work?esc(r.work)+'（'+(r.work_days||0)+'日はたらいた）':'まだえらんでいません。コメントに「しごと：木こり」のように書いてね')+'</div>'+(r.wish?'<div class="muted">なりたいもの：'+esc(r.wish)+'</div>':'')
-  +'<div class="muted" style="margin-top:6px">もっているもの：'+esc([...D.shop.icons,...D.shop.frames].filter(x=>own.has(x.key)).map(x=>x.name).join('・'))+'</div>'+'<ul class="hist">'+r.history.map(h=>'<li>'+esc(h)+'</li>').join('')+'</ul></div></div>';
+  +'<div class="muted" style="margin-top:6px">もっているもの：'+esc([...D.shop.icons,...D.shop.frames].filter(x=>own.has(x.key)).map(x=>x.name).join('・'))+'</div>'+'<ul class="hist">'+r.history.map(h=>'<li>'+esc(h)+'</li>').join('')+'</ul>'+linkBox(base)+'</div></div>';
  const row=document.querySelector('tr[data-id="'+CSS.escape(norm(base.id))+'"]');if(row)row.classList.add('me');
 }
+function linkBox(r){
+ const other=r.platform==='yt'?'インスタ':'YouTube';
+ if(r.linked)return '<div class="linkbox"><b>'+other+'でもあそんでるよ！</b> 限定アイコン「かけ橋の島」をもっています。</div>';
+ const head='<b>'+other+'でもあそぼう：コイン5枚＋限定アイコン「かけ橋の島」</b><div class="muted">'+other+'の最新の動画に、下の文を'+other+'のアカウントからコメントすると、次の更新でこのカードにもらえます（1人1回）。</div>';
+ if(!unlocked(r))return '<div class="linkbox">'+head+'<div class="muted">先に、下の「コインでアイコンをアンロック」であいことばを決めて、ひらいてね。</div></div>';
+ const msg='つなぐ '+(r.platform==='yt'?'YouTube':'インスタ')+' '+r.id+' '+r.code_reg;
+ const url=r.platform==='yt'?D.links.instagram:D.links.youtube;
+ return '<div class="linkbox">'+head+'<div class="msg">'+esc(msg)+'</div><div class="row2"><button class="btn" data-link="'+esc(msg)+'" data-url="'+esc(url)+'">コピーして'+other+'をひらく</button></div></div>';
+}
+$('cardOut').addEventListener('click',e=>{const b=e.target.closest('button[data-link]');if(!b)return;const go=()=>{location.href=b.dataset.url};(navigator.clipboard?navigator.clipboard.writeText(b.dataset.link):Promise.reject()).then(go,()=>{b.textContent='文を長おしでコピーしてから、ひらいてね'})});
 $('jobBox').addEventListener('click',e=>{const b=e.target.closest('button[data-c]');if(!b)return;const t=b.dataset.c;navigator.clipboard?.writeText(t).then(()=>{b.textContent='コピーしました：'+t},()=>{b.textContent='「'+t+'」と書いてね'}).catch(()=>{b.textContent='「'+t+'」と書いてね'})});
 $('findForm').addEventListener('submit',e=>{e.preventDefault();find($('q').value)});
 
@@ -274,6 +288,7 @@ const ICON={
  moon:'<path d="M40 10 C26 12 18 24 20 36 C22 48 34 56 46 52 C36 50 28 42 28 31 C28 21 33 14 40 10Z" fill="#ffe27a"/><circle cx="48" cy="18" r="2" fill="#fff"/><circle cx="52" cy="34" r="1.5" fill="#fff"/><circle cx="14" cy="16" r="1.5" fill="#fff"/>',
  whale:'<path d="M8 36 C8 24 22 20 34 22 C46 24 52 32 52 38 C52 46 40 50 28 50 C16 50 8 44 8 36Z" fill="#2c86c4"/><path d="M50 36 L60 26 L58 40Z" fill="#2c86c4"/><path d="M12 40 C20 46 36 48 50 40 C46 48 36 50 28 50 C18 50 12 46 12 40Z" fill="#cfe9f7"/><circle cx="20" cy="32" r="2" fill="#1e2a3a"/><path d="M26 18 C24 12 20 10 18 12 M26 18 C28 12 32 10 34 12" stroke="#4fb8e8" stroke-width="2.5" fill="none" stroke-linecap="round"/>',
  lighthouse:'<path d="M24 54 L28 20 L36 20 L40 54Z" fill="#fff"/><path d="M25.5 42 L38.5 42 L39.3 48 L24.7 48Z M26.8 30 L37.2 30 L38 36 L26 36Z" fill="#ef5b3c"/><rect x="26" y="14" width="12" height="7" rx="1" fill="#ffd23f"/><path d="M24 14 L32 8 L40 14Z" fill="#ef5b3c"/><path d="M38 17 L58 11 L58 23Z" fill="#ffe27a" opacity=".7"/><rect x="16" y="52" width="32" height="5" rx="2" fill="#8fa27a"/>',
+ bridge:'<ellipse cx="14" cy="46" rx="12" ry="6" fill="#7ccb5b"/><ellipse cx="50" cy="46" rx="12" ry="6" fill="#7ccb5b"/><path d="M4 50 C10 56 20 56 26 50 M38 50 C44 56 54 56 60 50" stroke="#f2dfa7" stroke-width="3" fill="none"/><path d="M10 44 C22 14 42 14 54 44" stroke="#ef5b3c" stroke-width="5" fill="none" stroke-linecap="round"/><path d="M10 44 C22 20 42 20 54 44" stroke="#ffd23f" stroke-width="3" fill="none"/><path d="M16 36 V44 M24 28 V44 M32 26 V44 M40 28 V44 M48 36 V44" stroke="#8a5428" stroke-width="2"/><path d="M10 44 H54" stroke="#8a5428" stroke-width="3"/><path d="M14 40 L14 32 L18 36Z M50 40 L50 32 L46 36Z" fill="#2e9e4f"/>',
  treasure:'<rect x="12" y="30" width="40" height="22" rx="3" fill="#b5743b"/><path d="M12 30 C12 18 52 18 52 30Z" fill="#8a5428"/><rect x="12" y="29" width="40" height="4" fill="#ffd23f"/><rect x="28" y="30" width="8" height="10" rx="2" fill="#ffd23f"/><circle cx="20" cy="22" r="3" fill="#ffe27a"/><circle cx="44" cy="22" r="3" fill="#ffe27a"/><path d="M32 14 L33.5 18 L37 18 L34 20 L35 24 L32 21.5 L29 24 L30 20 L27 18 L30.5 18Z" fill="#fff27a"/>'
 };
 let AV=0;
@@ -317,13 +332,14 @@ function view(r){ // resident as it will look after pending trades
 }
 function renderShop(){
  const v=CUR&&unlocked(CUR)?view(CUR):null;
- const has=x=>!x.cost||(v&&v.owned.includes(x.key));
+ const has=x=>(!x.cost&&!x.limited)||(v&&v.owned.includes(x.key));
  const item=x=>{let b='';
   if(v){const on=(x.kind==='i'?v.icon:v.frame)===x.key;
    if(on)b='<button disabled>つけている</button>';
    else if(has(x))b='<button class="ghost" data-k="'+esc(x.key)+'" data-t="wear">つける</button>';
+   else if(x.limited)b='<button disabled>げんてい</button>';
    else b='<button data-k="'+esc(x.key)+'" data-t="buy"'+(x.cost>v.coins?' disabled':'')+'>'+(x.cost>v.coins?'あと'+(x.cost-v.coins)+'枚':'こうかんする')+'</button>'}
-  return '<div class="item'+(v&&has(x)?' have':'')+'">'+(x.kind==='i'?avatar({icon:x.key,frame:'wood'},64):avatar({icon:'__',frame:x.key},64))+'<b>'+esc(x.name)+'</b><span class="c">'+(x.cost?'コイン'+x.cost+'枚':'さいしょから')+'</span>'+b+'</div>'};
+  return '<div class="item'+(v&&has(x)?' have':'')+'">'+(x.kind==='i'?avatar({icon:x.key,frame:'wood'},64):avatar({icon:'__',frame:x.key},64))+'<b>'+esc(x.name)+'</b><span class="c">'+(x.limited?esc(x.limited):x.cost?'コイン'+x.cost+'枚':'さいしょから')+'</span>'+b+'</div>'};
  $('shopIcons').innerHTML=ALL().filter(x=>x.kind==='i').map(item).join('');
  $('shopFrames').innerHTML=ALL().filter(x=>x.kind==='f').map(item).join('');
  $('shopBar').innerHTML=v?avatar(v,44)+'<span class="who">'+esc(v.name)+'さん</span><span class="coin">コイン '+v.coins+'枚</span>'+(pend(CUR).length?'<span class="pend">申しこみ中 '+pend(CUR).length+'件</span> <button class="btn" style="min-height:36px;padding:0 12px;font-size:13px" id="undo">申しこみを取り消す</button>':''):(CUR?lockForm(CUR):'上の「島民カード」で自分をさがすと、ここでこうかんできます。');
@@ -350,19 +366,19 @@ function refreshMe(){renderShop();if(CUR)find(CUR.id,false)}
 
 /* ---- 3D island ---- */
 const cv=$('cv'),fig=$('fig'),ctx=cv.getContext('2d');
-let W0=null,ang=-2.2,dist=27,elev=0.8,drag=null,timer=0,lowres=false;
+let W0=null,ang=-2.2,dist=78,elev=0.8,drag=null,timer=0,lowres=false;
 function buildWorld(){
- const w=Island3D.dayOneWorld({trees:22,heroAt:[-1.2,-8.6],heroRot:-0.55,heroScale:1.3});
- const n=Math.min(40,D.residents.length),cols=['#e85d75','#5b7cfa','#2bb3a0','#f2b134','#9b6bd6','#ef7d3c'];
- for(let i=0;i<n;i++){const a=-1.0+i*(2*Math.PI/Math.max(n,8))*0.9,r=7.4+(i%3)*0.35,x=Math.cos(a)*r,z=Math.sin(a)*r,y=Math.max(w.hAt(x,z),0.05);
-  const c=cols[i%cols.length],s=0.55+0.05*Math.min(6,D.residents[i].level);
-  w.S.box(x,y,z,0.42*s,0.6*s,0.3*s,c);w.S.box(x,y+0.6*s,z,0.36*s,0.36*s,0.34*s,'#F6CFA8')}
+ const w=Island3D.bigWorld();
+ const n=Math.min(60,D.residents.length),cols=['#e85d75','#5b7cfa','#2bb3a0','#f2b134','#9b6bd6','#ef7d3c'];
+ for(let i=0,k=0;i<n&&k<600;k++){const a=-1.9+k*0.47,r=9+(k%7)*1.6,x=Math.cos(a)*r-2,z=Math.sin(a)*r-8,y=w.hAt(x,z);if(y<0.6||y>3.2)continue;
+  const c=cols[i%cols.length],s=0.8+0.06*Math.min(6,D.residents[i].level);
+  w.S.box(x,y,z,0.42*s,0.6*s,0.3*s,c);w.S.box(x,y+0.6*s,z,0.36*s,0.36*s,0.34*s,'#F6CFA8');i++}
  return w;
 }
 function draw(){
  const r=fig.getBoundingClientRect(),dpr=Math.min(2,window.devicePixelRatio||1),k=lowres?0.45:0.85;
  const w=Math.max(160,Math.round(r.width*dpr*k)),h=Math.max(120,Math.round(r.height*dpr*k));
- const cam={pos:[Math.cos(ang)*dist,dist*elev,Math.sin(ang)*dist],target:[0,0.5,0],fov:42};
+ const cam={pos:[Math.cos(ang)*dist,dist*elev,Math.sin(ang)*dist],target:[0,1.5,0],fov:42};
  const img=Island3D.render(W0.S,cam,w,h,{ss:1,skyTop:'#7FD1FF',skyBot:'#FFF4D6'});
  cv.width=w;cv.height=h;ctx.putImageData(new ImageData(img.data,w,h),0,0);
 }
@@ -370,8 +386,8 @@ function req(low){lowres=low;cancelAnimationFrame(timer);timer=requestAnimationF
 fig.addEventListener('pointerdown',e=>{drag={x:e.clientX,y:e.clientY};fig.setPointerCapture(e.pointerId);fig.style.cursor='grabbing'});
 fig.addEventListener('pointermove',e=>{if(!drag)return;ang+=(e.clientX-drag.x)*0.008;elev=Math.min(1.6,Math.max(0.25,elev+(e.clientY-drag.y)*0.004));drag={x:e.clientX,y:e.clientY};req(true)});
 const up=()=>{drag=null;fig.style.cursor='grab';req(false)};fig.addEventListener('pointerup',up);fig.addEventListener('pointercancel',up);
-$('zin').addEventListener('click',()=>{dist=Math.max(16,dist-4);req(false)});
-$('zout').addEventListener('click',()=>{dist=Math.min(56,dist+4);req(false)});
+$('zin').addEventListener('click',()=>{dist=Math.max(30,dist-8);req(false)});
+$('zout').addEventListener('click',()=>{dist=Math.min(130,dist+8);req(false)});
 const ro=new ResizeObserver(()=>{if(W0)req(false)});ro.observe(fig);
 
 function start(data){D=data;render();W0=buildWorld();req(false)}
