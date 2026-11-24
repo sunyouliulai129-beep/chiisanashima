@@ -135,11 +135,13 @@ precision mediump float; out vec4 o; void main(){ o = vec4(1.0); }`;
     }
 
     const R = { canvas, gl, chars: [], fires: [], props: [], world: null, sun: norm3(opt.sun || [-0.45, 0.8, -0.4]) };
-    R.setWorld = (w) => {
+    R.worlds = {};
+    R.setWorld = (w, key = 'main') => {
       const S = new I.Scene(); S.tris = w.S.tris.filter(t => t[4] !== 4);
-      R.world = w; R.static = mesh(S); R.water = mesh(waterMesh((w.S.plateR || 33.6) * 0.995));
-      R.shore = w.S.islandR || 24; R.plate = w.S.plateR || 33.6;
+      R.worlds[key] = { w, st: mesh(S), wa: mesh(waterMesh((w.S.plateR || 33.6) * 0.995)), shore: w.S.islandR || 24, plate: w.S.plateR || 33.6 };
+      if (key === 'main' || !R.world) R.use(key);
     };
+    R.use = (key) => { const o = R.worlds[key] || R.worlds.main; R.cur = key; R.world = o.w; R.static = o.st; R.water = o.wa; R.shore = o.shore; R.plate = o.plate; };
     const partCache = new Map();
     R.addCharacter = (c) => {
       const L = c.look || I.HERO_LOOK, key = L.key || JSON.stringify(L);
@@ -178,13 +180,13 @@ precision mediump float; out vec4 o; void main(){ o = vec4(1.0); }`;
       const sky = opt.sky || [0.62, 0.84, 0.98], ground = [0.42, 0.38, 0.32], fog = opt.fog || [0.80, 0.90, 0.97];
       const sun = R.sun, ctr = [0, 2, 0], ext = (R.plate || 34) * 1.05;
       const LV = M4.look([ctr[0] + sun[0] * 80, ctr[1] + sun[1] * 80, ctr[2] + sun[2] * 80], ctr), LP = M4.ortho(-ext, ext, -ext, ext, 10, 170), LVP = M4.mul(LP, LV);
-      const poses = R.chars.map(ch => charPose(ch, t));
+      const poses = R.cur === 'main' ? R.chars.map(ch => charPose(ch, t)) : [];
       const drawAll = (uM, isShadow) => {
         const id = M4.id();
         gl.uniformMatrix4fv(uM, false, id); gl.bindVertexArray(R.static.vao); gl.drawArrays(gl.TRIANGLES, 0, R.static.count);
-        for (const pr of R.props) { gl.uniformMatrix4fv(uM, false, pr.M); gl.bindVertexArray(pr.m.vao); gl.drawArrays(gl.TRIANGLES, 0, pr.m.count); }
-        R.chars.forEach((ch, i) => { const ps = poses[i]; for (const k of ['body', 'armL', 'armR', 'legL', 'legR']) { gl.uniformMatrix4fv(uM, false, ps[k]); const m = ch.mesh.m[k]; gl.bindVertexArray(m.vao); gl.drawArrays(gl.TRIANGLES, 0, m.count); } });
-        for (const f of R.fires) {
+        if (R.cur === 'main') for (const pr of R.props) { gl.uniformMatrix4fv(uM, false, pr.M); gl.bindVertexArray(pr.m.vao); gl.drawArrays(gl.TRIANGLES, 0, pr.m.count); }
+        if (R.cur === 'main') R.chars.forEach((ch, i) => { const ps = poses[i]; for (const k of ['body', 'armL', 'armR', 'legL', 'legR']) { gl.uniformMatrix4fv(uM, false, ps[k]); const m = ch.mesh.m[k]; gl.bindVertexArray(m.vao); gl.drawArrays(gl.TRIANGLES, 0, m.count); } });
+        if (R.cur === 'main') for (const f of R.fires) {
           gl.uniformMatrix4fv(uM, false, M4.T(...f.p)); gl.bindVertexArray(f.logs.vao); gl.drawArrays(gl.TRIANGLES, 0, f.logs.count);
           if (!isShadow) f.fl.forEach((m, k) => { const fl = 1 + 0.25 * Math.sin(t * (11 + k * 3) + k) + 0.12 * Math.sin(t * 23 + k * 2); const M = M4.mul(M4.T(f.p[0], f.p[1] + 0.05, f.p[2]), M4.mul(M4.RY(t * 2 + k), [1, 0, 0, 0, 0, fl, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1])); gl.uniformMatrix4fv(uM, false, M); gl.bindVertexArray(m.vao); gl.drawArrays(gl.TRIANGLES, 0, m.count); });
         }
@@ -207,8 +209,48 @@ precision mediump float; out vec4 o; void main(){ o = vec4(1.0); }`;
       return canvas;
     };
     R.project = (p) => { if (!VP) return null; const x = VP[0] * p[0] + VP[4] * p[1] + VP[8] * p[2] + VP[12], y = VP[1] * p[0] + VP[5] * p[1] + VP[9] * p[2] + VP[13], w = VP[3] * p[0] + VP[7] * p[1] + VP[11] * p[2] + VP[15]; if (w <= 0.01) return null; return [(x / w * 0.5 + 0.5) * W, (1 - (y / w * 0.5 + 0.5)) * H, w]; };
-    R.labels = () => R.chars.filter(c => c.name && c.cur).map(c => { const q = R.project([c.cur[0], c.cur[1] + c.mesh.h * c.scale + 0.35, c.cur[2]]); return q && { name: c.name, x: q[0], y: q[1], d: q[2] }; }).filter(Boolean);
+    R.labels = () => R.cur !== 'main' ? [] : R.chars.filter(c => c.name && c.cur).map(c => { const q = R.project([c.cur[0], c.cur[1] + c.mesh.h * c.scale + 0.35, c.cur[2]]); return q && { name: c.name, x: q[0], y: q[1], d: q[2] }; }).filter(Boolean);
     return R;
   }
-  I.GL = { create, M4 };
+  // ---------- stage: what the video pipelines use ----------
+  // EP fields used: buildWorld(opt) (optional; must pass opt to Island3D.bigWorld), cams, worlds (extra worlds for cams with world:'key'),
+  //   heroAt [x,z], heroAct, residents [{id:'ig:xxx', name:'xxx'}] (order = data.json residents), actors [{look, pos, act, path, name}], fires [[x,y,z]], tags (true = show name tags)
+  function stage(EP, W, H) {
+    const R = create(W, H, { transparent: true });
+    const w = (EP.buildWorld || I.bigWorld)({ hd: true, hero: false });
+    R.setWorld(w, 'main');
+    for (const k in (EP.worlds || {})) R.setWorld(EP.worlds[k](), k);
+    R.use('main');
+    const hb = EP.heroAt || [w.big.beach[0], w.big.beach[1]];
+    R.addCharacter({ look: I.HERO_LOOK, pos: [hb[0], null, hb[1]], yaw: -0.55, act: EP.heroAct || 'idle', phase: 0, name: EP.heroName || '' });
+    const res = EP.residents || [], spots = I.villagerSpots(w, res.length), taken = new Set(), ACT = ['idle', 'walk', 'work', 'idle', 'walk', 'wave', 'cheer', 'walk', 'work', 'idle'];
+    res.forEach((r, i) => { const p = spots[i]; if (!p) return; const a = r.act || ACT[i % ACT.length], ang = i * 2.4;
+      R.addCharacter({ look: I.lookFor(r.id, taken), pos: [p[0], p[1], p[2]], yaw: ang, act: a, path: [[p[0], p[2]], [p[0] + Math.cos(ang) * 2.2, p[2] + Math.sin(ang) * 2.2]], speed: 0.7 + (i % 3) * 0.15, name: r.name, phase: i * 1.7 }); });
+    (EP.actors || []).forEach(a => R.addCharacter(a));
+    (EP.fires || []).forEach(f => R.addFire(f));
+    const out = document.createElement('canvas'); out.width = W; out.height = H; const ctx = out.getContext('2d');
+    const FONT = "'Yu Gothic UI','Yu Gothic','Meiryo',sans-serif";
+    return {
+      R, world: w,
+      frame(cam, p, t) {
+        R.use(cam.world || 'main');
+        const o = cam.orbit ?? 0.12, dl = cam.dolly ?? 0.07, a = o * (p - 0.5), k = 1 - dl * p;
+        const dx = cam.pos[0] - cam.target[0], dz = cam.pos[2] - cam.target[2], dy = cam.pos[1] - cam.target[1];
+        const c = { pos: [cam.target[0] + (dx * Math.cos(a) - dz * Math.sin(a)) * k, cam.target[1] + dy * k, cam.target[2] + (dx * Math.sin(a) + dz * Math.cos(a)) * k], target: cam.target, fov: cam.fov };
+        const g = ctx.createLinearGradient(0, 0, 0, H); g.addColorStop(0, cam.skyTop || '#6EC3F5'); g.addColorStop(0.55, cam.skyBot || '#CFE9F7'); g.addColorStop(1, '#F3F7F2');
+        ctx.fillStyle = g; ctx.fillRect(0, 0, W, H);
+        ctx.drawImage(R.render(c, t), 0, 0);
+        if (EP.tags !== false && !cam.noTags) {
+          const L = R.labels().filter(l => l.d < (cam.tagDist || 22) && l.x > 0 && l.x < W && l.y > 0 && l.y < H).sort((a, b) => b.d - a.d);
+          for (const l of L) { const fs = Math.max(18, Math.min(34, 520 / l.d)); ctx.font = `800 ${fs}px ${FONT}`; const tw = ctx.measureText(l.name).width + fs * 1.1, th = fs * 1.5;
+            ctx.globalAlpha = Math.min(1, (cam.tagDist || 22) - l.d); ctx.fillStyle = 'rgba(255,252,240,0.92)'; ctx.strokeStyle = 'rgba(90,56,28,0.8)'; ctx.lineWidth = 2;
+            ctx.beginPath(); ctx.roundRect(l.x - tw / 2, l.y - th, tw, th, th / 2); ctx.fill(); ctx.stroke();
+            ctx.beginPath(); ctx.moveTo(l.x - 6, l.y); ctx.lineTo(l.x + 6, l.y); ctx.lineTo(l.x, l.y + 8); ctx.closePath(); ctx.fillStyle = 'rgba(255,252,240,0.92)'; ctx.fill();
+            ctx.fillStyle = '#5A381C'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillText(l.name, l.x, l.y - th / 2); ctx.globalAlpha = 1; }
+        }
+        return out;
+      },
+    };
+  }
+  I.GL = { create, stage, M4 };
 })();

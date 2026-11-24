@@ -1,3 +1,6 @@
+// GPU版（2026-11-25〜）：island3d.js のあとに island3d_gl.js も実行しておくと、影・波・木のゆれ・動く島民と主人公・動くカメラで描く（CS.STAGE）。
+//   EP.buildWorld(opt) は opt を Island3D.bigWorld(opt) にそのまま渡すこと。EP.residents=[{id:'ig:xxx',name:'表示名'}]（data.json の residents 順）、EP.heroAct（'idle'|'wave'|'work'|'walk'|'cheer'）、
+//   EP.actors=[{look:Island3D.lookFor('id'), pos:[x,null,z], act, path:[[x,z],[x,z]], name}]、EP.fires=[[x,y,z]]、cams[k].orbit / dolly / world / noTags で調整。EP.gl=false で昔の止め絵版。
 // ちいさな島から世界へ — LONG (横長 1920x1080、8〜11分) pipeline. Runs inside a YouTube Studio upload tab, like chiisanashima_pipeline.js.
 // Prereq: island3d.js evaluated (window.Island3D), VOICEVOX at http://localhost:50021, Studio open at .../videos/upload?d=ud.
 // Usage:
@@ -30,19 +33,22 @@
       const ab = await fetch(`${V}/synthesis?speaker=31`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(q) }).then(r => r.arrayBuffer());
       CS.BUFS.push(await CS.AC.decodeAudioData(ab));
     }
+    CS.STILLS = {}; CS.STAGE = null;
+    if (Island3D.GL && EP.gl !== false) { CS.STAGE = Island3D.GL.stage(EP, W, H); }   // GPU: shadows, water, wind, moving characters & camera
+    else {
     const w = (EP.buildWorld || Island3D.bigWorld)({}), WS = {};   // a cam may say world:'name' to use EP.worlds[name]() (e.g. the island's birth stages)
-    CS.STILLS = {};
     for (const k in EP.cams) { const cam = EP.cams[k], ww = cam.world ? (WS[cam.world] = WS[cam.world] || EP.worlds[cam.world]()) : w; const img = Island3D.render(ww.S, cam, W, H, { ss: 1, skyTop: cam.skyTop || '#7FD1FF', skyBot: cam.skyBot || '#FFF4D6' }); CS.STILLS[k] = await createImageBitmap(new ImageData(img.data, W, H)); }
+    }
     CS.CV = document.createElement('canvas'); CS.CV.width = W; CS.CV.height = H;
     return { voice: CS.BUFS.reduce((a, b) => a + b.duration, 0).toFixed(1), scenes: EP.lines.length };
   };
   const T = (ctx, s, x, y, fill = '#fff', stroke = '#1E2A3A', lw = 12) => { ctx.lineWidth = lw; ctx.strokeStyle = stroke; ctx.strokeText(s, x, y); ctx.fillStyle = fill; ctx.fillText(s, x, y); };
   CS.drawFrame = (EP, ctx, i, rel, dur) => {
     const [shot, sub, mode] = EP.lines[i];
-    const p = Math.min(1, Math.max(0, rel / dur)), img = CS.STILLS[shot] || CS.STILLS[Object.keys(CS.STILLS)[0]];
+    const p = Math.min(1, Math.max(0, rel / dur)), img = CS.STILLS[shot] || CS.STILLS[Object.keys(CS.STILLS)[0]], camx = EP.cams[shot] || EP.cams[Object.keys(EP.cams)[0]];
     // slow Ken Burns: zoom in or out and drift, direction by scene index
     const zin = i % 2 === 0, sc = zin ? 1.02 + 0.1 * p : 1.12 - 0.1 * p, dx = ((i % 3) - 1) * 60 * (p - 0.5), dy = ((i % 4 < 2) ? -1 : 1) * 25 * (p - 0.5);
-    ctx.drawImage(img, (W - W * sc) / 2 + dx, (H - H * sc) / 2 + dy, W * sc, H * sc);
+    if (CS.STAGE) ctx.drawImage(CS.STAGE.frame(camx, p, CS.REC_T ?? (i * 3 + rel)), 0, 0); else ctx.drawImage(img, (W - W * sc) / 2 + dx, (H - H * sc) / 2 + dy, W * sc, H * sc);
     ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.lineJoin = 'round';
     // top-left label
     ctx.font = `900 40px ${FONT}`; const lab = EP.title || 'ちいさな島から世界へ', lw = ctx.measureText(lab).width + 60;
@@ -89,7 +95,7 @@
   CS.preview = (EP, i) => { const s = document.createElement('canvas'); s.width = W; s.height = H; CS.drawFrame(EP, s.getContext('2d'), i, 2, 5); s.id = '__pv'; s.style.cssText = 'position:fixed;left:0;top:0;width:100vw;z-index:999999;background:#000'; document.getElementById('__pv')?.remove(); document.body.appendChild(s); return i; };
   CS.clearPreview = () => document.getElementById('__pv')?.remove();
   CS.record = async (EP) => {
-    CS.clearPreview(); const AC = CS.AC; if (AC.state !== 'running') { try { await AC.resume(); } catch (e) { } }
+    CS.clearPreview(); CS.REC_T = null; const AC = CS.AC; if (AC.state !== 'running') { try { await AC.resume(); } catch (e) { } }
     const SR = AC.sampleRate, PAD = 0.6, GAP = 0.7, starts = [], durs = []; let tt = PAD;
     CS.BUFS.forEach((b, i) => { const extra = EP.lines[i][2] === 'chapter' ? 1.2 : 0; starts.push(tt); durs.push(b.duration + GAP + extra); tt += b.duration + GAP + extra; });
     const TOTAL = tt + 2.0;
@@ -114,7 +120,7 @@
     let started = false, stopped = false;
     CS.iv = setInterval(() => { const now = AC.currentTime - T0; if (!started && now >= -0.05) { started = true; rec.start(2000); } if (!started) return;
       let i = 0; for (let k = 0; k < starts.length; k++) if (now >= starts[k] - 0.1) i = k;
-      CS.drawFrame(EP, ctx, i, Math.max(0, now - starts[i]), durs[i]); CS.FC++; CS.NOW = now;
+      CS.REC_T = now; CS.drawFrame(EP, ctx, i, Math.max(0, now - starts[i]), durs[i]); CS.FC++; CS.NOW = now;
       if (!stopped && now >= TOTAL) { stopped = true; clearInterval(CS.iv); rec.stop(); } }, 33);
     return { total: TOTAL.toFixed(1) };
   };
