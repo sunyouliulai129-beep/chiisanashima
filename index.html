@@ -202,7 +202,7 @@ $('findForm').addEventListener('submit',e=>{e.preventDefault();find($('q').value
 
 /* ---- 3D island ---- */
 const cv=$('cv'),fig=$('fig'),ctx=cv.getContext('2d');
-let W0=null,ang=-2.2,dist=34,elev=0.78,drag=null,timer=0,lowres=false;
+let W0=null,ang=-2.2,dist=27,elev=0.8,drag=null,timer=0,lowres=false;
 function buildWorld(){
  const w=Island3D.dayOneWorld({trees:22,heroAt:[-1.2,-8.6],heroRot:-0.55,heroScale:1.3});
  const n=Math.min(40,D.residents.length),cols=['#e85d75','#5b7cfa','#2bb3a0','#f2b134','#9b6bd6','#ef7d3c'];
