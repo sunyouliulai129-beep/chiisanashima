@@ -598,6 +598,36 @@
     "key": "rainbow",
     "name": "にじのわく",
     "cost": 20
+   },
+   {
+    "key": "wave",
+    "name": "大波のわく",
+    "cost": 15
+   },
+   {
+    "key": "fire",
+    "name": "ほのおのわく",
+    "cost": 25
+   },
+   {
+    "key": "thunder",
+    "name": "いなずまのわく",
+    "cost": 25
+   },
+   {
+    "key": "galaxy",
+    "name": "星空のわく",
+    "cost": 30
+   },
+   {
+    "key": "wings",
+    "name": "つばさのわく",
+    "cost": 40
+   },
+   {
+    "key": "crown",
+    "name": "王者のわく",
+    "cost": 50
    }
   ]
  },
