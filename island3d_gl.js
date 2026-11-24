@@ -153,26 +153,26 @@ precision mediump float; out vec4 o; void main(){ o = vec4(1.0); }`;
     R.addFire = (p, s = 1) => {
       const logs = new I.Scene(); for (let k = 0; k < 4; k++) logs.box(0, 0, 0, 0.12 * s, 0.12 * s, 0.9 * s, '#6B4423', k * Math.PI / 4);
       for (let k = 0; k < 8; k++) { const a = k / 8 * 6.28; logs.ico(Math.cos(a) * 0.55 * s, 0.05, Math.sin(a) * 0.55 * s, 0.13 * s, '#8E8E86', k); }
-      const fl = []; for (const [col, r, h] of [['#FF5A1F', 0.32, 0.9], ['#FF9A2E', 0.22, 0.75], ['#FFE066', 0.12, 0.55]]) { const S = new I.Scene(); S.kind = 3; S.cone(0, 0, 0, r * s, h * s, 7, col); fl.push(mesh(S)); }
+      const fl = []; for (const [col, r, h] of [['#E8401C', 0.34, 0.85], ['#FF7A1F', 0.26, 1.0], ['#FFB23A', 0.18, 0.8], ['#FFE680', 0.09, 0.55]]) { const S = new I.Scene(); S.kind = 3; S.cone(0, 0, 0, r * s, h * s, 7, col); fl.push(mesh(S)); }
       R.fires.push({ p, logs: mesh(logs), fl, s }); };
     R.addProp = (S, M = M4.id()) => { const m = mesh(S); const pr = { m, M }; R.props.push(pr); return pr; };
 
     function charPose(ch, t) { // returns model matrices for parts
-      let [x, y, z] = ch.pos, yaw = ch.yaw, bob = 0, aL = 0, aR = 0, lL = 0, lR = 0, ph = ch.phase;
+      let [x, y, z] = ch.pos, yaw = ch.yaw, bob = 0, aL = 0, aR = 0, lL = 0, lR = 0, zL = 0, zR = 0, ph = ch.phase;
       if (ch.act === 'walk' && ch.path) {
         const [p0, p1] = ch.path, d = Math.hypot(p1[0] - p0[0], p1[1] - p0[1]) || 1, per = d / ch.speed, u = ((t + ph) % (2 * per)) / per, f = u < 1 ? u : 2 - u;
         x = p0[0] + (p1[0] - p0[0]) * f; z = p0[1] + (p1[1] - p0[1]) * f; y = R.world.hAt(x, z);
         yaw = Math.atan2(-(p1[0] - p0[0]) * (u < 1 ? 1 : -1), -(p1[1] - p0[1]) * (u < 1 ? 1 : -1));
         const w = Math.sin((t + ph) * ch.speed * 7); lL = w * 0.6; lR = -w * 0.6; aL = -w * 0.5; aR = w * 0.5; bob = Math.abs(Math.cos((t + ph) * ch.speed * 7)) * 0.05;
-      } else if (ch.act === 'wave') { aR = -2.7 + Math.sin((t + ph) * 9) * 0.35; aL = Math.sin((t + ph) * 2) * 0.08; bob = Math.sin((t + ph) * 2) * 0.01; }
+      } else if (ch.act === 'wave') { zR = 2.5 + Math.sin((t + ph) * 8) * 0.35; aL = Math.sin((t + ph) * 2) * 0.08; bob = Math.sin((t + ph) * 2) * 0.01; }
       else if (ch.act === 'work') { const w = (t + ph) * 3.2 % 1; aR = -2.4 * (w < 0.6 ? w / 0.6 : 1 - (w - 0.6) / 0.4); aL = aR * 0.6; bob = -Math.max(0, aR) * 0.02; }
-      else if (ch.act === 'cheer') { const j = Math.abs(Math.sin((t + ph) * 5)); aL = -2.8 + j * 0.3; aR = -2.8 + j * 0.3; bob = j * 0.22; }
+      else if (ch.act === 'cheer') { const j = Math.abs(Math.sin((t + ph) * 5)); zL = -2.6 - j * 0.3; zR = 2.6 + j * 0.3; bob = j * 0.22; }
       else { aL = Math.sin((t + ph) * 1.6) * 0.06; aR = -aL; bob = Math.sin((t + ph) * 1.6) * 0.012; }
       if (ch.act !== 'walk' && (y === undefined || y === null)) y = R.world.hAt(x, z);
       ch.cur = [x, y + bob, z];
       const base = M4.mul(M4.T(x, y + bob, z), M4.mul(M4.RY(yaw), M4.S(ch.scale)));
-      const pv = ch.mesh.pv, J = (name, ang) => M4.mul(base, M4.mul(M4.T(...pv[name]), M4.mul(M4.RX(ang), M4.T(-pv[name][0], -pv[name][1], -pv[name][2]))));
-      return { body: base, armL: J('armL', aL), armR: J('armR', aR), legL: J('legL', lL), legR: J('legR', lR) };
+      const pv = ch.mesh.pv, J = (name, ang, rz = 0) => M4.mul(base, M4.mul(M4.T(...pv[name]), M4.mul(M4.mul(M4.RZ(rz), M4.RX(ang)), M4.T(-pv[name][0], -pv[name][1], -pv[name][2]))));
+      return { body: base, armL: J('armL', aL, zL), armR: J('armR', aR, zR), legL: J('legL', lL), legR: J('legR', lR) };
     }
 
     let VP = null;
