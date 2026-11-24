@@ -1,0 +1,263 @@
+{
+ "updated": "2026-11-24 22:00",
+ "day": 1,
+ "island_name": "？？？島",
+ "islanders": {
+  "youtube": 11,
+  "instagram": 10
+ },
+ "next_event": {
+  "at": 50,
+  "name": "初めてのお祭り"
+ },
+ "levels": [
+  0,
+  3,
+  7,
+  12,
+  20,
+  30,
+  45,
+  65,
+  90,
+  120
+ ],
+ "question": {
+  "day": 1,
+  "text": "男が最初に持ち出す道具は？",
+  "choices": [
+   [
+    "A",
+    "オノ",
+    1
+   ],
+   [
+    "B",
+    "つりざお",
+    7
+   ],
+   [
+    "C",
+    "たね",
+    1
+   ]
+  ],
+  "note": "YouTubeとインスタの合計（途中経過）"
+ },
+ "ideas": [
+  {
+   "day": 1,
+   "by": "ren_05",
+   "text": "動物になりたい",
+   "status": "候補"
+  },
+  {
+   "day": 1,
+   "by": "ik_0415",
+   "text": "島の長になりたい",
+   "status": "候補"
+  },
+  {
+   "day": 1,
+   "by": "horse.6315152",
+   "text": "島のまとめ役になりたい",
+   "status": "候補"
+  },
+  {
+   "day": 1,
+   "by": "ビッパ色違い",
+   "text": "斧で動物を狩る",
+   "status": "候補"
+  }
+ ],
+ "timeline": [
+  {
+   "day": 1,
+   "text": "何もない小さな島に、ひとりの男が流れ着いた"
+  }
+ ],
+ "built": [],
+ "residents": [
+  {
+   "id": "ren050554",
+   "platform": "ig",
+   "name": "ren_05",
+   "points": 3,
+   "level": 2,
+   "job": "森で動物たちと仲良くなる練習中",
+   "wish": "動物になりたい",
+   "history": [
+    "1日目：投票B",
+    "1日目：アイデア「動物になりたい」",
+    "1日目：いいね"
+   ],
+   "since_day": 1
+  },
+  {
+   "id": "ik_0415",
+   "platform": "ig",
+   "name": "ik_0415",
+   "points": 2,
+   "level": 1,
+   "job": "島の長をめざして浜辺を見回り中",
+   "wish": "島の長になりたい",
+   "history": [
+    "1日目：投票B",
+    "1日目：アイデア「島の長になりたい」"
+   ],
+   "since_day": 1
+  },
+  {
+   "id": "horse.6315152",
+   "platform": "ig",
+   "name": "horse.6315152",
+   "points": 2,
+   "level": 1,
+   "job": "みんなの意見をメモにまとめている",
+   "wish": "島のまとめ役になりたい",
+   "history": [
+    "1日目：投票B",
+    "1日目：アイデア「島のまとめ役になりたい」"
+   ],
+   "since_day": 1
+  },
+  {
+   "id": "yy368313",
+   "platform": "ig",
+   "name": "yy368313",
+   "points": 2,
+   "level": 1,
+   "job": "島に着いたばかり。浜辺で寝床をさがし中",
+   "wish": "島民になりたい",
+   "history": [
+    "1日目：投票B",
+    "1日目：アイデア「島民になりたい」"
+   ],
+   "since_day": 1
+  },
+  {
+   "id": "m_q1e.5",
+   "platform": "ig",
+   "name": "M.",
+   "points": 2,
+   "level": 1,
+   "job": "木の実をさがして森を歩いている",
+   "wish": null,
+   "history": [
+    "1日目：投票B",
+    "1日目：いいね"
+   ],
+   "since_day": 1
+  },
+  {
+   "id": "aist.ory751",
+   "platform": "ig",
+   "name": "aist.ory751",
+   "points": 2,
+   "level": 1,
+   "job": "砂浜に島の地図をかいている",
+   "wish": null,
+   "history": [
+    "1日目：投票B",
+    "1日目：いいね"
+   ],
+   "since_day": 1
+  },
+  {
+   "id": "@ビッパ色違い",
+   "platform": "yt",
+   "name": "ビッパ色違い",
+   "points": 2,
+   "level": 1,
+   "job": "オノが届くのを待ちながら森を下見中",
+   "wish": "斧で動物を狩りたい",
+   "history": [
+    "1日目：投票A",
+    "1日目：アイデア「斧で動物を狩る」"
+   ],
+   "since_day": 1
+  },
+  {
+   "id": "mizuki_tennis12",
+   "platform": "ig",
+   "name": "mizuki_tennis12",
+   "points": 1,
+   "level": 1,
+   "job": "浜辺で貝がらを集めている",
+   "wish": null,
+   "history": [
+    "1日目：投票C"
+   ],
+   "since_day": 1
+  },
+  {
+   "id": "@いと-f7v",
+   "platform": "yt",
+   "name": "いと",
+   "points": 1,
+   "level": 1,
+   "job": "丘の上から海をながめている",
+   "wish": null,
+   "history": [
+    "1日目：投票B"
+   ],
+   "since_day": 1
+  },
+  {
+   "id": "go20141224",
+   "platform": "ig",
+   "name": "go",
+   "points": 1,
+   "level": 1,
+   "job": "流木を拾って運んでいる",
+   "wish": null,
+   "history": [
+    "1日目：いいね"
+   ],
+   "since_day": 1
+  },
+  {
+   "id": "kizuna._.potato",
+   "platform": "ig",
+   "name": "kizuna._.potato",
+   "points": 1,
+   "level": 1,
+   "job": "焚き火の番をしている",
+   "wish": null,
+   "history": [
+    "1日目：いいね"
+   ],
+   "since_day": 1
+  },
+  {
+   "id": "sasukeeeeeee412",
+   "platform": "ig",
+   "name": "さすけ",
+   "points": 1,
+   "level": 1,
+   "job": "木の実をさがして森を歩いている",
+   "wish": null,
+   "history": [
+    "1日目：いいね"
+   ],
+   "since_day": 1
+  },
+  {
+   "id": "tyhw__z09",
+   "platform": "ig",
+   "name": "Hayato",
+   "points": 1,
+   "level": 1,
+   "job": "砂浜に島の地図をかいている",
+   "wish": null,
+   "history": [
+    "1日目：いいね"
+   ],
+   "since_day": 1
+  }
+ ],
+ "links": {
+  "youtube": "https://www.youtube.com/@chiisanashima_sekai",
+  "instagram": "https://www.instagram.com/chiisanashima_sekai/"
+ }
+}

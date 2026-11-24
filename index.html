@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>ちいさな島から世界へ</title>
+<meta name="description" content="コメントで育つちいさな島。島民の数・ランキング・あなたの島民カード。">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=M+PLUS+Rounded+1c:wght@500;800&display=swap" rel="stylesheet">
+<style>
+/* VOICE: friendly harbour noticeboard for a tiny island that viewers steer
+   IDEA: the wooden sign + tide map from the videos — the island is a toy diorama you can turn in your hands
+   PICTURE: the same low-poly 3D island as the videos, drag to rotate, residents standing on the beach
+   COLOUR/TYPE: sea teal ground, sand cards, orange accent, wood brown signs; M PLUS Rounded 1c
+   LAYOUT: one column story: island + counters, your card, today's vote, ranking, ideas, rules */
+:root{color-scheme:light dark;
+ --sea:light-dark(#2c86c4,#0f3552);--sea2:light-dark(#4fb8e8,#16486e);
+ --sand:light-dark(#fff6df,#1d2a33);--sand2:light-dark(#f2dfa7,#2a3a45);
+ --ink:light-dark(#2a2118,#f3ead8);--soft:light-dark(#6b5a45,#c7b9a0);
+ --wood:#c98b4e;--wood2:#5a381c;--or:#ff7a1a;--or2:light-dark(#e2560a,#ff9a4d)}
+:root[data-theme=light]{color-scheme:light}:root[data-theme=dark]{color-scheme:dark}
+*{box-sizing:border-box;min-width:0}
+body{margin:0;background:var(--sea);color:var(--ink);font:16px/1.6 "M PLUS Rounded 1c","Hiragino Maru Gothic ProN","Yu Gothic",sans-serif;overflow-x:clip}
+a{color:var(--or2)}
+.wrap{max-width:1040px;margin:0 auto;padding:0 max(4vw,14px)}
+header.top{background:linear-gradient(var(--sea2),var(--sea));color:#fff;padding:22px 0 0}
+.sign{display:inline-block;background:var(--wood);border:5px solid var(--wood2);border-radius:18px;padding:6px 18px 8px;box-shadow:0 6px 0 rgba(0,0,0,.18);color:#fff;text-shadow:0 2px 0 var(--wood2)}
+.sign h1{margin:0;font-size:clamp(26px,5vw,42px);line-height:1.1;font-weight:800;text-wrap:balance}
+.sign small{display:block;font-size:14px;opacity:.95}
+.stats{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin:16px 0 0}
+.stat{background:rgba(255,255,255,.14);border-radius:14px;padding:10px 12px}
+.stat b{display:block;font-size:clamp(24px,5vw,38px);line-height:1.1;font-weight:800;white-space:nowrap}
+.stat span{font-size:13px;opacity:.92}
+.bar{height:12px;border-radius:6px;background:rgba(0,0,0,.25);overflow:hidden;margin-top:6px}
+.bar i{display:block;height:100%;background:var(--or);border-radius:6px}
+.fig{position:relative;height:min(62vh,520px);min-height:320px;margin-top:14px;border-radius:22px 22px 0 0;overflow:hidden;background:linear-gradient(#7fd1ff,#fff4d6);touch-action:none;cursor:grab}
+.fig canvas{position:absolute;inset:0;width:100%;height:100%}
+.fig .hint{position:absolute;left:12px;bottom:10px;background:rgba(0,0,0,.45);color:#fff;font-size:13px;padding:4px 10px;border-radius:99px}
+.fig .zoom{position:absolute;right:10px;bottom:10px;display:flex;gap:6px}
+.fig .zoom button{width:44px;height:44px;border-radius:50%;border:0;background:rgba(255,255,255,.9);color:var(--wood2);font:800 22px/1 inherit;cursor:pointer}
+main{background:var(--sand);padding-bottom:40px}
+section{padding:30px 0 6px}
+h2{font-size:clamp(22px,3.4vw,30px);line-height:1.15;margin:0 0 12px;font-weight:800;color:var(--ink)}
+h2 em{font-style:normal;color:var(--or2)}
+p.lead{margin:0 0 14px;color:var(--soft)}
+.card{background:light-dark(#fff,#24333d);border:3px solid var(--sand2);border-radius:18px;padding:16px}
+form.find{display:flex;gap:8px;flex-wrap:wrap}
+form.find input{flex:1 1 220px;font:inherit;font-size:16px;padding:12px 14px;border-radius:12px;border:3px solid var(--sand2);background:light-dark(#fff,#1a262e);color:var(--ink)}
+form.find input:focus,button:focus-visible{outline:3px solid var(--or);outline-offset:2px}
+.btn{font:inherit;font-weight:800;min-height:48px;padding:0 20px;border-radius:12px;border:0;background:var(--or);color:#fff;cursor:pointer}
+#cardOut{margin-top:14px}
+.pcard{display:grid;grid-template-columns:auto minmax(0,1fr);gap:14px;align-items:center}
+.badge{width:84px;height:84px;border-radius:20px;background:var(--wood);border:4px solid var(--wood2);color:#fff;display:grid;place-items:center;text-align:center;line-height:1;font-weight:800}
+.badge b{font-size:34px;display:block}.badge span{font-size:12px}
+.pcard h3{margin:0;font-size:22px;line-height:1.2;overflow-wrap:anywhere}
+.pf{display:inline-block;font-size:12px;padding:1px 8px;border-radius:99px;background:var(--sand2);color:var(--ink);margin-left:6px;vertical-align:middle}
+.now{margin:6px 0 0;font-weight:800}
+.hist{margin:10px 0 0;padding-left:18px;color:var(--soft);font-size:14px}
+.vote .row{display:grid;grid-template-columns:2.2em minmax(0,7em) minmax(0,1fr) 3em;gap:8px;align-items:center;margin:8px 0}
+.vote .k{width:32px;height:32px;border-radius:50%;background:var(--or);color:#fff;display:grid;place-items:center;font-weight:800}
+.vote .t{height:22px;background:var(--sand2);border-radius:11px;overflow:hidden}.vote .t i{display:block;height:100%;background:var(--or)}
+.vote .n{text-align:right;font-weight:800;white-space:nowrap}
+.vote .lead2{font-weight:800;font-size:18px}
+table{width:100%;border-collapse:collapse}
+th,td{padding:9px 6px;border-bottom:2px dashed var(--sand2);text-align:left}
+th{font-size:13px;color:var(--soft)}
+td.r,th.r{text-align:right;white-space:nowrap}
+tr.me td{background:light-dark(#fff0e0,#3a2c1e)}
+.rank{font-weight:800;width:2.2em}
+.lv{display:inline-block;min-width:3.2em;text-align:center;font-weight:800;color:#fff;background:var(--wood);border-radius:8px;padding:0 6px}
+.ideas{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:10px}
+.note{background:#fff27a;color:#3a2c10;border-radius:4px 14px 14px 14px;padding:12px 14px;box-shadow:0 4px 0 rgba(0,0,0,.12);transform:rotate(-.6deg)}
+.note:nth-child(2n){transform:rotate(.7deg);background:#ffd9a8}
+.note small{display:block;opacity:.75;font-size:13px}
+.note .st{font-size:12px;font-weight:800;background:rgba(0,0,0,.1);border-radius:99px;padding:1px 8px}
+.rules{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:12px}
+.rules ul{margin:0;padding-left:20px}.rules li{margin:4px 0}
+.lvl{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}.lvl span{font-size:13px;background:var(--sand2);border-radius:8px;padding:2px 8px;white-space:nowrap}
+footer{background:var(--wood2);color:#f3e6cf;padding:24px 0 36px;font-size:14px}
+footer a{color:#ffd29a}
+.muted{color:var(--soft);font-size:14px}
+@media(max-width:600px){.stats{grid-template-columns:repeat(3,minmax(0,1fr));gap:6px}.stat{padding:8px}.stat span{font-size:12px}.pcard{grid-template-columns:1fr}.vote .row{grid-template-columns:2.2em minmax(0,5em) minmax(0,1fr) 2.6em}.hide-sm{display:none}}
+@media(prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+</head>
+<body>
+<header class="top">
+ <div class="wrap">
+  <div class="sign"><h1>ちいさな島から世界へ</h1><small>みんなのコメントで動く島。動画のない時間も、島はここにある。</small></div>
+  <div class="stats">
+   <div class="stat"><span>今日は</span><b id="sDay">–</b></div>
+   <div class="stat"><span>島民（YouTube＋インスタ）</span><b id="sPop">–</b></div>
+   <div class="stat"><span id="sEvName">次のイベントまで</span><b id="sNext">–</b><div class="bar"><i id="sBar" style="width:0"></i></div></div>
+  </div>
+  <div class="fig" id="fig" aria-label="島の3Dジオラマ。ドラッグで回せます">
+   <canvas id="cv"></canvas>
+   <span class="hint">ドラッグで島を回せます</span>
+   <div class="zoom"><button id="zin" aria-label="近づく">＋</button><button id="zout" aria-label="はなれる">－</button></div>
+  </div>
+ </div>
+</header>
+<main>
+ <div class="wrap">
+  <section id="card">
+   <h2>あなたの<em>島民カード</em></h2>
+   <p class="lead">YouTubeの名前かインスタのIDを入れると、レベル・ポイント・いま島でしていることがわかります。</p>
+   <div class="card">
+    <form class="find" id="findForm"><input id="q" type="search" autocomplete="off" placeholder="例：@ビッパ色違い ／ ik_0415" aria-label="名前かID"><button class="btn" type="submit">さがす</button></form>
+    <div id="cardOut" aria-live="polite"></div>
+   </div>
+  </section>
+  <section id="vote">
+   <h2>今日のお題の<em>途中経過</em></h2>
+   <div class="card vote" id="voteBox"></div>
+  </section>
+  <section id="ranking">
+   <h2>島民<em>ランキング</em></h2>
+   <p class="lead" id="rankLead"></p>
+   <div class="card scroll"><table><thead><tr><th>順位</th><th>島民</th><th class="hide-sm">いましていること</th><th class="r">レベル</th><th class="r">ポイント</th></tr></thead><tbody id="rankBody"></tbody></table></div>
+  </section>
+  <section id="ideas">
+   <h2>みんなの<em>アイデア</em></h2>
+   <p class="lead">「島でこれをやりたい」「こんな島民になりたい」をコメントやDMで送ってね。毎回いくつか採用して、本当に動画にします。</p>
+   <div class="ideas" id="ideaBox"></div>
+  </section>
+  <section id="rules">
+   <h2>ポイントと<em>レベル</em></h2>
+   <div class="rules">
+    <div class="card"><b>ポイントのもらい方</b>
+     <ul>
+      <li>お題への投票コメント：1ポイント（1本の動画につき1回）</li>
+      <li>アイデアのコメント・DM：1ポイント</li>
+      <li>アイデアが採用される：＋5ポイント</li>
+      <li>インスタの「いいね」：1ポイント（1本の動画につき1回）</li>
+      <li>インスタのストーリーズでメンション：3ポイント（1人1回まで）</li>
+     </ul>
+     <p class="muted">YouTubeの「いいね」とシェアは、だれが押したかがわからない仕組みなので数えられません。</p>
+    </div>
+    <div class="card"><b>レベルが上がると</b>
+     <ul><li>動画に島民として登場しやすくなる</li><li>建物や場所の名前を決められることがある</li><li>アイデアが優先して採用される</li></ul>
+     <p class="muted">投票の1票の重さは、レベルに関係なくみんな同じです。</p>
+     <div class="lvl" id="lvlBox"></div>
+    </div>
+   </div>
+  </section>
+  <section id="history">
+   <h2>これまでの<em>島</em></h2>
+   <div class="card"><ul id="tl" style="margin:0;padding-left:20px"></ul></div>
+  </section>
+ </div>
+</main>
+<footer>
+ <div class="wrap">
+  <p><a id="lYt" href="https://www.youtube.com/@chiisanashima_sekai">YouTube @chiisanashima_sekai</a>　／　<a id="lIg" href="https://www.instagram.com/chiisanashima_sekai/">Instagram @chiisanashima_sekai</a></p>
+  <p>毎日の動画のあとに更新しています（最終更新：<span id="upd">–</span>）。コメントしてくれた人の名前が島民として載ります。載りたくない人はコメントで「出たくない」と教えてね、すぐに外します。</p>
+  <p>※AIを使って作っている架空の島づくり企画です。音声：VOICEVOX:No.7</p>
+ </div>
+</footer>
+<script src="island3d.js"></script>
+<script>
+{
+const $=id=>document.getElementById(id);
+const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const norm=s=>String(s||'').trim().toLowerCase().replace(/^@/,'').replace(/[\s　]/g,'');
+let D=null;
+const nextLv=(p,L)=>{for(const t of L)if(t>p)return t;return null};
+function render(){
+ const pop=D.islanders.youtube+D.islanders.instagram;
+ $('sDay').textContent=D.day+'日目';$('sPop').textContent=pop+'人';
+ $('sEvName').textContent='「'+D.next_event.name+'」まで';
+ $('sNext').textContent='あと'+Math.max(0,D.next_event.at-pop)+'人';
+ $('sBar').style.width=Math.min(100,pop/D.next_event.at*100)+'%';
+ $('upd').textContent=D.updated;
+ const Q=D.question,tot=Q.choices.reduce((a,c)=>a+c[2],0)||1,mx=Math.max(...Q.choices.map(c=>c[2]));
+ $('voteBox').innerHTML='<div class="lead2">'+esc(Q.day+'日目のお題：'+Q.text)+'</div>'+Q.choices.map(c=>'<div class="row"><span class="k">'+esc(c[0])+'</span><span>'+esc(c[1])+'</span><span class="t"><i style="width:'+(c[2]/tot*100).toFixed(1)+'%"></i></span><span class="n">'+c[2]+'票</span></div>').join('')+'<p class="muted">'+esc(Q.note)+'。いちばん多い答えを、次の動画で本当にやります。</p>';
+ const R=[...D.residents].sort((a,b)=>b.points-a.points||a.since_day-b.since_day);
+ let rk=0,prev=null;R.forEach((r,i)=>{if(r.points!==prev){rk=i+1;prev=r.points}r.rank=rk});
+ $('rankLead').textContent='いま載っている島民は'+R.length+'人。同じポイントの人は同じ順位です。';
+ $('rankBody').innerHTML=R.map(r=>'<tr data-id="'+esc(norm(r.id))+'"><td class="rank">'+r.rank+'</td><td>'+esc(r.name)+'<span class="pf">'+(r.platform==='yt'?'YouTube':'インスタ')+'</span></td><td class="hide-sm">'+esc(r.job)+'</td><td class="r"><span class="lv">Lv'+r.level+'</span></td><td class="r">'+r.points+'</td></tr>').join('');
+ $('ideaBox').innerHTML=D.ideas.length?D.ideas.map(x=>'<div class="note"><small>'+esc(x.day+'日目・'+x.by+'さん')+'</small>'+esc(x.text)+' <span class="st">'+esc(x.status)+'</span></div>').join(''):'<p class="muted">まだアイデアはありません。最初のひとりになってね。</p>';
+ $('lvlBox').innerHTML=D.levels.map((t,i)=>'<span>Lv'+(i+1)+'：'+t+'pt〜</span>').join('');
+ $('tl').innerHTML=D.timeline.map(t=>'<li><b>'+t.day+'日目</b>　'+esc(t.text)+'</li>').join('');
+ try{const last=localStorage.getItem('cs_me');if(last){$('q').value=last;find(last,false)}}catch(e){}
+}
+function find(v,save=true){
+ const k=norm(v);const out=$('cardOut');
+ document.querySelectorAll('tr.me').forEach(t=>t.classList.remove('me'));
+ if(!k){out.textContent='';return}
+ const r=D.residents.find(x=>norm(x.id)===k||norm(x.name)===k);
+ if(!r){out.innerHTML='<p>「'+esc(v)+'」さんは、まだ島民リストにいないみたい。<br>最新の動画にコメントすると、次の更新で島にやってきます。</p>';return}
+ try{if(save)localStorage.setItem('cs_me',v)}catch(e){}
+ const L=D.levels,nx=nextLv(r.points,L),cur=L[r.level-1]||0;
+ const pct=nx?((r.points-cur)/(nx-cur)*100):100;
+ out.innerHTML='<div class="pcard"><div class="badge"><div><span>レベル</span><b>'+r.level+'</b></div></div><div><h3>'+esc(r.name)+'<span class="pf">'+(r.platform==='yt'?'YouTube':'インスタ')+'</span></h3>'
+  +'<div>'+r.points+'ポイント・'+(nx?'次のレベルまで あと'+(nx-r.points)+'ポイント':'最高レベル')+'</div><div class="bar" style="background:var(--sand2)"><i style="width:'+pct.toFixed(0)+'%"></i></div>'
+  +'<p class="now">いま島で：'+esc(r.job)+'</p>'+(r.wish?'<div class="muted">なりたいもの：'+esc(r.wish)+'</div>':'')
+  +'<ul class="hist">'+r.history.map(h=>'<li>'+esc(h)+'</li>').join('')+'</ul></div></div>';
+ const row=document.querySelector('tr[data-id="'+CSS.escape(norm(r.id))+'"]');if(row)row.classList.add('me');
+}
+$('findForm').addEventListener('submit',e=>{e.preventDefault();find($('q').value)});
+
+/* ---- 3D island ---- */
+const cv=$('cv'),fig=$('fig'),ctx=cv.getContext('2d');
+let W0=null,ang=-2.2,dist=34,elev=0.78,drag=null,timer=0,lowres=false;
+function buildWorld(){
+ const w=Island3D.dayOneWorld({trees:22,heroAt:[-1.2,-8.6],heroRot:-0.55,heroScale:1.3});
+ const n=Math.min(40,D.residents.length),cols=['#e85d75','#5b7cfa','#2bb3a0','#f2b134','#9b6bd6','#ef7d3c'];
+ for(let i=0;i<n;i++){const a=-1.0+i*(2*Math.PI/Math.max(n,8))*0.9,r=7.4+(i%3)*0.35,x=Math.cos(a)*r,z=Math.sin(a)*r,y=Math.max(w.hAt(x,z),0.05);
+  const c=cols[i%cols.length],s=0.55+0.05*Math.min(6,D.residents[i].level);
+  w.S.box(x,y,z,0.42*s,0.6*s,0.3*s,c);w.S.box(x,y+0.6*s,z,0.36*s,0.36*s,0.34*s,'#F6CFA8')}
+ return w;
+}
+function draw(){
+ const r=fig.getBoundingClientRect(),dpr=Math.min(2,window.devicePixelRatio||1),k=lowres?0.45:0.85;
+ const w=Math.max(160,Math.round(r.width*dpr*k)),h=Math.max(120,Math.round(r.height*dpr*k));
+ const cam={pos:[Math.cos(ang)*dist,dist*elev,Math.sin(ang)*dist],target:[0,0.5,0],fov:42};
+ const img=Island3D.render(W0.S,cam,w,h,{ss:1,skyTop:'#7FD1FF',skyBot:'#FFF4D6'});
+ cv.width=w;cv.height=h;ctx.putImageData(new ImageData(img.data,w,h),0,0);
+}
+function req(low){lowres=low;cancelAnimationFrame(timer);timer=requestAnimationFrame(()=>{draw();if(low){clearTimeout(req.t);req.t=setTimeout(()=>req(false),180)}})}
+fig.addEventListener('pointerdown',e=>{drag={x:e.clientX,y:e.clientY};fig.setPointerCapture(e.pointerId);fig.style.cursor='grabbing'});
+fig.addEventListener('pointermove',e=>{if(!drag)return;ang+=(e.clientX-drag.x)*0.008;elev=Math.min(1.6,Math.max(0.25,elev+(e.clientY-drag.y)*0.004));drag={x:e.clientX,y:e.clientY};req(true)});
+const up=()=>{drag=null;fig.style.cursor='grab';req(false)};fig.addEventListener('pointerup',up);fig.addEventListener('pointercancel',up);
+$('zin').addEventListener('click',()=>{dist=Math.max(16,dist-4);req(false)});
+$('zout').addEventListener('click',()=>{dist=Math.min(56,dist+4);req(false)});
+const ro=new ResizeObserver(()=>{if(W0)req(false)});ro.observe(fig);
+
+function start(data){D=data;render();W0=buildWorld();req(false)}
+fetch('data.json',{cache:'no-store'}).then(r=>r.json()).then(start).catch(()=>{if(window.CS_DATA)start(window.CS_DATA);else $('cardOut').textContent='データを読み込めませんでした。少しあとでもう一度ひらいてね。'});
+}
+</script>
+</body>
+</html>
