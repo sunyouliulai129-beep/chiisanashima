@@ -180,9 +180,10 @@ footer a{color:#ffd29a}
      <ul>
       <li>動画に島民として登場するのは、その回にコメントした人の中から順番に。まだ出ていない人が先です（レベルは関係なし）</li>
       <li>投票の1票、アイデアの採用は、レベルに関係なくみんな同じ</li>
-      <li>レベルが上がると変わるのは「称号」だけ。アイコンとわくは、だれでもコインでアンロックできます</li>
+      <li>レベルは100まで。上がると変わるのは「称号」（10レベルごと）と、5レベルごとのコインのごほうびだけ。アイコンとわくは、だれでもコインでアンロックできます</li>
      </ul>
      <div class="lvl" id="lvlBox"></div>
+     <p style="margin:12px 0 4px"><b>レベル5ごとにコインのごほうび！</b>（そのレベルと同じ数のコイン）</p><div class="lvl" id="rewardBox"></div>
     </div>
    </div>
   </section>
@@ -221,7 +222,8 @@ function render(){
  $('rankLead').textContent='いま載っている島民は'+R.length+'人。同じポイントの人は同じ順位です。';
  $('rankBody').innerHTML=R.map(r=>'<tr data-id="'+esc(norm(r.id))+'"><td class="rank">'+r.rank+'</td><td>'+esc(r.name)+'<span class="pf">'+(r.platform==='yt'?'YouTube':'インスタ')+'</span></td><td class="hide-sm">'+esc(r.work?r.work+'・'+r.job:r.job)+'</td><td class="r"><span class="lv">Lv'+r.level+'</span></td><td class="r">'+r.points+'</td></tr>').join('');
  $('ideaBox').innerHTML=D.ideas.length?D.ideas.map(x=>'<div class="note"><small>'+esc(x.day+'日目・'+x.by+'さん')+'</small>'+esc(x.text)+' <span class="st">'+esc(x.status)+'</span></div>').join(''):'<p class="muted">まだアイデアはありません。最初のひとりになってね。</p>';
- $('lvlBox').innerHTML=D.levels.map((t,i)=>'<span>Lv'+(i+1)+' '+esc((D.titles||[])[i]||'')+'：'+t+'pt〜</span>').join('');
+ $('lvlBox').innerHTML=D.levels.map((t,i)=>[i+1,t]).filter(([l])=>l===1||l%10===0||l===5).map(([l,t])=>'<span>Lv'+l+(' '+esc(titleOf(l)))+'：'+t+'pt〜</span>').join('')+'<span>…最高Lv100</span>';
+ $('rewardBox').innerHTML=Array.from({length:20},(_,k)=>(k+1)*5).map(l=>'<span>Lv'+l+'：コイン'+l+'枚</span>').join('');
  renderShop();
  const cnt={};D.residents.forEach(r=>{if(r.work)cnt[r.work]=(cnt[r.work]||0)+1});
  $('jobBox').innerHTML=(D.jobs||[]).map(j=>'<div class="job"><span class="ic" aria-hidden="true">'+esc(j.icon)+'</span><b>'+esc(j.key)+'</b><span>'+esc(j.does)+'</span><span class="who">いま '+(cnt[j.key]||0)+'人がこのしごと</span><span class="res">島の'+esc(j.res)+'：'+((D.resources||{})[j.res]||0)+'</span><button type="button" data-c="しごと：'+esc(j.key)+'">コメント文をコピー</button></div>').join('');
@@ -240,8 +242,8 @@ function find(v,save=true){
  const pct=nx?((r.points-cur)/(nx-cur)*100):100;
  const own=new Set([...(r.owned||[]),...D.shop.icons.filter(x=>!x.cost).map(x=>x.key),...D.shop.frames.filter(x=>!x.cost).map(x=>x.key)]);
  out.innerHTML='<div class="pcard"><div>'+avatar(r,108)+'<div style="text-align:center;font-weight:800;margin-top:4px">Lv'+r.level+'</div></div><div><h3>'+esc(r.name)+'<span class="pf">'+(r.platform==='yt'?'YouTube':'インスタ')+'</span></h3>'
-  +'<div>'+r.points+'ポイント・'+(nx?'次のレベルまで あと'+(nx-r.points)+'ポイント':'最高レベル')+'</div><div class="bar" style="background:var(--sand2)"><i style="width:'+pct.toFixed(0)+'%"></i></div>'
-  +'<div class="title">'+esc((D.titles||[])[r.level-1]||'')+'</div> <span class="coin">コイン '+(r.coins||0)+'枚</span>'+(unlocked(base)&&pend(base).length?' <span class="pend">申しこみ中</span>':'')+' <a href="#shop">アイコンをかえる</a>'+'<p class="now">いま島で：'+esc(r.job)+'</p>'+'<div>しごと：'+(r.work?esc(r.work)+'（'+(r.work_days||0)+'日はたらいた）':'まだえらんでいません。コメントに「しごと：木こり」のように書いてね')+'</div>'+(r.wish?'<div class="muted">なりたいもの：'+esc(r.wish)+'</div>':'')
+  +'<div>'+r.points+'ポイント・'+(nx?'次のレベルまで あと'+(nx-r.points)+'ポイント':'最高レベル')+(r.level<100?'・Lv'+(Math.floor(r.level/5)*5+5)+'でコイン'+(Math.floor(r.level/5)*5+5)+'枚もらえる':'')+'</div><div class="bar" style="background:var(--sand2)"><i style="width:'+pct.toFixed(0)+'%"></i></div>'
+  +'<div class="title">'+esc(titleOf(r.level))+'</div> <span class="coin">コイン '+(r.coins||0)+'枚</span>'+(unlocked(base)&&pend(base).length?' <span class="pend">申しこみ中</span>':'')+' <a href="#shop">アイコンをかえる</a>'+'<p class="now">いま島で：'+esc(r.job)+'</p>'+'<div>しごと：'+(r.work?esc(r.work)+'（'+(r.work_days||0)+'日はたらいた）':'まだえらんでいません。コメントに「しごと：木こり」のように書いてね')+'</div>'+(r.wish?'<div class="muted">なりたいもの：'+esc(r.wish)+'</div>':'')
   +'<div class="muted" style="margin-top:6px">もっているもの：'+esc([...D.shop.icons,...D.shop.frames].filter(x=>own.has(x.key)).map(x=>x.name).join('・'))+'</div>'+'<ul class="hist">'+r.history.map(h=>'<li>'+esc(h)+'</li>').join('')+'</ul></div></div>';
  const row=document.querySelector('tr[data-id="'+CSS.escape(norm(base.id))+'"]');if(row)row.classList.add('me');
 }
@@ -278,6 +280,7 @@ function avatar(r,size){
 
 
 /* ---- shop & trades (button → DM text, applied on next update) ---- */
+const titleOf=l=>(D.titles||[])[Math.min((D.titles||[]).length-1,Math.floor((l-1)/(D.title_every||1)))]||'';
 let CUR=null;
 const UK=r=>'cs_unlock_'+norm(r.id);
 const unlocked=r=>{try{return sessionStorage.getItem(UK(r))==='1'}catch(e){return false}};

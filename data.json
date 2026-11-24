@@ -13,14 +13,104 @@
  "levels": [
   0,
   3,
-  7,
-  12,
-  20,
-  30,
-  45,
-  65,
-  90,
-  120
+  8,
+  16,
+  24,
+  34,
+  44,
+  56,
+  68,
+  81,
+  95,
+  109,
+  125,
+  141,
+  157,
+  174,
+  192,
+  210,
+  229,
+  248,
+  268,
+  289,
+  310,
+  331,
+  353,
+  375,
+  398,
+  421,
+  444,
+  469,
+  493,
+  518,
+  543,
+  569,
+  595,
+  621,
+  648,
+  675,
+  703,
+  731,
+  759,
+  788,
+  817,
+  846,
+  876,
+  906,
+  936,
+  967,
+  998,
+  1029,
+  1061,
+  1093,
+  1125,
+  1158,
+  1190,
+  1224,
+  1257,
+  1291,
+  1325,
+  1360,
+  1394,
+  1429,
+  1465,
+  1500,
+  1536,
+  1572,
+  1609,
+  1645,
+  1682,
+  1719,
+  1757,
+  1795,
+  1833,
+  1871,
+  1910,
+  1949,
+  1988,
+  2027,
+  2067,
+  2107,
+  2147,
+  2187,
+  2228,
+  2268,
+  2310,
+  2351,
+  2393,
+  2434,
+  2477,
+  2519,
+  2561,
+  2604,
+  2647,
+  2691,
+  2734,
+  2778,
+  2822,
+  2866,
+  2910,
+  2955
  ],
  "question": {
   "day": 1,
@@ -98,7 +188,8 @@
    "icon": "palm",
    "frame": "wood",
    "owned": [],
-   "appeared": 0
+   "appeared": 0,
+   "rewarded_level": 0
   },
   {
    "id": "ik_0415",
@@ -119,7 +210,8 @@
    "icon": "shell",
    "frame": "wood",
    "owned": [],
-   "appeared": 0
+   "appeared": 0,
+   "rewarded_level": 0
   },
   {
    "id": "horse.6315152",
@@ -140,7 +232,8 @@
    "icon": "fish",
    "frame": "wood",
    "owned": [],
-   "appeared": 0
+   "appeared": 0,
+   "rewarded_level": 0
   },
   {
    "id": "yy368313",
@@ -161,7 +254,8 @@
    "icon": "palm",
    "frame": "wood",
    "owned": [],
-   "appeared": 0
+   "appeared": 0,
+   "rewarded_level": 0
   },
   {
    "id": "m_q1e.5",
@@ -182,7 +276,8 @@
    "icon": "shell",
    "frame": "wood",
    "owned": [],
-   "appeared": 0
+   "appeared": 0,
+   "rewarded_level": 0
   },
   {
    "id": "aist.ory751",
@@ -203,7 +298,8 @@
    "icon": "fish",
    "frame": "wood",
    "owned": [],
-   "appeared": 0
+   "appeared": 0,
+   "rewarded_level": 0
   },
   {
    "id": "@ビッパ色違い",
@@ -224,7 +320,8 @@
    "icon": "palm",
    "frame": "wood",
    "owned": [],
-   "appeared": 0
+   "appeared": 0,
+   "rewarded_level": 0
   },
   {
    "id": "mizuki_tennis12",
@@ -244,7 +341,8 @@
    "icon": "shell",
    "frame": "wood",
    "owned": [],
-   "appeared": 0
+   "appeared": 0,
+   "rewarded_level": 0
   },
   {
    "id": "@いと-f7v",
@@ -264,7 +362,8 @@
    "icon": "fish",
    "frame": "wood",
    "owned": [],
-   "appeared": 0
+   "appeared": 0,
+   "rewarded_level": 0
   },
   {
    "id": "go20141224",
@@ -284,7 +383,8 @@
    "icon": "palm",
    "frame": "wood",
    "owned": [],
-   "appeared": 0
+   "appeared": 0,
+   "rewarded_level": 0
   },
   {
    "id": "kizuna._.potato",
@@ -304,7 +404,8 @@
    "icon": "shell",
    "frame": "wood",
    "owned": [],
-   "appeared": 0
+   "appeared": 0,
+   "rewarded_level": 0
   },
   {
    "id": "sasukeeeeeee412",
@@ -324,7 +425,8 @@
    "icon": "fish",
    "frame": "wood",
    "owned": [],
-   "appeared": 0
+   "appeared": 0,
+   "rewarded_level": 0
   },
   {
    "id": "tyhw__z09",
@@ -344,7 +446,8 @@
    "icon": "palm",
    "frame": "wood",
    "owned": [],
-   "appeared": 0
+   "appeared": 0,
+   "rewarded_level": 0
   }
  ],
  "links": {
@@ -497,5 +600,10 @@
     "cost": 20
    }
   ]
+ },
+ "title_every": 10,
+ "level_reward": {
+  "every": 5,
+  "rule": "Lv5ごとに、そのレベルと同じ数のコイン（Lv5→5枚、Lv10→10枚…Lv100→100枚）"
  }
 }
