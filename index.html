@@ -74,6 +74,12 @@ tr.me td{background:light-dark(#fff0e0,#3a2c1e)}
 .note:nth-child(2n){transform:rotate(.7deg);background:#ffd9a8}
 .note small{display:block;opacity:.75;font-size:13px}
 .note .st{font-size:12px;font-weight:800;background:rgba(0,0,0,.1);border-radius:99px;padding:1px 8px}
+.jobs{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:10px}
+.job{background:light-dark(#fff,#24333d);border:3px solid var(--sand2);border-radius:18px;padding:12px 14px;display:flex;flex-direction:column;gap:4px}
+.job .ic{font-size:30px;line-height:1}.job b{font-size:19px}.job .who{font-size:13px;color:var(--soft)}
+.job .res{font-weight:800;color:var(--or2)}
+.job button{margin-top:6px;min-height:44px;border-radius:10px;border:2px solid var(--or);background:transparent;color:var(--or2);font:800 15px/1 inherit;cursor:pointer}
+.title{display:inline-block;font-size:13px;font-weight:800;color:#fff;background:var(--or);border-radius:99px;padding:1px 10px;margin-top:4px}
 .rules{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:12px}
 .rules ul{margin:0;padding-left:20px}.rules li{margin:4px 0}
 .lvl{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}.lvl span{font-size:13px;background:var(--sand2);border-radius:8px;padding:2px 8px;white-space:nowrap}
@@ -110,6 +116,12 @@ footer a{color:#ffd29a}
     <div id="cardOut" aria-live="polite"></div>
    </div>
   </section>
+  <section id="jobs">
+   <h2>島での<em>しごと</em>をえらぼう</h2>
+   <p class="lead">好きなしごとを1つえらんでね。しごとをえらんだ人は、動画にコメントするたびに「はたらいた」ことになって、ポイントがもらえます。みんなの働きで、島に物が集まって、島が育っていきます。</p>
+   <div class="jobs" id="jobBox"></div>
+   <p class="muted">えらび方：最新の動画のコメントに「しごと：木こり」のように書くだけ（YouTubeでもインスタでもOK）。いつでも変えられます。</p>
+  </section>
   <section id="vote">
    <h2>今日のお題の<em>途中経過</em></h2>
    <div class="card vote" id="voteBox"></div>
@@ -121,7 +133,7 @@ footer a{color:#ffd29a}
   </section>
   <section id="ideas">
    <h2>みんなの<em>アイデア</em></h2>
-   <p class="lead">「島でこれをやりたい」「こんな島民になりたい」をコメントやDMで送ってね。毎回いくつか採用して、本当に動画にします。</p>
+   <p class="lead">「島でこれをやりたい」「こんな島民になりたい」をコメントやDMで送ってね。毎回いくつか採用して、本当に動画にします。採用はレベルに関係なし。</p>
    <div class="ideas" id="ideaBox"></div>
   </section>
   <section id="rules">
@@ -130,6 +142,7 @@ footer a{color:#ffd29a}
     <div class="card"><b>ポイントのもらい方</b>
      <ul>
       <li>お題への投票コメント：1ポイント（1本の動画につき1回）</li>
+      <li>しごとをして働く：1ポイント（しごとをえらんだ人が、その動画にコメントした日）</li>
       <li>アイデアのコメント・DM：1ポイント</li>
       <li>アイデアが採用される：＋5ポイント</li>
       <li>インスタの「いいね」：1ポイント（1本の動画につき1回）</li>
@@ -137,9 +150,12 @@ footer a{color:#ffd29a}
      </ul>
      <p class="muted">YouTubeの「いいね」とシェアは、だれが押したかがわからない仕組みなので数えられません。</p>
     </div>
-    <div class="card"><b>レベルが上がると</b>
-     <ul><li>動画に島民として登場しやすくなる</li><li>建物や場所の名前を決められることがある</li><li>アイデアが優先して採用される</li></ul>
-     <p class="muted">投票の1票の重さは、レベルに関係なくみんな同じです。</p>
+    <div class="card"><b>みんなが同じように楽しめるルール</b>
+     <ul>
+      <li>動画に島民として登場するのは、その回にコメントした人の中から順番に。まだ出ていない人が先です（レベルは関係なし）</li>
+      <li>投票の1票、アイデアの採用は、レベルに関係なくみんな同じ</li>
+      <li>レベルが上がると変わるのは「称号」とカードの見た目だけ</li>
+     </ul>
      <div class="lvl" id="lvlBox"></div>
     </div>
    </div>
@@ -177,9 +193,11 @@ function render(){
  const R=[...D.residents].sort((a,b)=>b.points-a.points||a.since_day-b.since_day);
  let rk=0,prev=null;R.forEach((r,i)=>{if(r.points!==prev){rk=i+1;prev=r.points}r.rank=rk});
  $('rankLead').textContent='いま載っている島民は'+R.length+'人。同じポイントの人は同じ順位です。';
- $('rankBody').innerHTML=R.map(r=>'<tr data-id="'+esc(norm(r.id))+'"><td class="rank">'+r.rank+'</td><td>'+esc(r.name)+'<span class="pf">'+(r.platform==='yt'?'YouTube':'インスタ')+'</span></td><td class="hide-sm">'+esc(r.job)+'</td><td class="r"><span class="lv">Lv'+r.level+'</span></td><td class="r">'+r.points+'</td></tr>').join('');
+ $('rankBody').innerHTML=R.map(r=>'<tr data-id="'+esc(norm(r.id))+'"><td class="rank">'+r.rank+'</td><td>'+esc(r.name)+'<span class="pf">'+(r.platform==='yt'?'YouTube':'インスタ')+'</span></td><td class="hide-sm">'+esc(r.work?r.work+'・'+r.job:r.job)+'</td><td class="r"><span class="lv">Lv'+r.level+'</span></td><td class="r">'+r.points+'</td></tr>').join('');
  $('ideaBox').innerHTML=D.ideas.length?D.ideas.map(x=>'<div class="note"><small>'+esc(x.day+'日目・'+x.by+'さん')+'</small>'+esc(x.text)+' <span class="st">'+esc(x.status)+'</span></div>').join(''):'<p class="muted">まだアイデアはありません。最初のひとりになってね。</p>';
- $('lvlBox').innerHTML=D.levels.map((t,i)=>'<span>Lv'+(i+1)+'：'+t+'pt〜</span>').join('');
+ $('lvlBox').innerHTML=D.levels.map((t,i)=>'<span>Lv'+(i+1)+' '+esc((D.titles||[])[i]||'')+'：'+t+'pt〜</span>').join('');
+ const cnt={};D.residents.forEach(r=>{if(r.work)cnt[r.work]=(cnt[r.work]||0)+1});
+ $('jobBox').innerHTML=(D.jobs||[]).map(j=>'<div class="job"><span class="ic" aria-hidden="true">'+esc(j.icon)+'</span><b>'+esc(j.key)+'</b><span>'+esc(j.does)+'</span><span class="who">いま '+(cnt[j.key]||0)+'人がこのしごと</span><span class="res">島の'+esc(j.res)+'：'+((D.resources||{})[j.res]||0)+'</span><button type="button" data-c="しごと：'+esc(j.key)+'">コメント文をコピー</button></div>').join('');
  $('tl').innerHTML=D.timeline.map(t=>'<li><b>'+t.day+'日目</b>　'+esc(t.text)+'</li>').join('');
  try{const last=localStorage.getItem('cs_me');if(last){$('q').value=last;find(last,false)}}catch(e){}
 }
@@ -194,10 +212,11 @@ function find(v,save=true){
  const pct=nx?((r.points-cur)/(nx-cur)*100):100;
  out.innerHTML='<div class="pcard"><div class="badge"><div><span>レベル</span><b>'+r.level+'</b></div></div><div><h3>'+esc(r.name)+'<span class="pf">'+(r.platform==='yt'?'YouTube':'インスタ')+'</span></h3>'
   +'<div>'+r.points+'ポイント・'+(nx?'次のレベルまで あと'+(nx-r.points)+'ポイント':'最高レベル')+'</div><div class="bar" style="background:var(--sand2)"><i style="width:'+pct.toFixed(0)+'%"></i></div>'
-  +'<p class="now">いま島で：'+esc(r.job)+'</p>'+(r.wish?'<div class="muted">なりたいもの：'+esc(r.wish)+'</div>':'')
+  +'<div class="title">'+esc((D.titles||[])[r.level-1]||'')+'</div>'+'<p class="now">いま島で：'+esc(r.job)+'</p>'+'<div>しごと：'+(r.work?esc(r.work)+'（'+(r.work_days||0)+'日はたらいた）':'まだえらんでいません。コメントに「しごと：木こり」のように書いてね')+'</div>'+(r.wish?'<div class="muted">なりたいもの：'+esc(r.wish)+'</div>':'')
   +'<ul class="hist">'+r.history.map(h=>'<li>'+esc(h)+'</li>').join('')+'</ul></div></div>';
  const row=document.querySelector('tr[data-id="'+CSS.escape(norm(r.id))+'"]');if(row)row.classList.add('me');
 }
+$('jobBox').addEventListener('click',e=>{const b=e.target.closest('button[data-c]');if(!b)return;const t=b.dataset.c;navigator.clipboard?.writeText(t).then(()=>{b.textContent='コピーしました：'+t},()=>{b.textContent='「'+t+'」と書いてね'}).catch(()=>{b.textContent='「'+t+'」と書いてね'})});
 $('findForm').addEventListener('submit',e=>{e.preventDefault();find($('q').value)});
 
 /* ---- 3D island ---- */

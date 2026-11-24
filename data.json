@@ -91,7 +91,9 @@
     "1日目：アイデア「動物になりたい」",
     "1日目：いいね"
    ],
-   "since_day": 1
+   "since_day": 1,
+   "work": null,
+   "work_days": 0
   },
   {
    "id": "ik_0415",
@@ -105,7 +107,9 @@
     "1日目：投票B",
     "1日目：アイデア「島の長になりたい」"
    ],
-   "since_day": 1
+   "since_day": 1,
+   "work": null,
+   "work_days": 0
   },
   {
    "id": "horse.6315152",
@@ -119,7 +123,9 @@
     "1日目：投票B",
     "1日目：アイデア「島のまとめ役になりたい」"
    ],
-   "since_day": 1
+   "since_day": 1,
+   "work": null,
+   "work_days": 0
   },
   {
    "id": "yy368313",
@@ -133,7 +139,9 @@
     "1日目：投票B",
     "1日目：アイデア「島民になりたい」"
    ],
-   "since_day": 1
+   "since_day": 1,
+   "work": null,
+   "work_days": 0
   },
   {
    "id": "m_q1e.5",
@@ -147,7 +155,9 @@
     "1日目：投票B",
     "1日目：いいね"
    ],
-   "since_day": 1
+   "since_day": 1,
+   "work": null,
+   "work_days": 0
   },
   {
    "id": "aist.ory751",
@@ -161,7 +171,9 @@
     "1日目：投票B",
     "1日目：いいね"
    ],
-   "since_day": 1
+   "since_day": 1,
+   "work": null,
+   "work_days": 0
   },
   {
    "id": "@ビッパ色違い",
@@ -175,7 +187,9 @@
     "1日目：投票A",
     "1日目：アイデア「斧で動物を狩る」"
    ],
-   "since_day": 1
+   "since_day": 1,
+   "work": null,
+   "work_days": 0
   },
   {
    "id": "mizuki_tennis12",
@@ -188,7 +202,9 @@
    "history": [
     "1日目：投票C"
    ],
-   "since_day": 1
+   "since_day": 1,
+   "work": null,
+   "work_days": 0
   },
   {
    "id": "@いと-f7v",
@@ -201,7 +217,9 @@
    "history": [
     "1日目：投票B"
    ],
-   "since_day": 1
+   "since_day": 1,
+   "work": null,
+   "work_days": 0
   },
   {
    "id": "go20141224",
@@ -214,7 +232,9 @@
    "history": [
     "1日目：いいね"
    ],
-   "since_day": 1
+   "since_day": 1,
+   "work": null,
+   "work_days": 0
   },
   {
    "id": "kizuna._.potato",
@@ -227,7 +247,9 @@
    "history": [
     "1日目：いいね"
    ],
-   "since_day": 1
+   "since_day": 1,
+   "work": null,
+   "work_days": 0
   },
   {
    "id": "sasukeeeeeee412",
@@ -240,7 +262,9 @@
    "history": [
     "1日目：いいね"
    ],
-   "since_day": 1
+   "since_day": 1,
+   "work": null,
+   "work_days": 0
   },
   {
    "id": "tyhw__z09",
@@ -253,11 +277,64 @@
    "history": [
     "1日目：いいね"
    ],
-   "since_day": 1
+   "since_day": 1,
+   "work": null,
+   "work_days": 0
   }
  ],
  "links": {
   "youtube": "https://www.youtube.com/@chiisanashima_sekai",
   "instagram": "https://www.instagram.com/chiisanashima_sekai/"
- }
+ },
+ "jobs": [
+  {
+   "key": "木こり",
+   "icon": "🪓",
+   "does": "森で木を切って、木材を集める",
+   "res": "木材"
+  },
+  {
+   "key": "漁師",
+   "icon": "🎣",
+   "does": "海で魚をとって、食べ物を集める",
+   "res": "食べ物"
+  },
+  {
+   "key": "畑係",
+   "icon": "🌱",
+   "does": "畑をたがやして、作物を育てる",
+   "res": "作物"
+  },
+  {
+   "key": "大工",
+   "icon": "🔨",
+   "does": "木材を使って、家や道具を作る",
+   "res": "建物の進み"
+  },
+  {
+   "key": "探検家",
+   "icon": "🧭",
+   "does": "島のまだ知らない場所を調べる",
+   "res": "見つけた場所"
+  }
+ ],
+ "resources": {
+  "木材": 0,
+  "食べ物": 0,
+  "作物": 0,
+  "建物の進み": 0,
+  "見つけた場所": 0
+ },
+ "titles": [
+  "新入り",
+  "島の住人",
+  "働き者",
+  "島の顔",
+  "ベテラン",
+  "島の先輩",
+  "島の名人",
+  "島の守り神",
+  "伝説の島民",
+  "島そのもの"
+ ]
 }
