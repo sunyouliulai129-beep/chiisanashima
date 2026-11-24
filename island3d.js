@@ -23,8 +23,10 @@
   }
 
   // ---------- scene building ----------
-  function Scene() { this.tris = []; }
-  Scene.prototype.tri = function (a, b, c, col) { this.tris.push([a, b, c, typeof col === 'string' ? hex(col) : col]); };
+  // tri = [a, b, c, rgb, kind, normals?]  kind: 0 solid, 1..1.99 sways in the wind (weight = kind-1), 3 glowing, 4 skip in GPU renderer (its own water)
+  function Scene() { this.tris = []; this.kind = 0; }
+  Scene.prototype.tri = function (a, b, c, col) { this.tris.push([a, b, c, typeof col === 'string' ? hex(col) : col, this.kind]); };
+  Scene.prototype.triN = function (a, b, c, col, na, nb, nc) { this.tris.push([a, b, c, typeof col === 'string' ? hex(col) : col, this.kind, [na, nb, nc]]); };
   Scene.prototype.quad = function (a, b, c, d, col) { this.tri(a, b, c, col); this.tri(a, c, d, col); };
   Scene.prototype.box = function (x, y, z, sx, sy, sz, col, rotY = 0) {
     const c = Math.cos(rotY), s = Math.sin(rotY);
@@ -73,6 +75,8 @@
     const hf = opt.heightFn ? (x, z) => opt.heightFn(x, z, noise) : (x, z) => islandHeight(x, z, noise, opt);
     const H = [];
     for (let i = 0; i <= N; i++) { H.push([]); for (let j = 0; j <= N; j++) { const x = -size + i * step, z = -size + j * step; H[i].push(hf(x, z)); } }
+    const HG = (a, b) => H[Math.max(0, Math.min(N, a))][Math.max(0, Math.min(N, b))];
+    const NRM = (a, b) => norm([HG(a - 1, b) - HG(a + 1, b), 2 * step, HG(a, b - 1) - HG(a, b + 1)]);
     const col0 = (h) => h < 0.35 ? '#F2DFA7' : h < 0.6 ? '#E8D394' : h < 2.8 ? '#7CCB5B' : h < 4.4 ? '#5DB24B' : '#8FA27A';
     for (let i = 0; i < N; i++) for (let j = 0; j < N; j++) {
       const P = (a, b) => { const h = H[a][b]; return [-size + a * step, Math.max(h, -0.6), -size + b * step]; };
@@ -80,35 +84,38 @@
       if (Math.max(a[1], b[1], c[1], d[1]) < -0.05) continue;
       const m1 = (a[1] + b[1] + c[1]) / 3, m2 = (a[1] + c[1] + d[1]) / 3;
       const col = opt.colorFn ? (h, t) => opt.colorFn(h, (t[0][0] + t[1][0] + t[2][0]) / 3, (t[0][2] + t[1][2] + t[2][2]) / 3, noise) : (h) => col0(h);
-      S.tri(a, b, c, col(m1, [a, b, c])); S.tri(a, c, d, col(m2, [a, c, d]));
+      const nA = NRM(i, j), nB = NRM(i + 1, j), nC = NRM(i + 1, j + 1), nD = NRM(i, j + 1);
+      S.triN(a, b, c, col(m1, [a, b, c]), nA, nB, nC); S.triN(a, c, d, col(m2, [a, c, d]), nA, nC, nD);
     }
     // sea plate (hexagon) with a visible side (diorama look)
     const R = opt.radius * (opt.plate || 1.75), top = 0.0, bot = -1.6, n = 6, center = [0, top, 0];
     for (let k = 0; k < n; k++) {
       const a0 = (k / n) * Math.PI * 2 + Math.PI / 6, a1 = ((k + 1) / n) * Math.PI * 2 + Math.PI / 6;
       const p0 = [Math.cos(a0) * R, top, Math.sin(a0) * R], p1 = [Math.cos(a1) * R, top, Math.sin(a1) * R];
-      S.tri(center, p1, p0, '#4FB8E8');
+      S.kind = 4; S.tri(center, p1, p0, '#4FB8E8'); S.kind = 0;
       S.quad(p0, p1, [p1[0], bot, p1[2]], [p0[0], bot, p0[2]], '#2C86C4');
       S.quad([p0[0], bot, p0[2]], [p1[0], bot, p1[2]], [p1[0], bot - 0.6, p1[2]], [p0[0], bot - 0.6, p0[2]], '#C9A36B'); // wooden base
     }
     // shallow-water ring
+    S.kind = 4;
     for (let k = 0; k < 24; k++) {
       const a0 = (k / 24) * Math.PI * 2, a1 = ((k + 1) / 24) * Math.PI * 2, r0 = opt.radius * 1.02, r1 = opt.radius * 1.22;
       S.quad([Math.cos(a0) * r0, 0.02, Math.sin(a0) * r0], [Math.cos(a1) * r0, 0.02, Math.sin(a1) * r0], [Math.cos(a1) * r1, 0.02, Math.sin(a1) * r1], [Math.cos(a0) * r1, 0.02, Math.sin(a0) * r1], '#7FD6EE');
     }
+    S.kind = 0; S.plateR = R; S.islandR = opt.radius;
     return hf;
   }
 
   // ---------- props ----------
   function tree(S, x, y, z, s, seed) {
     S.cyl(x, y, z, 0.18 * s, 1.0 * s, 5, '#8B5A2B');
-    S.ico(x, y + 1.5 * s, z, 0.85 * s, seed % 2 ? '#3FA35B' : '#4DB86A', seed);
-    S.ico(x + 0.2 * s, y + 2.2 * s, z - 0.1 * s, 0.55 * s, '#5CC979', seed + 3);
+    S.kind = 1.5; S.ico(x, y + 1.5 * s, z, 0.85 * s, seed % 2 ? '#3FA35B' : '#4DB86A', seed);
+    S.kind = 1.8; S.ico(x + 0.2 * s, y + 2.2 * s, z - 0.1 * s, 0.55 * s, '#5CC979', seed + 3); S.kind = 0;
   }
   function palm(S, x, y, z, s, seed) {
     for (let k = 0; k < 4; k++) S.box(x + k * 0.08 * s, y + k * 0.55 * s, z, 0.28 * s, 0.55 * s, 0.28 * s, '#9C6B3C');
     const tx = x + 0.32 * s, ty = y + 2.2 * s;
-    for (let k = 0; k < 6; k++) { const a = k / 6 * Math.PI * 2; S.tri([tx, ty, z], [tx + Math.cos(a) * 1.4 * s, ty - 0.5 * s, z + Math.sin(a) * 1.4 * s], [tx + Math.cos(a + 0.35) * 1.1 * s, ty - 0.25 * s, z + Math.sin(a + 0.35) * 1.1 * s], '#2E9E4F'); }
+    S.kind = 1.9; for (let k = 0; k < 6; k++) { const a = k / 6 * Math.PI * 2; S.tri([tx, ty, z], [tx + Math.cos(a) * 1.4 * s, ty - 0.5 * s, z + Math.sin(a) * 1.4 * s], [tx + Math.cos(a + 0.35) * 1.1 * s, ty - 0.25 * s, z + Math.sin(a + 0.35) * 1.1 * s], '#2E9E4F'); } S.kind = 0;
   }
   function rock(S, x, y, z, s, seed) { S.ico(x, y + 0.2 * s, z, 0.5 * s, '#A9A9A0', seed); }
   function boat(S, x, y, z, rot) {
@@ -135,7 +142,7 @@
   }
   function pine(S, x, y, z, s, seed) {
     S.cyl(x, y, z, 0.16 * s, 0.7 * s, 5, '#7A4E2A');
-    S.cone(x, y + 0.6 * s, z, 0.9 * s, 1.4 * s, 7, seed % 2 ? '#2F7D45' : '#36894D'); S.cone(x, y + 1.4 * s, z, 0.65 * s, 1.2 * s, 7, '#3C9555');
+    S.kind = 1.3; S.cone(x, y + 0.6 * s, z, 0.9 * s, 1.4 * s, 7, seed % 2 ? '#2F7D45' : '#36894D'); S.kind = 1.6; S.cone(x, y + 1.4 * s, z, 0.65 * s, 1.2 * s, 7, '#3C9555'); S.kind = 0;
   }
   function signpost(S, x, y, z) { S.box(x, y, z, 0.15, 1.3, 0.15, '#7A4E2A'); S.box(x, y + 1.0, z - 0.02, 1.3, 0.55, 0.1, '#C98B4E'); }
 
@@ -235,17 +242,17 @@
     const st = opt.stage ?? 1;
     const hFn = st >= 1 ? bigHeight : (x, z, n) => { const h = bigHeight(x, z, n); const pk = Math.max(0, 1 - Math.hypot(x - 9, z - 13) / 26); return (h + 2.2) * (0.15 + 0.85 * st) * (st < 0.5 ? 0.4 + 0.6 * pk : 1) - 2.2 - (1 - st) * 1.2; };
     const cFn = st >= 0.75 ? bigColor : (h, x, z, n) => { if (st < 0.5) return h > 2.5 && Math.hypot(x - 9, z - 13) < 4 ? '#E2453C' : (n(x * 0.7, z * 0.7) > 0.5 ? '#5A4A42' : '#4A3C36'); if (h < 0.5) return '#E8D394'; return h > 4 ? '#7A6A60' : (n(x * 0.5, z * 0.5) > 0.6 ? '#7CCB5B' : '#8A7A6E'); };
-    const hAt = buildIsland(S, { radius: BIG.radius, seed: opt.seed || 11, grid: opt.grid || 112, plate: 1.4, heightFn: hFn, colorFn: cFn });
+    const hAt = buildIsland(S, { radius: BIG.radius, seed: opt.seed || 11, grid: opt.grid || (opt.hd ? 180 : 112), plate: 1.4, heightFn: hFn, colorFn: cFn });
     if (st < 1) { if (st >= 0.75) for (let k = 0, n = 0, R2 = rng(9); k < 800 && n < 25; k++) { const x = (R2() - 0.5) * 40, z = (R2() - 0.5) * 40, y = hAt(x, z); if (y < 0.8 || y > 4) continue; tree(S, x, y - 0.05, z, 0.6 + R2() * 0.3, k); n++; }
       if (st < 0.5) for (let k = 0; k < 6; k++) S.ico(9 + Math.sin(k) * 1.5, hAt(9, 13) + 2 + k * 1.6, 13 + Math.cos(k * 2) * 1.2, 1.2 + k * 0.35, k % 2 ? '#9A9A9A' : '#BDBDBD', k);
       return { S, hAt, big: BIG }; }
     const R = rng(5), near = (x, z, c, d) => Math.hypot(x - c[0], z - c[1]) < d;
-    for (let k = 0, n = 0; k < 3000 && n < 90; k++) { // forest
+    for (let k = 0, n = 0; k < 9000 && n < (opt.hd ? 260 : 90); k++) { // forest
       const x = BIG.forest[0] + (R() - 0.5) * 16, z = BIG.forest[1] + (R() - 0.5) * 16, y = hAt(x, z);
       if (!near(x, z, BIG.forest, 8) || y < 0.7 || y > 5) continue;
       (k % 3 ? tree : pine)(S, x, y - 0.05, z, 0.9 + R() * 0.6, k); n++;
     }
-    for (let k = 0, n = 0; k < 2000 && n < 28; k++) { // scattered trees on grassland
+    for (let k = 0, n = 0; k < 6000 && n < (opt.hd ? 90 : 28); k++) { // scattered trees on grassland
       const x = (R() - 0.5) * 40, z = (R() - 0.5) * 40, y = hAt(x, z);
       if (y < 0.8 || y > 4.5 || near(x, z, BIG.desert, 10) || near(x, z, BIG.forest, 9) || near(x, z, BIG.beach, 5)) continue;
       tree(S, x, y - 0.05, z, 0.8 + R() * 0.4, k); n++;
@@ -265,7 +272,7 @@
     for (const [x, z] of [[-8, -19.5], [1.5, -21], [-12, -16], [5, -19], [-15, -12], [9, -17]]) palm(S, x, hAt(x, z) - 0.05, z, 1.0, 3);
     if (opt.detail !== false) {
       const FL = ['#FF6B8A', '#FFD23F', '#FFFFFF', '#B07CFF', '#FF9A3D'];
-      for (let k = 0, n = 0; k < 6000 && n < 160; k++) { // flowers & grass tufts on grassland
+      for (let k = 0, n = 0; k < 20000 && n < (opt.hd ? 900 : 160); k++) { // flowers & grass tufts on grassland
         const x = (R() - 0.5) * 44, z = (R() - 0.5) * 44, y = hAt(x, z);
         if (y < 0.7 || y > 3.6 || near(x, z, BIG.desert, 9) || near(x, z, BIG.lake, 5)) continue;
         if (n % 3) { S.cone(x, y - 0.02, z, 0.14, 0.32, 4, n % 2 ? '#4FA640' : '#6CC24E'); } else { S.cyl(x, y, z, 0.03, 0.22, 3, '#3E8E3A'); S.ico(x, y + 0.26, z, 0.11, FL[n % FL.length], k); }
@@ -356,7 +363,45 @@
     if (acc === 'pack') { B(0, 0.55, 0.22, 0.36, 0.4, 0.14, '#8B5A2B'); }
     if (acc === 'cape') { B(0, 0.45, 0.18, 0.5, 0.6, 0.04, hc); }
   }
+  // ---------- animated characters (GPU renderer): body parts in local space, feet at origin, facing -z ----------
+  const HERO_LOOK = { colors: { skin: '#F6CFA8', hair: '#3A2A1E', shirt: '#1FA6A0', pants: '#33415C', hat: 'band', hatCol: '#FF7A1A', acc: 'pack' }, tall: 1.08, key: 'hero' };
+  function villagerParts(L) {
+    const P = { body: new Scene(), armL: new Scene(), armR: new Scene(), legL: new Scene(), legR: new Scene() };
+    const C = L.colors || { skin: SKIN[L.skin], hair: HAIR[L.hair], shirt: SHIRT[L.shirt], pants: PANTS[L.pants], hat: HAT[L.hat], hatCol: SHIRT[L.hatCol], acc: ACC[L.acc] };
+    const s = L.tall || 1, B = (p, dx, dy, dz, sx, sy, sz, col) => P[p].box(dx * s, dy * s, dz * s, sx * s, sy * s, sz * s, col);
+    B('legL', -0.11, 0, 0, 0.18, 0.5, 0.22, C.pants); B('legR', 0.11, 0, 0, 0.18, 0.5, 0.22, C.pants);
+    B('legL', -0.11, 0, -0.03, 0.2, 0.08, 0.28, '#4A3426'); B('legR', 0.11, 0, -0.03, 0.2, 0.08, 0.28, '#4A3426');
+    B('body', 0, 0.5, 0, 0.5, 0.55, 0.3, C.shirt);
+    B('armL', -0.32, 0.55, 0, 0.14, 0.45, 0.18, C.shirt); B('armR', 0.32, 0.55, 0, 0.14, 0.45, 0.18, C.shirt);
+    B('armL', -0.32, 0.47, 0, 0.12, 0.1, 0.14, C.skin); B('armR', 0.32, 0.47, 0, 0.12, 0.1, 0.14, C.skin);
+    B('body', 0, 1.05, 0, 0.44, 0.42, 0.4, C.skin);
+    B('body', 0, 1.42, 0.02, 0.48, 0.12, 0.44, C.hair); B('body', 0, 1.2, 0.2, 0.46, 0.3, 0.06, C.hair);
+    B('body', -0.1, 1.12, -0.205, 0.06, 0.08, 0.02, '#222'); B('body', 0.1, 1.12, -0.205, 0.06, 0.08, 0.02, '#222');
+    B('body', 0, 1.0, -0.205, 0.12, 0.03, 0.02, '#B0645A');
+    const hat = C.hat, hc = C.hatCol;
+    if (hat === 'cap') { B('body', 0, 1.48, 0, 0.5, 0.12, 0.46, hc); B('body', 0, 1.48, -0.3, 0.42, 0.04, 0.2, hc); }
+    if (hat === 'straw') { B('body', 0, 1.46, 0, 0.8, 0.05, 0.8, '#E8C872'); B('body', 0, 1.5, 0, 0.44, 0.16, 0.42, '#E8C872'); B('body', 0, 1.5, 0, 0.45, 0.05, 0.43, hc); }
+    if (hat === 'beanie') { B('body', 0, 1.48, 0, 0.5, 0.2, 0.46, hc); B('body', 0, 1.7, 0, 0.12, 0.1, 0.12, '#fff'); }
+    if (hat === 'band') { B('body', 0, 1.36, 0, 0.5, 0.12, 0.46, hc); B('body', 0.08, 1.38, 0.26, 0.12, 0.12, 0.12, hc); }
+    if (hat === 'hood') { B('body', 0, 1.25, 0.04, 0.52, 0.5, 0.46, C.shirt); B('body', 0, 1.05, -0.21, 0.36, 0.34, 0.02, C.skin); }
+    if (hat === 'flower') { B('body', 0.16, 1.5, -0.1, 0.12, 0.12, 0.12, '#FF6B8A'); B('body', 0.16, 1.5, -0.1, 0.05, 0.05, 0.14, '#FFD23F'); }
+    if (hat === 'tophat') { B('body', 0, 1.48, 0, 0.6, 0.04, 0.56, '#222'); B('body', 0, 1.52, 0, 0.36, 0.34, 0.34, '#222'); B('body', 0, 1.55, 0, 0.37, 0.06, 0.35, hc); }
+    const acc = C.acc;
+    if (acc === 'glasses') { B('body', -0.1, 1.1, -0.215, 0.13, 0.11, 0.02, '#1E2A3A'); B('body', 0.1, 1.1, -0.215, 0.13, 0.11, 0.02, '#1E2A3A'); }
+    if (acc === 'scarf') { B('body', 0, 0.98, 0, 0.5, 0.1, 0.36, hc); B('body', 0.12, 0.8, -0.18, 0.1, 0.25, 0.04, hc); }
+    if (acc === 'pack') { B('body', 0, 0.58, 0.22, 0.4, 0.46, 0.16, '#8B5A2B'); B('body', 0, 0.95, 0.24, 0.42, 0.08, 0.18, '#6E4520'); }
+    if (acc === 'cape') { B('body', 0, 0.45, 0.18, 0.5, 0.6, 0.04, hc); }
+    return { parts: P, pivots: { armL: [-0.32 * s, 1.0 * s, 0], armR: [0.32 * s, 1.0 * s, 0], legL: [-0.11 * s, 0.5 * s, 0], legR: [0.11 * s, 0.5 * s, 0] }, height: 1.6 * s };
+  }
   // place residents around the beach and meadow (same spots on the site and in videos)
+  function villagerSpots(w, count) {
+    const spots = [];
+    for (let k = 0; spots.length < count && k < 4000; k++) {
+      const a = -1.9 + k * 0.47, r = 9 + (k % 7) * 1.6, x = Math.cos(a) * r - 2, z = Math.sin(a) * r - 8, y = w.hAt(x, z);
+      if (y < 0.6 || y > 3.2) continue; if (spots.some(p => Math.hypot(p[0] - x, p[2] - z) < 1.1)) continue; spots.push([x, y, z]);
+    }
+    return spots;
+  }
   function placeVillagers(w, ids, opt = {}) {
     const taken = new Set(), R = rng(opt.seed || 77), spots = [];
     for (let k = 0; spots.length < ids.length && k < 4000; k++) {
@@ -366,6 +411,6 @@
     ids.forEach((id, i) => { const p = spots[i]; if (!p) return; villager(w.S, p[0], p[1], p[2], opt.scale || 0.9, R() * 6.28, lookFor(id, taken)); });
     return spots;
   }
-  const api = { Scene, render, dayOneWorld, bigWorld, villager, lookFor, placeVillagers, BIG_CAMS, cactus, pine, hero, tree, palm, rock, boat, signpost, buildIsland };
+  const api = { Scene, render, dayOneWorld, bigWorld, villager, villagerParts, HERO_LOOK, lookFor, placeVillagers, villagerSpots, BIG_CAMS, cactus, pine, hero, tree, palm, rock, boat, signpost, buildIsland };
   if (typeof module !== "undefined" && module.exports) module.exports = api; (typeof window !== "undefined" ? window : globalThis).Island3D = api;
 })(this);
