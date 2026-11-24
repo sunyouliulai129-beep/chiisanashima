@@ -144,7 +144,7 @@ footer a{color:#ffd29a}
    <h2>コインで<em>アイコンをアンロック</em></h2>
    <p class="lead">ポイントがもらえるたびに、同じ数のコインももらえます。コインでアイコンやわくを手に入れて、自分の島民カードをかざろう。コインは使っても、ポイントとレベルは減りません。</p>
    <div class="card"><div class="shopbar" id="shopBar">上の「島民カード」で自分をさがすと、ここでこうかんできます。</div><div id="tradeBox" aria-live="polite"></div><b>アイコン</b><div class="shop" id="shopIcons"></div><b>わく</b><div class="shop" id="shopFrames"></div>
-   <p class="muted">こうかんの仕方：島民カードで自分をさがす → ほしいものの「こうかんする」を押す → 出てきた文をインスタのDMで送る（YouTubeの人は最新の動画のコメントに書く）。押したらすぐ自分のカードが変わって、次の更新で正式にこうかんされます。</p></div>
+   <p class="muted">こうかんの仕方：島民カードで自分をさがす → ほしいものの「こうかんする」を押す → 出てきた文をインスタのDMで送る（YouTubeの人は最新の動画のコメントに書く）。押したらすぐ自分の画面のカードが変わって、次の更新で正式にこうかんされます。正式なこうかんは「その人のアカウントから届いた申しこみ」だけなので、ほかの人がかってにあなたのアイコンを変えることはできません。</p></div>
   </section>
   <section id="vote">
    <h2>今日のお題の<em>途中経過</em></h2>
@@ -306,7 +306,7 @@ function renderShop(){
 function tradeMsg(r,x,type){
  const word=type==='buy'?'こうかん':'つける';
  const msg=word+'：'+x.name+'（'+(r.platform==='yt'?'YouTube ':'インスタ ')+r.id+'）';
- $('tradeBox').innerHTML='<div class="trade"><b>'+(type==='buy'?esc(x.name)+'をこうかんしました（申しこみ中）':esc(x.name)+'に付けかえました（申しこみ中）')+'</b><div>この文を送ると、次の更新で正式に反映されます。</div><div class="msg">'+esc(msg)+'</div><div class="row2"><button class="btn" id="cp">文をコピー</button>'+(r.platform==='yt'?'<a class="btn" href="'+esc(D.links.youtube)+'">YouTubeの最新動画にコメント</a>':'<a class="btn" href="https://ig.me/m/chiisanashima_sekai">インスタのDMをひらく</a>')+'</div></div>';
+ $('tradeBox').innerHTML='<div class="trade"><b>'+(type==='buy'?esc(x.name)+'をこうかんしました（申しこみ中）':esc(x.name)+'に付けかえました（申しこみ中）')+'</b><div>この文を<b>自分のアカウントから</b>送ると、次の更新で正式に反映されます。いま変わったのは、このスマホの画面だけです。ほかの人の名前で送られた申しこみは反映されません。</div><div class="msg">'+esc(msg)+'</div><div class="row2"><button class="btn" id="cp">文をコピー</button>'+(r.platform==='yt'?'<a class="btn" href="'+esc(D.links.youtube)+'">YouTubeの最新動画にコメント</a>':'<a class="btn" href="https://ig.me/m/chiisanashima_sekai">インスタのDMをひらく</a>')+'</div></div>';
  $('cp').addEventListener('click',e=>{navigator.clipboard?.writeText(msg).then(()=>{e.target.textContent='コピーしました'},()=>{e.target.textContent='長おしでコピーしてね'}).catch(()=>{e.target.textContent='長おしでコピーしてね'})});
 }
 document.getElementById('shop').addEventListener('click',e=>{
