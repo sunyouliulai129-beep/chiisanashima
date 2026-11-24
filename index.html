@@ -107,6 +107,7 @@ footer{background:var(--wood2);color:#f3e6cf;padding:24px 0 36px;font-size:14px}
 footer a{color:#ffd29a}
 .muted{color:var(--soft);font-size:14px}
 .ytcta{display:flex;flex-wrap:wrap;gap:10px;align-items:center;justify-content:space-between;background:#c4302b;color:#fff;border-radius:16px;padding:12px 16px;margin:14px 0 0}.ytcta b{font-size:17px}.ytcta a{background:#fff;color:#c4302b;font-weight:900;border-radius:99px;padding:10px 18px;text-decoration:none;min-height:44px;display:inline-flex;align-items:center}
+.evl{list-style:none;margin:6px 0;padding:0}.evl li{display:grid;grid-template-columns:6.5em 1fr auto;gap:8px;align-items:center;padding:8px 10px;border-radius:10px;margin:4px 0;background:var(--sand2)}.evl li b{font-variant-numeric:tabular-nums}.evl li i{font-style:normal;font-weight:800;color:var(--or)}.evl li.done{opacity:.55}.evl li.done i{color:#2b9a4a}.evl li.now{background:light-dark(#fff1dc,#3a2a14);outline:2px solid var(--or)}.evl li.more{background:none}
 .linkbox{margin-top:10px;background:light-dark(#eef4ff,#1c2433);border:2px dashed #5b7cfa;border-radius:14px;padding:10px 12px}
 @media(max-width:600px){.stats{grid-template-columns:repeat(3,minmax(0,1fr));gap:6px}.stat{padding:8px}.stat span{font-size:12px}.pcard{grid-template-columns:1fr}.vote .row{grid-template-columns:2.2em minmax(0,5em) minmax(0,1fr) 2.6em}.hide-sm{display:none}}
 @media(prefers-reduced-motion:reduce){*{transition:none!important}}
@@ -202,6 +203,12 @@ footer a{color:#ffd29a}
     </div>
    </div>
   </section>
+  <section id="events">
+   <h2>登録者でおこる<em>イベント</em></h2>
+   <p class="lead">YouTubeのチャンネル登録者が節目の人数をこえると、島でイベントがおこって、その回の動画になります。終わりはありません。</p>
+   <div class="card"><p class="muted" id="evNow"></p><ol class="evl" id="evBox"></ol>
+    <p style="margin:8px 0 0"><a class="btn" href="https://www.youtube.com/@chiisanashima_sekai?sub_confirmation=1">YouTubeでチャンネル登録</a></p></div>
+  </section>
   <section id="history">
    <h2>これまでの<em>島</em></h2>
    <div class="card"><ul id="tl" style="margin:0;padding-left:20px"></ul></div>
@@ -215,6 +222,7 @@ footer a{color:#ffd29a}
   <p>※AIを使って作っている架空の島づくり企画です。音声：VOICEVOX:No.7</p>
  </div>
 </footer>
+<script src="events.js"></script>
 <script src="island3d.js"></script>
 <script>
 {
@@ -226,9 +234,15 @@ const nextLv=(p,L)=>{for(const t of L)if(t>p)return t;return null};
 function render(){
  const pop=D.islanders.youtube+D.islanders.instagram;
  $('sDay').textContent=D.day+'日目';$('sPop').textContent=pop+'人';
- $('sEvName').textContent='「'+D.next_event.name+'」まで';
- $('sNext').textContent='あと'+Math.max(0,D.next_event.at-pop)+'人';
- $('sBar').style.width=Math.min(100,pop/D.next_event.at*100)+'%';
+ const yt=D.islanders.youtube,ne=window.CSEvents?CSEvents.next(yt):D.next_event,prevAt=window.CSEvents&&ne.index>0?CSEvents.list(ne.at-1).slice(-1)[0].at:0;
+ $('sEvName').textContent='「'+ne.name+'」まで';
+ $('sNext').textContent='登録者あと'+Math.max(0,ne.at-yt)+'人';
+ $('sBar').style.width=Math.min(100,Math.max(0,(yt-prevAt)/(ne.at-prevAt))*100)+'%';
+ if(window.CSEvents){const past=CSEvents.list(yt).slice(-3),up=CSEvents.upcoming(yt,6);
+  $('evBox').innerHTML=past.map(e=>'<li class="done"><b>'+e.at.toLocaleString()+'人</b><span>'+esc(e.name)+'</span><i>達成！</i></li>').join('')
+   +up.map((e,k)=>'<li'+(k===0?' class="now"':'')+'><b>'+e.at.toLocaleString()+'人</b><span>'+esc(e.name)+'</span><i>'+(k===0?'あと'+(e.at-yt)+'人':'')+'</i></li>').join('')
+   +'<li class="more"><b>…</b><span>その先もずっと続きます</span><i></i></li>';
+  $('evNow').textContent='いまのYouTubeチャンネル登録者：'+yt+'人';}
  $('upd').textContent=D.updated;
  const Q=D.question,tot=Q.choices.reduce((a,c)=>a+c[2],0)||1,mx=Math.max(...Q.choices.map(c=>c[2]));
  $('voteBox').innerHTML='<div class="lead2">'+esc(Q.day+'日目のお題：'+Q.text)+'</div>'+Q.choices.map(c=>'<div class="row"><span class="k">'+esc(c[0])+'</span><span>'+esc(c[1])+'</span><span class="t"><i style="width:'+(c[2]/tot*100).toFixed(1)+'%"></i></span><span class="n">'+c[2]+'票</span></div>').join('')+'<p class="muted">'+esc(Q.note)+'。いちばん多い答えを、次の動画で本当にやります。</p>';
