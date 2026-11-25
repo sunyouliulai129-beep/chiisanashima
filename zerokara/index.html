@@ -1,0 +1,575 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>ゼロから共和国 — コメントでつくる国</title>
+<meta name="description" content="何もない大陸から、みんなで国をつくる。国民登録で国のお金100万円（先着50人は300万円）。土地もお店も早い者勝ち。">
+<meta name="theme-color" content="#0F3D3E">
+<link rel="manifest" href="data:application/manifest+json,%7B%22name%22%3A%22%E3%82%BC%E3%83%AD%E3%81%8B%E3%82%89%E5%85%B1%E5%92%8C%E5%9B%BD%22%2C%22short_name%22%3A%22%E5%85%B1%E5%92%8C%E5%9B%BD%22%2C%22display%22%3A%22standalone%22%2C%22start_url%22%3A%22.%22%2C%22background_color%22%3A%22%23F6F1E4%22%2C%22theme_color%22%3A%22%230F3D3E%22%7D">
+<style>
+:root{--ink:#1D2B2A;--sea:#2F7FB5;--deep:#0F3D3E;--sand:#F6F1E4;--card:#FFFDF7;--gold:#E8A317;--red:#D9534F;--mut:#6B7A78;--line:#E3DCCB;--ok:#2E8B57}
+*{box-sizing:border-box}
+html,body{margin:0;background:var(--sand);color:var(--ink);font-family:"Hiragino Sans","Yu Gothic UI","Noto Sans JP","Noto Sans CJK JP",sans-serif;-webkit-text-size-adjust:100%}
+a{color:var(--sea)}
+header{position:sticky;top:0;z-index:20;background:var(--deep);color:#fff;padding:10px 14px calc(8px);display:flex;align-items:center;gap:10px}
+header .logo{font-weight:900;font-size:18px;letter-spacing:.02em;display:flex;align-items:center;gap:8px}
+header .me{margin-left:auto;font-size:13px;background:rgba(255,255,255,.14);padding:6px 10px;border-radius:999px;cursor:pointer;white-space:nowrap}
+nav.tabs{position:sticky;top:48px;z-index:19;background:#fff;border-bottom:1px solid var(--line);display:flex;overflow-x:auto;scrollbar-width:none}
+nav.tabs::-webkit-scrollbar{display:none}
+nav.tabs button{flex:0 0 auto;border:0;background:none;padding:12px 14px;font:inherit;font-weight:700;font-size:14px;color:var(--mut);border-bottom:3px solid transparent}
+nav.tabs button.on{color:var(--deep);border-bottom-color:var(--gold)}
+main{max-width:760px;margin:0 auto;padding:14px 14px 90px}
+section{display:none}section.on{display:block}
+h2{font-size:20px;margin:18px 0 10px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:14px;margin:10px 0;box-shadow:0 1px 0 rgba(0,0,0,.03)}
+.hero{background:linear-gradient(160deg,#0F3D3E,#2F7FB5);color:#fff;border-radius:20px;padding:18px;display:flex;gap:14px;align-items:center}
+.hero h1{font-size:24px;line-height:1.25;margin:0 0 6px}
+.hero p{margin:0;opacity:.95;font-size:14px;line-height:1.6}
+.seats{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:12px}
+.seat{background:#fff;border-radius:16px;padding:12px;text-align:center;border:2px solid var(--gold)}
+.seat b{display:block;font-size:30px;color:var(--red);line-height:1.1}
+.seat span{font-size:12px;color:var(--mut)}
+.note{font-size:12px;color:var(--mut)}
+.big{font-size:28px;font-weight:900}
+.btn{display:inline-block;border:0;border-radius:12px;padding:12px 16px;font:inherit;font-weight:800;background:var(--gold);color:#3A2600;cursor:pointer;text-decoration:none}
+.btn.sec{background:#EAF2F7;color:var(--deep)}
+.btn.wide{display:block;width:100%;text-align:center}
+.btn:disabled{opacity:.5}
+.cmds{display:grid;gap:10px}
+.cmd{display:flex;gap:10px;align-items:flex-start}
+.cmd .n{flex:0 0 32px;height:32px;border-radius:50%;background:var(--deep);color:#fff;display:grid;place-items:center;font-weight:900}
+.bubble{background:#fff;border:1px solid var(--line);border-radius:14px;padding:8px 12px;font-weight:800;display:inline-block;margin-top:4px}
+.meter{height:12px;background:#EFE8D6;border-radius:99px;overflow:hidden;margin:8px 0}
+.meter i{display:block;height:100%;background:linear-gradient(90deg,var(--gold),var(--red))}
+#mapWrap{position:relative;border-radius:16px;overflow:hidden;border:1px solid var(--line);background:#2F7FB5;touch-action:none;height:62vh;min-height:360px}
+#map{display:block;width:100%;height:100%;cursor:grab}
+.mapbar{position:absolute;right:8px;top:8px;display:flex;flex-direction:column;gap:6px}
+.mapbar button{width:40px;height:40px;border-radius:12px;border:0;background:rgba(255,255,255,.92);font-size:20px;font-weight:900}
+.legend{display:flex;flex-wrap:wrap;gap:6px 10px;font-size:12px;margin-top:8px}
+.legend i{display:inline-block;width:12px;height:12px;border-radius:3px;margin-right:4px;vertical-align:-1px}
+.sheet{position:fixed;left:0;right:0;bottom:0;z-index:40;background:#fff;border-radius:20px 20px 0 0;box-shadow:0 -8px 30px rgba(0,0,0,.18);padding:16px 16px calc(16px + env(safe-area-inset-bottom));transform:translateY(110%);transition:transform .2s;max-height:80vh;overflow:auto}
+.sheet.on{transform:none}
+.sheet .x{position:absolute;right:12px;top:10px;border:0;background:#F1F1F1;border-radius:50%;width:34px;height:34px;font-size:18px}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:10px}
+.cz{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:12px;cursor:pointer;position:relative}
+.cz .ic{width:46px;height:46px;border-radius:50%;display:grid;place-items:center;font-size:24px;color:#fff}
+.cz .nm{font-weight:900;margin-top:6px}
+.cz .no{font-size:12px;color:var(--mut)}
+.badge{display:inline-block;font-size:11px;font-weight:800;border-radius:999px;padding:2px 8px;margin:4px 4px 0 0;background:#FFF3D6;color:#7A4E00}
+.badge.f{background:#FDE2E1;color:#8A1F1B}
+.rank{display:flex;align-items:center;gap:10px;padding:10px 4px;border-bottom:1px dashed var(--line)}
+.rank .r{width:28px;font-weight:900;color:var(--gold);text-align:center}
+.rank .v{margin-left:auto;font-weight:800}
+input,textarea,select{width:100%;font:inherit;padding:11px 12px;border-radius:12px;border:1px solid #CFC6B2;background:#fff;margin:4px 0 10px}
+label{font-weight:800;font-size:14px}
+.err{color:var(--red);font-weight:700;font-size:14px;min-height:1.2em}
+.okm{color:var(--ok);font-weight:700;font-size:14px}
+.tip{position:fixed;left:10px;right:10px;bottom:calc(10px + env(safe-area-inset-bottom));z-index:50;background:#1D2B2A;color:#fff;border-radius:16px;padding:12px 44px 12px 14px;font-size:13px;line-height:1.5;display:none}
+.tip.on{display:block}
+.tip button{position:absolute;right:8px;top:8px;border:0;background:rgba(255,255,255,.15);color:#fff;border-radius:50%;width:30px;height:30px}
+.unlock{display:flex;gap:10px;align-items:center;padding:8px 0;border-bottom:1px dashed var(--line);font-size:14px}
+.unlock b{flex:0 0 64px;text-align:center;border-radius:10px;padding:4px 0;background:#EAF2F7}
+.unlock.open b{background:#DFF3E6;color:var(--ok)}
+.news{padding:8px 0;border-bottom:1px dashed var(--line);font-size:14px}
+.news time{color:var(--mut);font-size:12px;margin-right:6px}
+.swatches{display:flex;gap:8px;flex-wrap:wrap;margin:4px 0 10px}
+.swatches button{width:34px;height:34px;border-radius:50%;border:3px solid #fff;box-shadow:0 0 0 1px #ccc}
+.swatches button.on{box-shadow:0 0 0 3px var(--ink)}
+.small{font-size:13px}
+.row{display:flex;gap:8px;align-items:center}
+.row>*{flex:1}
+footer{text-align:center;color:var(--mut);font-size:12px;padding:20px}
+</style>
+</head>
+<body>
+<header>
+  <div class="logo"><span id="owlMini"></span>ゼロから共和国</div>
+  <div class="me" id="meChip">国民になる</div>
+</header>
+<nav class="tabs" id="tabs">
+  <button data-t="top" class="on">トップ</button>
+  <button data-t="map">大陸の地図</button>
+  <button data-t="people">国民</button>
+  <button data-t="shops">お店</button>
+  <button data-t="rank">ランキング</button>
+  <button data-t="rules">あそび方</button>
+  <button data-t="me">マイページ</button>
+</nav>
+<main>
+<!-- トップ -->
+<section id="s-top" class="on">
+  <div class="hero">
+    <div id="owlBig" style="flex:0 0 96px"></div>
+    <div>
+      <h1>何もない大陸から、<br>みんなで国をつくる。</h1>
+      <p>国民になると<b>国のお金100万円</b>。<br>先着50人は<b style="color:#FFE27A">300万円スタート</b>！</p>
+    </div>
+  </div>
+  <div class="seats">
+    <div class="seat"><span>300万円スタート</span><b id="left50">50</b><span>のこり席</span></div>
+    <div class="seat"><span>建国メンバー（〜100番）</span><b id="left100">100</b><span>のこり席</span></div>
+  </div>
+  <div class="card">
+    <div class="row"><div><div class="note">いまの国民</div><div class="big" id="popNow">0人</div></div>
+    <div><div class="note">いまの土地の値段</div><div class="big" id="priceNow">50万円</div></div></div>
+    <div class="meter"><i id="nextBar" style="width:0%"></i></div>
+    <div class="small" id="nextText">国民30人になると、土地の値段が上がります</div>
+    <p class="note">※円は国の中だけのお金です。本物のお金とは関係ありません。</p>
+  </div>
+  <h2>参加はコメントするだけ</h2>
+  <div class="card cmds">
+    <div class="cmd"><div class="n">1</div><div>国民になる<br><span class="bubble">国民登録 ゆうと</span></div></div>
+    <div class="cmd"><div class="n">2</div><div>土地を買う（今ならどこでも50万円）<br><span class="bubble">土地 海</span></div></div>
+    <div class="cmd"><div class="n">3</div><div>お店を開く（5万円）<br><span class="bubble">お店 たこ焼き屋</span></div></div>
+    <p class="note">YouTubeかインスタの動画にコメントしてね。サイトからでも登録できます👇</p>
+    <button class="btn wide" data-go="me">サイトで国民登録する</button>
+  </div>
+  <h2>国のニュース</h2>
+  <div class="card" id="newsList"><div class="note">まだニュースはありません。最初の国民はだれだ？</div></div>
+  <h2>見る</h2>
+  <div class="card row">
+    <a class="btn sec" href="https://www.youtube.com/@zerokara_kyowakoku" target="_blank" rel="noopener">YouTube</a>
+    <a class="btn sec" href="https://www.instagram.com/zerokara_kyowakoku/" target="_blank" rel="noopener">Instagram</a>
+  </div>
+</section>
+
+<!-- 地図 -->
+<section id="s-map">
+  <h2>大陸の地図 <span class="note">100×100区画（1区画＝1km四方）</span></h2>
+  <div id="mapWrap">
+    <canvas id="map"></canvas>
+    <div class="mapbar"><button id="zin">＋</button><button id="zout">－</button><button id="zhome">⌂</button></div>
+  </div>
+  <div class="legend" id="legend"></div>
+  <p class="note">指2本で拡大、なぞって移動。区画をタップすると持ち主や値段が見られます。</p>
+</section>
+
+<!-- 国民 -->
+<section id="s-people">
+  <h2>国民カード</h2>
+  <input id="pq" placeholder="名前か国民番号でさがす">
+  <div class="grid" id="peopleGrid"></div>
+  <p class="note" id="peopleNote"></p>
+</section>
+
+<!-- お店 -->
+<section id="s-shops">
+  <h2>お店・会社</h2>
+  <div class="grid" id="shopGrid"></div>
+  <p class="note" id="shopNote">お店はコメント「お店 （名前）」か、マイページから申しこめます。</p>
+</section>
+
+<!-- ランキング -->
+<section id="s-rank">
+  <h2>お金持ちランキング</h2>
+  <div class="card" id="rankMoney"></div>
+  <h2>建国の歴史</h2>
+  <div class="card" id="historyList"><div class="note">はじめての〇〇は、ここにずっと残ります。</div></div>
+</section>
+
+<!-- あそび方 -->
+<section id="s-rules">
+  <h2>あそび方</h2>
+  <div class="card small">
+    <p><b>1. 国民になる</b>：コメントに「国民登録 （名前）」。国民番号は先着順で一生変わりません。1〜10番は「建国の父・母」として記念碑に名前がきざまれます。</p>
+    <p><b>2. 土地を買う</b>：「土地 （海・森・山・川・平地・砂漠・雪原）」。今はどこでも50万円。国民が増えるほど値上がりします。</p>
+    <p><b>3. お店を開く</b>：「お店 （店の名前）」。5万円。ほかの人は「（店の名前）で買う」で応援できます。</p>
+    <p class="note">※円は国の中だけのお金です。本物のお金で買ったり交換したりはできません。フォローや登録でお金がもらえることもありません。</p>
+  </div>
+  <h2>国民が増えると解放</h2>
+  <div class="card" id="unlocks"></div>
+  <h2>やってはいけないこと</h2>
+  <div class="card small">悪口・いやがらせ・エッチなもの／実在の人や政治家・政党の名前／宣伝・スパム／1人で何人分も登録すること。悪質なものは運営が消します。</div>
+</section>
+
+<!-- マイページ -->
+<section id="s-me">
+  <div id="meOut">
+    <h2>国民になる</h2>
+    <div class="card">
+      <label>国民名（12文字まで）</label>
+      <input id="rName" maxlength="12" placeholder="例：ゆうと">
+      <label>合言葉（4〜16文字）</label>
+      <input id="rPass" type="password" maxlength="16" placeholder="ほかのサービスのパスワードは使わないでね">
+      <div class="err" id="rErr"></div>
+      <button class="btn wide" id="rGo">国民登録する</button>
+      <p class="note">名前と合言葉だけで登録できます。メールアドレスなどはいりません。一度登録すれば、同じスマホ・同じブラウザなら次からは自動でログインします。</p>
+    </div>
+    <h2>もう国民の人（別のスマホなど）</h2>
+    <div class="card">
+      <div class="row"><div><label>国民番号</label><input id="lNo" type="number" inputmode="numeric" min="1"></div><div><label>合言葉</label><input id="lPass" type="password" maxlength="16"></div></div>
+      <div class="err" id="lErr"></div>
+      <button class="btn sec wide" id="lGo">ログイン</button>
+    </div>
+  </div>
+  <div id="meIn" style="display:none">
+    <h2>マイページ</h2>
+    <div class="card" id="myCard"></div>
+    <div class="card">
+      <div class="row"><button class="btn wide" id="bonusBtn">今日のログインボーナス</button></div>
+      <div class="small" id="bonusMsg"></div>
+    </div>
+    <h2>申しこむ</h2>
+    <div class="card">
+      <label>土地を買う</label>
+      <select id="qLand"><option value="">地形をえらぶ</option></select>
+      <p class="note">地図で区画をタップしても申しこめます。</p>
+      <button class="btn sec wide" id="qLandGo">土地を申しこむ</button>
+      <hr style="border:0;border-top:1px dashed var(--line);margin:14px 0">
+      <label>お店を開く（5万円）</label>
+      <input id="qShop" maxlength="16" placeholder="お店の名前">
+      <input id="qShopWhat" maxlength="30" placeholder="何のお店？（例：たこ焼き）">
+      <button class="btn sec wide" id="qShopGo">お店を申しこむ</button>
+      <div class="small" id="qMsg"></div>
+      <p class="note">申しこみは、毎日の更新で運営が確認してから反映されます。</p>
+    </div>
+    <h2>プロフィールを編集</h2>
+    <div class="card">
+      <label>自己紹介（80文字まで）</label>
+      <textarea id="eBio" maxlength="80" rows="2"></textarea>
+      <label>アイコン（絵文字1つ）</label>
+      <input id="eIcon" maxlength="4" placeholder="🦊">
+      <label>色</label>
+      <div class="swatches" id="eColors"></div>
+      <button class="btn wide" id="eGo">保存する</button>
+      <div class="small" id="eMsg"></div>
+    </div>
+    <h2>わたしの申しこみ</h2>
+    <div class="card" id="myReqs"><div class="note">まだありません</div></div>
+    <button class="btn sec wide" id="logout" style="margin-top:14px">このスマホからログアウト</button>
+    <p class="note">ログアウトしても、国民番号と合言葉があれば、またログインできます。</p>
+  </div>
+</section>
+</main>
+
+<div class="sheet" id="sheet"><button class="x" id="sheetX">×</button><div id="sheetBody"></div></div>
+<div class="tip" id="tip"><button id="tipX">×</button><span id="tipText"></span></div>
+<footer>ゼロから共和国 ／ 声：VOICEVOX:ちび式じい ／ 円は国の中だけのお金です</footer>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+import { getAuth, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+import { getFirestore, doc, getDoc, getDocs, setDoc, updateDoc, addDoc, deleteDoc, collection, query, orderBy, limit, where, runTransaction, serverTimestamp, onSnapshot } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyCk2v3ug6fbIMuVV06tUNlIuL6klPmkiZI",
+  authDomain: "zerokara-kyowakoku.firebaseapp.com",
+  projectId: "zerokara-kyowakoku",
+  storageBucket: "zerokara-kyowakoku.firebasestorage.app",
+  messagingSenderId: "495540611145",
+  appId: "1:495540611145:web:bd56f007bef6618e3fb798"
+};
+
+const $ = (id) => document.getElementById(id);
+const esc = (s) => String(s ?? "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+const yen = (n) => (n >= 10000 ? (n / 10000).toLocaleString("ja-JP") + "万円" : Number(n || 0).toLocaleString("ja-JP") + "円");
+const COLORS = ["#E8A317", "#D9534F", "#2F7FB5", "#2E8B57", "#8E5BD0", "#E67EA4", "#1D2B2A", "#F07A2B"];
+const NG = ["死ね", "しね", "殺す", "ころす", "きもい", "キモい", "うざい", "ばか", "バカ", "あほ", "アホ", "ちんこ", "まんこ", "セックス", "sex", "http", "www.", ".com"];
+const hasNG = (s) => NG.some(w => String(s).toLowerCase().includes(w.toLowerCase()));
+const todayJST = () => Math.floor((Date.now() + 9 * 3600e3) / 86400e3);
+
+// ---------- フクロウ（ゼロ大統領） ----------
+function owlSVG(size) {
+  return `<svg width="${size}" height="${size}" viewBox="0 0 100 100" aria-label="ゼロ大統領">
+  <ellipse cx="50" cy="60" rx="34" ry="36" fill="#8B5A2B"/>
+  <ellipse cx="50" cy="70" rx="22" ry="24" fill="#E9C99A"/>
+  <path d="M22 36 L30 18 L40 32 Z M78 36 L70 18 L60 32 Z" fill="#8B5A2B"/>
+  <circle cx="36" cy="44" r="14" fill="#fff"/><circle cx="64" cy="44" r="14" fill="#fff"/>
+  <circle cx="38" cy="46" r="7" fill="#1D2B2A"/><circle cx="62" cy="46" r="7" fill="#1D2B2A"/>
+  <circle cx="40" cy="43" r="2.4" fill="#fff"/><circle cx="64" cy="43" r="2.4" fill="#fff"/>
+  <path d="M46 54 L54 54 L50 62 Z" fill="#E8A317"/>
+  <path d="M30 78 L70 66 L72 74 L32 86 Z" fill="#D9534F"/>
+  <path d="M38 14 L42 6 L46 12 L50 4 L54 12 L58 6 L62 14 Z" fill="#E8A317"/>
+  </svg>`;
+}
+$("owlMini").innerHTML = owlSVG(28);
+$("owlBig").innerHTML = owlSVG(96);
+
+// ---------- タブ ----------
+function showTab(t) {
+  document.querySelectorAll("nav.tabs button").forEach(b => b.classList.toggle("on", b.dataset.t === t));
+  document.querySelectorAll("main section").forEach(s => s.classList.toggle("on", s.id === "s-" + t));
+  if (location.hash !== "#" + t) history.replaceState(null, "", "#" + t);
+  if (t === "map") requestAnimationFrame(() => { resizeMap(); if (!MAP.fitted) fitMap(); drawMap(); });
+  window.scrollTo(0, 0);
+}
+$("tabs").addEventListener("click", e => { const b = e.target.closest("button"); if (b) showTab(b.dataset.t); });
+document.addEventListener("click", e => { const g = e.target.closest("[data-go]"); if (g) showTab(g.dataset.go); });
+$("meChip").onclick = () => showTab("me");
+
+// ---------- 大陸をつくる（毎回同じ形になる） ----------
+const N = 100, SEED = 20261125;
+function rng(seed) { let s = seed >>> 0; return () => { s = (s * 1664525 + 1013904223) >>> 0; return s / 4294967296; }; }
+function makeNoise(seed) {
+  const r = rng(seed), G = 17, g = [];
+  for (let i = 0; i < G * G; i++) g.push(r());
+  const at = (x, y) => g[((y % G + G) % G) * G + ((x % G + G) % G)];
+  const sm = t => t * t * (3 - 2 * t);
+  return (x, y) => { const x0 = Math.floor(x), y0 = Math.floor(y), fx = sm(x - x0), fy = sm(y - y0);
+    const a = at(x0, y0), b = at(x0 + 1, y0), c = at(x0, y0 + 1), d = at(x0 + 1, y0 + 1);
+    return a + (b - a) * fx + (c - a) * fy + (a - b - c + d) * fx * fy; };
+}
+const T = { SEA: 0, COAST: 1, PLAIN: 2, FOREST: 3, MOUNT: 4, RIVER: 5, LAKE: 6, DESERT: 7, SNOW: 8 };
+const TNAME = ["海", "海沿い", "平地", "森", "山", "川沿い", "湖", "砂漠", "雪原"];
+const TCOL = ["#2F7FB5", "#E9D9A6", "#9ACD6B", "#3E8E4E", "#8C7B6B", "#6FB3D9", "#4A9BD1", "#E3C27A", "#F3F6F8"];
+const TKEY = { "海": T.COAST, "海沿い": T.COAST, "平地": T.PLAIN, "森": T.FOREST, "山": T.MOUNT, "川": T.RIVER, "川沿い": T.RIVER, "砂漠": T.DESERT, "雪原": T.SNOW, "雪": T.SNOW };
+const PRICE30 = { [T.COAST]: 1000, [T.RIVER]: 1000, [T.PLAIN]: 500, [T.FOREST]: 300, [T.MOUNT]: 300, [T.DESERT]: 100, [T.SNOW]: 100 }; // 万円
+function buildContinent() {
+  const n1 = makeNoise(SEED), n2 = makeNoise(SEED + 7), n3 = makeNoise(SEED + 13);
+  const elev = new Float32Array(N * N), wet = new Float32Array(N * N), t = new Uint8Array(N * N);
+  for (let y = 0; y < N; y++) for (let x = 0; x < N; x++) {
+    const nx = x / N - 0.5, ny = y / N - 0.5, d = Math.sqrt(nx * nx * 1.1 + ny * ny) * 2;
+    const h = n1(x / 9, y / 9) * 0.55 + n1(x / 4.5 + 31, y / 4.5 + 17) * 0.3 + n1(x / 2.2 + 5, y / 2.2 + 9) * 0.15;
+    elev[y * N + x] = h - d * 0.85 + 0.18;
+    wet[y * N + x] = n2(x / 11, y / 11) * 0.7 + n3(x / 5, y / 5) * 0.3;
+  }
+  for (let i = 0; i < N * N; i++) {
+    const x = i % N, y = (i / N) | 0, e = elev[i];
+    if (e < 0) { t[i] = T.SEA; continue; }
+    if (e > 0.33) t[i] = T.MOUNT;
+    else if (y < 16 && e > 0.05) t[i] = T.SNOW;
+    else if (wet[i] < 0.33 && y > 55) t[i] = T.DESERT;
+    else if (wet[i] > 0.56) t[i] = T.FOREST;
+    else t[i] = T.PLAIN;
+  }
+  // 湖
+  const r = rng(SEED + 99);
+  for (let k = 0; k < 2; k++) { const cx = 35 + (r() * 30 | 0), cy = 35 + (r() * 30 | 0);
+    for (let y = -3; y <= 3; y++) for (let x = -4; x <= 4; x++) { const i = (cy + y) * N + cx + x; if (x * x / 16 + y * y / 9 <= 1 && t[i] !== T.SEA) t[i] = T.LAKE; } }
+  // 川（山から海へ一番低い方に流れる）
+  const peaks = []; for (let i = 0; i < N * N; i++) if (t[i] === T.MOUNT) peaks.push(i);
+  for (let k = 0; k < 4 && peaks.length; k++) {
+    let i = peaks[(r() * peaks.length) | 0], steps = 0;
+    while (steps++ < 200) { const x = i % N, y = (i / N) | 0; if (t[i] === T.SEA || t[i] === T.LAKE) break; if (t[i] !== T.MOUNT) t[i] = T.RIVER;
+      let best = -1, be = elev[i] + 0.02;
+      for (const [dx, dy] of [[1, 0], [-1, 0], [0, 1], [0, -1]]) { const xx = x + dx, yy = y + dy; if (xx < 0 || yy < 0 || xx >= N || yy >= N) continue; const j = yy * N + xx; const ee = elev[j] + (r() - 0.5) * 0.02; if (ee < be) { be = ee; best = j; } }
+      if (best < 0) { elev[i] -= 0.05; continue; } i = best; }
+  }
+  // 海沿い
+  for (let i = 0; i < N * N; i++) { if (t[i] === T.SEA || t[i] === T.RIVER || t[i] === T.LAKE) continue; const x = i % N, y = (i / N) | 0;
+    for (const [dx, dy] of [[1, 0], [-1, 0], [0, 1], [0, -1]]) { const xx = x + dx, yy = y + dy; if (xx < 0 || yy < 0 || xx >= N || yy >= N || t[yy * N + xx] === T.SEA) { t[i] = T.COAST; break; } } }
+  return t;
+}
+const LAND = buildContinent();
+const isBuyable = (tt) => tt !== T.SEA && tt !== T.LAKE;
+$("legend").innerHTML = TNAME.map((n, i) => `<span><i style="background:${TCOL[i]}"></i>${n}</span>`).join("");
+$("qLand").innerHTML += ["海沿い", "平地", "森", "山", "川沿い", "砂漠", "雪原"].map(n => `<option>${n}</option>`).join("");
+
+// ---------- 状態 ----------
+const S = { pop: 0, citizens: [], shops: [], lands: new Map(), me: null, myNo: null };
+function priceOf(tt, pop) {
+  if (pop < 30) return 50;
+  const base = PRICE30[tt] || 500, mul = pop >= 1000 ? 3 : pop >= 300 ? 2 : pop >= 100 ? 1.5 : 1;
+  return Math.round(base * mul);
+}
+
+// ---------- 地図を描く ----------
+const MAP = { cv: $("map"), z: 6, ox: 0, oy: 0, fitted: false, sel: null };
+const base = document.createElement("canvas"); base.width = N; base.height = N;
+(() => { const c = base.getContext("2d"), im = c.createImageData(N, N);
+  for (let i = 0; i < N * N; i++) { const h = TCOL[LAND[i]]; im.data[i * 4] = parseInt(h.slice(1, 3), 16); im.data[i * 4 + 1] = parseInt(h.slice(3, 5), 16); im.data[i * 4 + 2] = parseInt(h.slice(5, 7), 16); im.data[i * 4 + 3] = 255; }
+  c.putImageData(im, 0, 0); })();
+function resizeMap() { const r = MAP.cv.getBoundingClientRect(), d = devicePixelRatio || 1; MAP.cv.width = r.width * d; MAP.cv.height = r.height * d; MAP.d = d; }
+function fitMap() { const W = MAP.cv.width, H = MAP.cv.height; MAP.z = Math.min(W, H) / N * 0.95; MAP.ox = (W - N * MAP.z) / 2; MAP.oy = (H - N * MAP.z) / 2; MAP.fitted = true; }
+function drawMap() {
+  const c = MAP.cv.getContext("2d"), W = MAP.cv.width, H = MAP.cv.height, z = MAP.z;
+  c.fillStyle = TCOL[0]; c.fillRect(0, 0, W, H);
+  c.imageSmoothingEnabled = false; c.drawImage(base, MAP.ox, MAP.oy, N * z, N * z);
+  if (z > 7) { c.strokeStyle = "rgba(0,0,0,.08)"; c.lineWidth = 1; c.beginPath();
+    for (let k = 0; k <= N; k++) { c.moveTo(MAP.ox + k * z, MAP.oy); c.lineTo(MAP.ox + k * z, MAP.oy + N * z); c.moveTo(MAP.ox, MAP.oy + k * z); c.lineTo(MAP.ox + N * z, MAP.oy + k * z); } c.stroke(); }
+  for (const [id, L] of S.lands) { const x = MAP.ox + L.x * z, y = MAP.oy + L.y * z;
+    c.fillStyle = L.color || "#E8A317"; c.fillRect(x + z * .15, y + z * .15, z * .7, z * .7);
+    if (z > 14) { c.font = `${Math.floor(z * .6)}px "Noto Color Emoji","Apple Color Emoji",sans-serif`; c.textAlign = "center"; c.textBaseline = "middle"; c.fillText(L.emoji || "🏠", x + z / 2, y + z / 2 + 1); } }
+  // 建国記念碑（真ん中）
+  const mx = MAP.ox + 50 * z, my = MAP.oy + 50 * z; c.font = `${Math.max(12, z * 1.2)}px "Noto Color Emoji","Apple Color Emoji",sans-serif`; c.textAlign = "center"; c.textBaseline = "middle"; c.fillText("🗿", mx, my);
+  if (MAP.sel) { c.strokeStyle = "#D9534F"; c.lineWidth = Math.max(2, z * .12); c.strokeRect(MAP.ox + MAP.sel.x * z, MAP.oy + MAP.sel.y * z, z, z); }
+}
+addEventListener("resize", () => { if ($("s-map").classList.contains("on")) { resizeMap(); drawMap(); } });
+(() => { const P = new Map(); let moved = 0, last = null;
+  const cv = MAP.cv, pt = e => { const r = cv.getBoundingClientRect(); return { x: (e.clientX - r.left) * MAP.d, y: (e.clientY - r.top) * MAP.d }; };
+  const zoomAt = (px, py, f) => { const nz = Math.min(80, Math.max(Math.min(cv.width, cv.height) / N * .6, MAP.z * f)); f = nz / MAP.z; MAP.ox = px - (px - MAP.ox) * f; MAP.oy = py - (py - MAP.oy) * f; MAP.z = nz; drawMap(); };
+  cv.addEventListener("pointerdown", e => { cv.setPointerCapture(e.pointerId); P.set(e.pointerId, pt(e)); moved = 0; last = null; });
+  cv.addEventListener("pointermove", e => { if (!P.has(e.pointerId)) return; const p = pt(e), o = P.get(e.pointerId);
+    if (P.size === 1) { MAP.ox += p.x - o.x; MAP.oy += p.y - o.y; moved += Math.abs(p.x - o.x) + Math.abs(p.y - o.y); P.set(e.pointerId, p); drawMap(); }
+    else { P.set(e.pointerId, p); const [a, b] = [...P.values()], d = Math.hypot(a.x - b.x, a.y - b.y), cx = (a.x + b.x) / 2, cy = (a.y + b.y) / 2;
+      if (last) { zoomAt(cx, cy, d / last.d); MAP.ox += cx - last.cx; MAP.oy += cy - last.cy; drawMap(); } last = { d, cx, cy }; moved = 99; } });
+  const up = e => { const p = P.get(e.pointerId); P.delete(e.pointerId); last = null;
+    if (p && moved < 8 && P.size === 0) { const x = Math.floor((p.x - MAP.ox) / MAP.z), y = Math.floor((p.y - MAP.oy) / MAP.z); if (x >= 0 && y >= 0 && x < N && y < N) openPlot(x, y); } };
+  cv.addEventListener("pointerup", up); cv.addEventListener("pointercancel", e => { P.delete(e.pointerId); last = null; });
+  cv.addEventListener("wheel", e => { e.preventDefault(); const p = pt(e); zoomAt(p.x, p.y, e.deltaY < 0 ? 1.15 : 1 / 1.15); }, { passive: false });
+  $("zin").onclick = () => zoomAt(cv.width / 2, cv.height / 2, 1.4); $("zout").onclick = () => zoomAt(cv.width / 2, cv.height / 2, 1 / 1.4); $("zhome").onclick = () => { fitMap(); drawMap(); };
+})();
+
+// ---------- 下から出るカード ----------
+function sheet(html) { $("sheetBody").innerHTML = html; $("sheet").classList.add("on"); }
+$("sheetX").onclick = () => { $("sheet").classList.remove("on"); MAP.sel = null; drawMap(); };
+function openPlot(x, y) {
+  const tt = LAND[y * N + x], id = `${x}_${y}`, L = S.lands.get(id); MAP.sel = { x, y }; drawMap();
+  let h = `<h3 style="margin:0 0 6px">区画 ${x + 1}-${y + 1}（${TNAME[tt]}）</h3>`;
+  if (x === 50 && y === 50) h += `<p>🗿 建国記念碑の場所です。1〜10番の国民の名前がきざまれます。</p>`;
+  else if (!isBuyable(tt)) h += `<p class="note">${TNAME[tt]}なので、ここには住めません。</p>`;
+  else if (L) h += `<p>持ち主：<b>${esc(L.ownerName || ("国民No." + L.owner))}</b><br>${esc(L.building || "空き地")}</p>`;
+  else { h += `<p>空き地です。いまの値段：<b>${priceOf(tt, S.pop)}万円</b></p>`;
+    h += S.myNo ? `<button class="btn wide" id="plotReq">この区画を申しこむ</button><div class="small" id="plotMsg"></div>` : `<button class="btn wide" data-go="me">国民になって申しこむ</button>`; }
+  sheet(h);
+  const b = $("plotReq"); if (b) b.onclick = async () => { b.disabled = true; try { await sendReq("land", { x, y, terrain: TNAME[tt] }); $("plotMsg").innerHTML = `<span class="okm">申しこみました！毎日の更新で反映されます。</span>`; } catch (e) { $("plotMsg").innerHTML = `<span class="err">${esc(errText(e))}</span>`; b.disabled = false; } };
+}
+
+// ---------- 表示を作る ----------
+function badgesOf(c) { const b = []; if (c.no <= 10) b.push(`<span class="badge f">建国の父・母</span>`); if (c.no <= 100) b.push(`<span class="badge">建国メンバー</span>`); if (c.via === "ai") b.push(`<span class="badge">🤖</span>`); return b.join(""); }
+function czCard(c) { return `<div class="cz" data-no="${c.no}"><div class="ic" style="background:${esc(c.color || "#2F7FB5")}">${esc(c.icon || "🙂")}</div><div class="nm">${esc(c.name)}</div><div class="no">国民No.${c.no}・${yen(c.money)}</div>${badgesOf(c)}</div>`; }
+function renderTop() {
+  const p = S.pop; $("popNow").textContent = p + "人";
+  $("left50").textContent = Math.max(0, 50 - p); $("left100").textContent = Math.max(0, 100 - p);
+  const steps = [30, 100, 300, 1000], nx = steps.find(s => s > p) || 1000, prev = [0, ...steps][steps.indexOf(nx)] || 0;
+  $("nextBar").style.width = Math.min(100, (p - prev) / (nx - prev) * 100) + "%";
+  $("nextText").textContent = p < 30 ? `あと${30 - p}人で、地形ごとに土地の値段がつきます（海沿いは1,000万円に）` : `あと${nx - p}人で、土地がもっと値上がりします`;
+  $("priceNow").textContent = p < 30 ? "どこでも50万円" : "地形で変わる";
+  $("unlocks").innerHTML = [[0, "国民登録・土地（どこでも50万円）・お店・「〇〇で買う」"], [10, "最初の駅・人をやとう・はたらく"], [30, "株式会社・土地の値段が地形で変わる・銀行"], [100, "県・税金・投資（ゼロ証券取引所）・CM枠"], [300, "電車・法律の国民投票・選挙"], [1000, "海の向こうに…？"]]
+    .map(([n, t]) => `<div class="unlock ${p >= n ? "open" : ""}"><b>${n}人</b><span>${t}</span></div>`).join("");
+}
+function renderPeople() {
+  const q = $("pq").value.trim(); const list = S.citizens.filter(c => !q || c.name.includes(q) || String(c.no) === q);
+  $("peopleGrid").innerHTML = list.map(czCard).join("");
+  $("peopleNote").textContent = S.citizens.length ? "" : "まだ国民はいません。No.1になるのはだれだ？";
+}
+$("pq").oninput = renderPeople;
+$("peopleGrid").onclick = e => { const c = e.target.closest(".cz"); if (c) openCitizen(+c.dataset.no); };
+function openCitizen(no) { const c = S.citizens.find(v => v.no === no); if (!c) return;
+  const lands = [...S.lands.values()].filter(l => l.owner === no), shops = S.shops.filter(s => s.owner === no);
+  sheet(`<div class="row" style="align-items:center"><div style="flex:0 0 56px" class="cz"><div class="ic" style="background:${esc(c.color)}">${esc(c.icon || "🙂")}</div></div><div><h3 style="margin:0">${esc(c.name)}</h3><div class="note">国民No.${c.no}</div>${badgesOf(c)}</div></div>
+  <p>${esc(c.bio || "")}</p><p>持っているお金：<b>${yen(c.money)}</b><br>土地：${lands.length}区画<br>お店：${shops.map(s => esc(s.name)).join("、") || "なし"}</p>`); }
+function renderShops() {
+  $("shopGrid").innerHTML = S.shops.map(s => `<div class="cz" data-id="${esc(s.id)}"><div class="ic" style="background:${esc(s.color || "#E8A317")}">${esc(s.emoji || "🏪")}</div><div class="nm">${esc(s.name)}</div><div class="no">${esc(s.catch || s.what || "")}</div>${s.official ? '<span class="badge">運営の会社</span>' : ""}</div>`).join("") || "";
+}
+$("shopGrid").onclick = e => { const c = e.target.closest(".cz"); if (c) openShop(c.dataset.id); };
+function openShop(id) { const s = S.shops.find(v => v.id === id); if (!s) return; const owner = S.citizens.find(c => c.no === s.owner);
+  sheet(`<h3 style="margin:0">${esc(s.emoji || "🏪")} ${esc(s.name)}</h3><div class="note">社長：${esc(owner ? owner.name : "国民No." + s.owner)}${s.official ? "（運営の会社）" : ""}</div>
+  <p>${esc(s.catch || "")}</p><p class="small">${esc(s.desc || s.what || "")}</p>
+  ${(s.items || []).map(it => `<div class="rank"><span>${esc(it.name)}</span><span class="v">${yen(it.price)}</span></div>`).join("")}
+  <p class="small">売上：${yen(s.sales || 0)}</p>
+  <button class="btn wide" id="buyBtn">${S.myNo ? "このお店で買う（1日1回）" : "コメント「" + esc(s.name) + "で買う」をコピー"}</button><div class="small" id="buyMsg"></div>`);
+  $("buyBtn").onclick = async () => { const m = $("buyMsg");
+    if (!S.myNo) { try { await navigator.clipboard.writeText(`${s.name}で買う`); m.innerHTML = `<span class="okm">コピーしました！動画のコメントにはってね</span>`; } catch { m.textContent = `「${s.name}で買う」とコメントしてね`; } return; }
+    try { const d = todayJST(); await setDoc(doc(db, "buys", `${S.myNo}_${d}`), { no: S.myNo, shop: s.id, day: d, at: serverTimestamp() }); m.innerHTML = `<span class="okm">買いました！売上は毎日の更新で入ります</span>`; }
+    catch (e) { m.innerHTML = `<span class="err">今日はもう買いました（1日1回）</span>`; } };
+}
+function renderRank() {
+  const top = [...S.citizens].sort((a, b) => (b.money || 0) - (a.money || 0)).slice(0, 10);
+  $("rankMoney").innerHTML = top.map((c, i) => `<div class="rank"><span class="r">${i + 1}</span><span>${esc(c.icon || "🙂")} ${esc(c.name)} <span class="note">No.${c.no}</span></span><span class="v">${yen(c.money)}</span></div>`).join("") || `<div class="note">まだだれもいません</div>`;
+}
+
+// ---------- Firebase ----------
+let app, auth, db;
+try { app = initializeApp(firebaseConfig); auth = getAuth(app); db = getFirestore(app); } catch (e) { console.warn(e); }
+const errText = (e) => { const c = (e && e.code) || ""; if (c.includes("permission")) return "できませんでした（合言葉がちがうか、ルールに合っていません）"; if (c.includes("unavailable") || c.includes("network")) return "通信できませんでした。電波のよいところでもう一度"; return (e && e.message) || "エラーが起きました"; };
+async function hashPass(no, pass) { const b = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(`zerokara:${no}:${pass}`)); return [...new Uint8Array(b)].map(x => x.toString(16).padStart(2, "0")).join(""); }
+async function sendReq(type, payload) { if (!S.myNo) throw new Error("先に国民登録してね"); await addDoc(collection(db, "requests"), { no: S.myNo, type, payload, at: serverTimestamp(), status: "new" }); loadMyReqs(); }
+
+function listen() {
+  onSnapshot(doc(db, "meta", "counter"), s => { S.pop = Math.max(0, ((s.data() || {}).next || 1) - 1); renderTop(); });
+  onSnapshot(query(collection(db, "citizens"), orderBy("no"), limit(500)), q => { S.citizens = q.docs.map(d => d.data()); renderPeople(); renderRank(); renderMe(); });
+  onSnapshot(collection(db, "shops"), q => { S.shops = q.docs.map(d => ({ id: d.id, ...d.data() })); renderShops(); });
+  onSnapshot(collection(db, "lands"), q => { S.lands = new Map(q.docs.map(d => [d.id, d.data()])); if ($("s-map").classList.contains("on")) drawMap(); });
+  onSnapshot(query(collection(db, "news"), orderBy("at", "desc"), limit(10)), q => { if (!q.empty) $("newsList").innerHTML = q.docs.map(d => { const n = d.data(); const t = n.at && n.at.toDate ? n.at.toDate() : null; return `<div class="news"><time>${t ? (t.getMonth() + 1) + "/" + t.getDate() : ""}</time>${esc(n.text)}</div>`; }).join(""); }, () => {});
+  onSnapshot(query(collection(db, "history"), orderBy("at"), limit(50)), q => { if (!q.empty) $("historyList").innerHTML = q.docs.map(d => `<div class="news">🏁 ${esc(d.data().text)}</div>`).join(""); }, () => {});
+}
+async function checkLink(user) {
+  try { const l = await getDoc(doc(db, "links", user.uid)); S.myNo = l.exists() ? l.data().no : null; } catch { S.myNo = null; }
+  renderMe(); if (S.myNo) loadMyReqs();
+}
+function renderMe() {
+  const me = S.myNo ? S.citizens.find(c => c.no === S.myNo) : null;
+  $("meOut").style.display = S.myNo ? "none" : ""; $("meIn").style.display = S.myNo ? "" : "none";
+  $("meChip").textContent = S.myNo ? `国民No.${S.myNo}` : "国民になる";
+  if (!me) return;
+  $("myCard").innerHTML = `<div class="row" style="align-items:center"><div style="flex:0 0 60px"><div class="ic" style="width:56px;height:56px;border-radius:50%;display:grid;place-items:center;font-size:30px;background:${esc(me.color)}">${esc(me.icon || "🙂")}</div></div>
+    <div><div class="big" style="font-size:22px">${esc(me.name)}</div><div class="note">国民No.${me.no}</div>${badgesOf(me)}</div></div>
+    <p style="margin:10px 0 0">持っているお金：<b class="big" style="font-size:22px">${yen(me.money)}</b></p><p class="note">※国の中だけのお金です</p>`;
+  if (document.activeElement !== $("eBio")) $("eBio").value = me.bio || "";
+  if (document.activeElement !== $("eIcon")) $("eIcon").value = me.icon || "";
+  $("eColors").innerHTML = COLORS.map(c => `<button style="background:${c}" data-c="${c}" class="${c === me.color ? "on" : ""}"></button>`).join("");
+}
+$("eColors").onclick = e => { const b = e.target.closest("button"); if (!b) return; $("eColors").querySelectorAll("button").forEach(x => x.classList.toggle("on", x === b)); };
+async function loadMyReqs() {
+  if (!S.myNo) return;
+  try { const q = await getDocs(query(collection(db, "requests"), where("no", "==", S.myNo), limit(20)));
+    const L = { land: "土地", shop: "お店", hire: "やとう", job: "はたらく", other: "その他" }, ST = { new: "確認待ち", done: "反映ずみ", ng: "だめでした" };
+    const rows = q.docs.map(d => d.data()).sort((a, b) => (b.at?.seconds || 0) - (a.at?.seconds || 0));
+    $("myReqs").innerHTML = rows.map(r => `<div class="rank"><span>${L[r.type] || r.type}：${esc(r.payload.name || r.payload.terrain || "")}${r.payload.x != null ? `（${r.payload.x + 1}-${r.payload.y + 1}）` : ""}</span><span class="v small">${ST[r.status] || r.status}</span></div>`).join("") || `<div class="note">まだありません</div>`;
+  } catch (e) { $("myReqs").innerHTML = `<div class="note">読みこめませんでした</div>`; }
+}
+
+// 国民登録
+$("rGo").onclick = async () => {
+  const name = $("rName").value.trim(), pass = $("rPass").value, E = $("rErr"); E.textContent = "";
+  if (!name) return E.textContent = "国民名を入れてね"; if (name.length > 12) return E.textContent = "国民名は12文字まで";
+  if (hasNG(name)) return E.textContent = "その名前は使えません"; if (pass.length < 4) return E.textContent = "合言葉は4文字以上にしてね";
+  if (!auth.currentUser) return E.textContent = "通信の準備中です。少し待ってもう一度";
+  $("rGo").disabled = true;
+  try {
+    const uid = auth.currentUser.uid; let got = 0;
+    await runTransaction(db, async tx => {
+      const cs = await tx.get(doc(db, "meta", "counter")); const no = cs.data().next; const h = await hashPass(no, pass);
+      tx.set(doc(db, "citizens", String(no)), { no, name, bio: "", color: COLORS[no % COLORS.length], icon: "🙂", money: no <= 50 ? 3000000 : 1000000, joinedAt: serverTimestamp(), via: "site" });
+      tx.set(doc(db, "secrets", String(no)), { h });
+      tx.set(doc(db, "links", uid), { no, h });
+      tx.update(doc(db, "meta", "counter"), { next: no + 1 });
+      got = no;
+    });
+    S.myNo = got; try { localStorage.setItem("zk_no", String(got)); } catch {}
+    renderMe(); showTab("me");
+    sheet(`<div style="text-align:center">${owlSVG(90)}<h3>ようこそ、国民No.${got}！</h3><p>${got <= 50 ? "先着50人なので<b>300万円スタート</b>じゃ！" : "100万円スタートじゃ！"}<br>${got <= 10 ? "建国の父・母として、記念碑に名前がきざまれるぞ。" : ""}</p><p class="small"><b>国民番号 ${got}</b> と合言葉は、メモしておいてね（別のスマホでログインするときに使います）。</p><button class="btn wide" data-go="map" onclick="document.getElementById('sheet').classList.remove('on')">土地をえらびに行く</button></div>`);
+  } catch (e) { E.textContent = errText(e); }
+  $("rGo").disabled = false;
+};
+// ログイン（別のスマホ）
+$("lGo").onclick = async () => {
+  const no = parseInt($("lNo").value, 10), pass = $("lPass").value, E = $("lErr"); E.textContent = "";
+  if (!no || !pass) return E.textContent = "国民番号と合言葉を入れてね";
+  $("lGo").disabled = true;
+  try { const h = await hashPass(no, pass); await setDoc(doc(db, "links", auth.currentUser.uid), { no, h }); S.myNo = no; try { localStorage.setItem("zk_no", String(no)); } catch {} renderMe(); loadMyReqs(); }
+  catch (e) { E.textContent = "国民番号か合言葉がちがいます"; }
+  $("lGo").disabled = false;
+};
+$("logout").onclick = async () => { if (!confirm("このスマホからログアウトしますか？")) return; try { await deleteDoc(doc(db, "links", auth.currentUser.uid)); } catch {} S.myNo = null; try { localStorage.removeItem("zk_no"); } catch {} renderMe(); };
+// プロフィール保存
+$("eGo").onclick = async () => {
+  const bio = $("eBio").value.trim(), icon = [...$("eIcon").value.trim()].slice(0, 2).join("") || "🙂", color = ($("eColors").querySelector(".on") || {}).dataset?.c || COLORS[0], M = $("eMsg");
+  if (hasNG(bio)) return M.innerHTML = `<span class="err">使えない言葉が入っています</span>`;
+  try { await updateDoc(doc(db, "citizens", String(S.myNo)), { bio, icon, color }); M.innerHTML = `<span class="okm">保存しました</span>`; } catch (e) { M.innerHTML = `<span class="err">${esc(errText(e))}</span>`; }
+};
+// 申しこみ
+$("qLandGo").onclick = async () => { const t = $("qLand").value, M = $("qMsg"); if (!t) return M.innerHTML = `<span class="err">地形をえらんでね</span>`;
+  try { await sendReq("land", { terrain: t }); M.innerHTML = `<span class="okm">土地（${esc(t)}）を申しこみました！</span>`; } catch (e) { M.innerHTML = `<span class="err">${esc(errText(e))}</span>`; } };
+$("qShopGo").onclick = async () => { const n = $("qShop").value.trim(), w = $("qShopWhat").value.trim(), M = $("qMsg");
+  if (!n) return M.innerHTML = `<span class="err">お店の名前を入れてね</span>`; if (hasNG(n + w)) return M.innerHTML = `<span class="err">使えない言葉が入っています</span>`;
+  try { await sendReq("shop", { name: n, what: w }); M.innerHTML = `<span class="okm">お店「${esc(n)}」を申しこみました！</span>`; $("qShop").value = ""; $("qShopWhat").value = ""; } catch (e) { M.innerHTML = `<span class="err">${esc(errText(e))}</span>`; } };
+// ログインボーナス
+$("bonusBtn").onclick = async () => { const d = todayJST(), M = $("bonusMsg");
+  try { await setDoc(doc(db, "bonus", `${S.myNo}_${d}`), { no: S.myNo, day: d, at: serverTimestamp() }); M.innerHTML = `<span class="okm">今日のボーナス1,000円ゲット！（毎日の更新で入ります）</span>`; }
+  catch (e) { M.innerHTML = `<span class="note">今日はもうもらいました。また明日！</span>`; } };
+
+if (auth) {
+  onAuthStateChanged(auth, u => { if (u) checkLink(u); });
+  signInAnonymously(auth).catch(e => console.warn("auth", e));
+  try { listen(); } catch (e) { console.warn(e); }
+}
+
+// ---------- Safariなどのおすすめ ----------
+(() => { const ua = navigator.userAgent; const inApp = /Instagram|FBAN|FBAV|Line\/|YouTube|GSA\//i.test(ua);
+  let shown = false; try { shown = localStorage.getItem("zk_tip") === "1"; } catch {}
+  const standalone = matchMedia("(display-mode: standalone)").matches || navigator.standalone;
+  if (shown || standalone) return;
+  if (inApp) $("tipText").innerHTML = "💡 SafariやChromeで開くと、次から自動でログインできて便利だよ！<br>右上の「…」→「ブラウザで開く」";
+  else if (/iPhone|iPad|Android/i.test(ua)) $("tipText").innerHTML = "📱 ホーム画面に追加すると、アプリみたいにすぐ開けるよ！<br>共有ボタン →「ホーム画面に追加」";
+  else return;
+  $("tip").classList.add("on"); $("tipX").onclick = () => { $("tip").classList.remove("on"); try { localStorage.setItem("zk_tip", "1"); } catch {} };
+})();
+
+renderTop(); renderPeople(); renderRank(); renderShops();
+const h = location.hash.slice(1); if (["top", "map", "people", "shops", "rank", "rules", "me"].includes(h)) showTab(h);
+</script>
+</body>
+</html>
