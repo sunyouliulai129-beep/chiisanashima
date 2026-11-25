@@ -120,7 +120,7 @@
    [
     "A",
     "小屋",
-    7
+    9
    ],
    [
     "B",
@@ -130,7 +130,7 @@
    [
     "C",
     "魚屋さん",
-    3
+    4
    ]
   ],
   "note": "YouTubeとインスタの合計"
@@ -237,6 +237,18 @@
    "by": "ren_05",
    "text": "探検家のリーダーをしたい",
    "status": "候補"
+  },
+  {
+   "day": 2,
+   "by": "jennfer_3112",
+   "text": "料理人をやりたい",
+   "status": "候補"
+  },
+  {
+   "day": 2,
+   "by": "horse.6315152",
+   "text": "みんなのまとめ役になりたい",
+   "status": "候補"
   }
  ],
  "timeline": [
@@ -309,18 +321,20 @@
    "id": "horse.6315152",
    "platform": "ig",
    "name": "horse.6315152",
-   "points": 2,
-   "level": 1,
+   "points": 4,
+   "level": 2,
    "job": "みんなの意見を書いた看板を作っている",
    "wish": "島のまとめ役になりたい",
    "history": [
     "1日目：投票B",
-    "1日目：アイデア「島のまとめ役になりたい」"
+    "1日目：アイデア「島のまとめ役になりたい」",
+    "2日目：投票A",
+    "2日目：アイデア「みんなのまとめ役になりたい」"
    ],
    "since_day": 1,
    "work": null,
    "work_days": 0,
-   "coins": 2,
+   "coins": 4,
    "icon": "fish",
    "frame": "wood",
    "owned": [],
@@ -709,17 +723,19 @@
    "id": "jennfer_3112",
    "platform": "ig",
    "name": "jennfer_3112",
-   "points": 1,
-   "level": 1,
+   "points": 3,
+   "level": 2,
    "job": "浜辺でつり場をさがしている",
-   "wish": null,
+   "wish": "料理人をやりたい",
    "history": [
-    "1日目：投票B"
+    "1日目：投票B",
+    "2日目：投票A",
+    "2日目：アイデア「料理人をやりたい」"
    ],
    "since_day": 1,
    "work": null,
    "work_days": 0,
-   "coins": 1,
+   "coins": 3,
    "icon": "fish",
    "frame": "wood",
    "owned": [],
@@ -1195,6 +1211,27 @@
    "owned": [],
    "appeared": 0,
    "rewarded_level": 0
+  },
+  {
+   "id": "@Afrika-like",
+   "platform": "yt",
+   "name": "Afrika-like",
+   "points": 1,
+   "level": 1,
+   "job": "魚屋さんの店先をそうじしている",
+   "wish": null,
+   "history": [
+    "2日目：投票C"
+   ],
+   "since_day": 3,
+   "work": null,
+   "work_days": 0,
+   "coins": 1,
+   "icon": "palm",
+   "frame": "wood",
+   "owned": [],
+   "appeared": 0,
+   "rewarded_level": 0
   }
  ],
  "links": {
@@ -1389,6 +1426,6 @@
   "every": 5,
   "rule": "Lv5ごとに、そのレベルと同じ数のコイン（Lv5→5枚、Lv10→10枚…Lv100→100枚）"
  },
- "last_sync": "2026-11-25 20:56",
+ "last_sync": "2026-11-25 21:58",
  "events_rule": "YouTubeのチャンネル登録者だけで数える。節目と名前は events.js（20,30,50,70,100,150,200,300,500,700,1000…と終わりなし）"
 }
