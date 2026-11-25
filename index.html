@@ -30,7 +30,7 @@ header.top{background:linear-gradient(var(--sea2),var(--sea));color:#fff;padding
 .sign small{display:block;font-size:14px;opacity:.95}
 .stats{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin:16px 0 0}
 .stat{background:rgba(255,255,255,.14);border-radius:14px;padding:10px 12px}
-.stat b{display:block;font-size:clamp(24px,5vw,38px);line-height:1.1;font-weight:800;white-space:nowrap}
+.stat b{display:block;font-size:clamp(20px,5vw,38px);line-height:1.15;font-weight:800;overflow-wrap:anywhere}
 .stat span{font-size:13px;opacity:.92}
 .bar{height:12px;border-radius:6px;background:rgba(0,0,0,.25);overflow:hidden;margin-top:6px}
 .bar i{display:block;height:100%;background:var(--or);border-radius:6px}
@@ -116,6 +116,37 @@ footer a{color:#ffd29a}
 .evl{list-style:none;margin:6px 0;padding:0}.evl li{display:grid;grid-template-columns:6.5em 1fr auto;gap:8px;align-items:center;padding:8px 10px;border-radius:10px;margin:4px 0;background:var(--sand2)}.evl li b{font-variant-numeric:tabular-nums}.evl li i{font-style:normal;font-weight:800;color:var(--or)}.evl li.done{opacity:.55}.evl li.done i{color:#2b9a4a}.evl li.now{background:light-dark(#fff1dc,#3a2a14);outline:2px solid var(--or)}.evl li.more{background:none}
 .linkbox{margin-top:10px;background:light-dark(#eef4ff,#1c2433);border:2px dashed #5b7cfa;border-radius:14px;padding:10px 12px}
 @media(max-width:600px){.stats{grid-template-columns:repeat(3,minmax(0,1fr));gap:6px}.stat{padding:8px}.stat span{font-size:12px}.pcard{grid-template-columns:1fr}.vote .row{grid-template-columns:2.2em minmax(0,5em) minmax(0,1fr) 2.6em}.hide-sm{display:none}}
+/* tabs + new top page */
+nav.tabs{position:sticky;top:0;z-index:30;background:var(--wood);border-bottom:5px solid var(--wood2);box-shadow:0 4px 0 rgba(0,0,0,.12)}
+nav.tabs .wrap{display:flex;gap:6px;overflow-x:auto;padding-top:8px;padding-bottom:8px;scrollbar-width:none}
+nav.tabs a{flex:none;text-decoration:none;color:#fff;font-weight:800;font-size:15px;padding:8px 14px;border-radius:999px;text-shadow:0 1px 0 var(--wood2);white-space:nowrap}
+nav.tabs a[aria-current=page]{background:#fff;color:var(--wood2);text-shadow:none}
+[data-tab][hidden]{display:none!important}
+.hero{display:grid;grid-template-columns:minmax(0,1.2fr) minmax(0,1fr);gap:16px;align-items:center}
+.hero h2{font-size:clamp(26px,5vw,40px)}
+.hero .big{font-size:clamp(17px,2.4vw,20px);margin:0 0 12px}
+.hero .cta{display:flex;flex-wrap:wrap;gap:8px}
+.btnL{display:inline-flex;align-items:center;min-height:46px;padding:0 18px;border-radius:14px;font-weight:800;text-decoration:none;border:0;cursor:pointer;font:inherit;font-weight:800}
+.btnL.or{background:var(--or);color:#fff}.btnL.wh{background:light-dark(#fff,#24333d);color:var(--ink);border:3px solid var(--sand2)}
+.guide{display:flex;gap:12px;align-items:flex-start}
+.guide svg{flex:none;width:86px;height:86px}
+.guide .say{position:relative;background:light-dark(#fff,#24333d);border:3px solid var(--sand2);border-radius:16px;padding:10px 14px}
+.guide .say:before{content:"";position:absolute;left:-12px;top:24px;border:9px solid transparent;border-right-color:var(--sand2)}
+.ladder{display:grid;grid-template-columns:repeat(8,minmax(0,1fr));gap:6px;margin:10px 0 8px}
+.ladder div{text-align:center;padding:10px 2px;border-radius:12px;background:light-dark(#eef5f9,#1b2a33);font-size:13px;font-weight:800;color:var(--soft);line-height:1.25}
+.ladder div i{display:block;font-style:normal;font-size:22px;margin-bottom:2px}
+.ladder div.on{background:var(--or);color:#fff}.ladder div.done{background:light-dark(#ffe2c9,#4a3424);color:var(--ink)}
+.ladder small{display:block;font-size:11px;font-weight:700;opacity:.85}
+.today{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
+.today .card b.k{display:block;font-size:13px;color:var(--soft)}
+.today .card .v{font-size:18px;font-weight:800;line-height:1.35}
+.go{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
+.go a{display:block;text-decoration:none;color:var(--ink);background:light-dark(#fff,#24333d);border:3px solid var(--sand2);border-radius:18px;padding:14px;box-shadow:0 4px 0 var(--sand2);transition:transform .12s}
+.go a:hover{transform:translateY(-2px)}.go a b{display:block;font-size:18px}.go a span{color:var(--soft);font-size:14px}
+.go a i{font-style:normal;font-size:26px}
+.join ol{margin:6px 0 0;padding-left:22px}.join li{margin:4px 0}
+.pill{display:inline-block;background:var(--or);color:#fff;border-radius:999px;padding:2px 10px;font-size:13px;font-weight:800}
+@media(max-width:700px){.hero,.today,.go{grid-template-columns:1fr}.ladder{grid-template-columns:repeat(4,minmax(0,1fr))}}
 @media(prefers-reduced-motion:reduce){*{transition:none!important}}
 </style>
 </head>
@@ -128,6 +159,52 @@ footer a{color:#ffd29a}
    <div class="stat"><span>島民（YouTube＋インスタ）</span><b id="sPop">–</b></div>
    <div class="stat"><span id="sEvName">次のイベントまで</span><b id="sNext">–</b><div class="bar"><i id="sBar" style="width:0"></i></div></div>
   </div>
+ </div>
+</header>
+<nav class="tabs" aria-label="島のページ"><div class="wrap">
+ <a href="#top" data-go="top">トップ</a><a href="#map" data-go="map">島を見る</a><a href="#people" data-go="people">島民</a><a href="#vote" data-go="vote">投票と記録</a><a href="#events" data-go="events">イベント</a><a href="#guide" data-go="guide">はじめての方へ</a>
+</div></nav>
+<main>
+ <div class="wrap">
+  <section data-tab="top" id="hero">
+   <div class="hero">
+    <div>
+     <h2>コメントすると、<em>この島の島民になる。</em></h2>
+     <p class="big">何もない小さな島に、ひとりの男が流れ着いた。何を作るか、どこへ行くかは、動画を見たみんなのコメントで決まる。目指すのは、島から「世界」まで。</p>
+     <div class="cta"><a class="btnL or" href="#guide" data-go="guide">島民になる方法</a><a class="btnL wh" href="#map" data-go="map">島を見に行く</a></div>
+    </div>
+    <div class="guide">
+     <svg viewBox="0 0 100 100" aria-hidden="true"><ellipse cx="50" cy="88" rx="30" ry="6" fill="rgba(0,0,0,.15)"/><path d="M22 70 Q20 40 50 34 Q80 40 78 70 Z" fill="#E8833A"/><path d="M30 66 Q50 44 70 66" fill="none" stroke="#B8562A" stroke-width="4"/><path d="M38 60 Q50 50 62 60" fill="none" stroke="#B8562A" stroke-width="3"/><rect x="34" y="68" width="32" height="14" rx="7" fill="#F6CFA8"/><circle cx="40" cy="26" r="6" fill="#fff"/><circle cx="60" cy="26" r="6" fill="#fff"/><circle cx="41" cy="27" r="3" fill="#222"/><circle cx="59" cy="27" r="3" fill="#222"/><path d="M40 32 L42 40 M60 32 L58 40" stroke="#F6CFA8" stroke-width="4"/><path d="M18 74 Q8 70 10 60 M82 74 Q92 70 90 60" stroke="#E8833A" stroke-width="6" fill="none" stroke-linecap="round"/></svg>
+     <div class="say"><b>案内役のヤドカリ「カリン」</b><br><span id="karin">ようこそ！ この島は、きみのコメントで動いているよ。</span></div>
+    </div>
+   </div>
+  </section>
+  <section data-tab="top" id="rank">
+   <h2>島の<em>ランク</em></h2>
+   <p class="lead">島民（YouTube登録者＋インスタのフォロワー）がふえると、島のランクが上がる。最後は「世界」へ。</p>
+   <div class="card"><div class="ladder" id="ladder"></div><p style="margin:0" id="ladderNote"></p></div>
+  </section>
+  <section data-tab="top" id="today">
+   <h2>今日の<em>島</em></h2>
+   <div class="today">
+    <div class="card"><b class="k">いま起きていること</b><div class="v" id="tNow">–</div></div>
+    <div class="card"><b class="k">いま決めていること</b><div class="v" id="tQ">–</div><a href="#vote" data-go="vote" style="font-size:14px">途中経過を見る</a></div>
+    <div class="card"><b class="k">島民のようす</b><div class="v" id="tJob">–</div><a href="#map" data-go="map" style="font-size:14px">島で見る</a></div>
+   </div>
+  </section>
+  <section data-tab="top" id="where">
+   <h2>どこから<em>見る？</em></h2>
+   <div class="go">
+    <a href="#map" data-go="map"><i>🏝️</i><b>島を見る</b><span>3Dの島を回して、自分の名前で島民をさがせる</span></a>
+    <a href="#people" data-go="people"><i>🪪</i><b>島民</b><span>島民カード・しごと・ランキング・アイコンのこうかん</span></a>
+    <a href="#vote" data-go="vote"><i>🗳️</i><b>投票と記録</b><span>今日のお題の途中経過、みんなのアイデア、島のあゆみ</span></a>
+    <a href="#events" data-go="events"><i>🎉</i><b>イベント</b><span>YouTube登録者が節目をこえると島で何かが起きる</span></a>
+    <a href="#guide" data-go="guide"><i>🧭</i><b>はじめての方へ</b><span>島民になる方法、ポイントとレベルのしくみ</span></a>
+    <a id="goYt" href="https://www.youtube.com/@chiisanashima_sekai"><i>▶️</i><b>毎日の動画</b><span>YouTubeとインスタで毎日更新</span></a>
+   </div>
+  </section>
+  <section data-tab="top map" id="map">
+   <h2 data-tab="map">島を<em>見る</em></h2>
   <div class="fig" id="fig" aria-label="島の3Dジオラマ。ドラッグで回せます。2本指で拡大できます">
    <canvas id="cv"></canvas>
    <form class="isle-find" id="isleFind"><input id="iq" type="search" autocomplete="off" placeholder="名前を入れると、島で何をしているか見られる" aria-label="島民の名前"><button type="submit">さがす</button></form>
@@ -136,11 +213,22 @@ footer a{color:#ffd29a}
    <div class="zoom"><button id="zin" aria-label="近づく">＋</button><button id="zout" aria-label="はなれる">－</button></div>
   </div>
   <div class="ytcta"><div><b>YouTubeチャンネルもよろしく！</b><br><span style="font-size:14px">毎日の島の動画はYouTubeでも見られます。登録しておくと、新しい回を見のがしません。</span></div><a id="ytSub" href="https://www.youtube.com/@chiisanashima_sekai?sub_confirmation=1">チャンネル登録</a></div>
- </div>
-</header>
-<main>
- <div class="wrap">
-  <section id="card">
+  </section>
+
+  <section data-tab="guide" id="join">
+   <h2>島民に<em>なろう</em></h2>
+   <div class="card join">
+    <p style="margin:0 0 6px"><span class="pill">かんたん3ステップ</span></p>
+    <ol>
+     <li>YouTube（@chiisanashima_sekai）かインスタ（@chiisanashima_sekai）で、毎日の動画を見る。</li>
+     <li>動画のお題に、コメントで「A」「B」「C」のどれかを書く。島でやりたいことのアイデアも書いてOK。</li>
+     <li>次の動画で、きみの名前が島民として登場するかも。島の上にも、きみの島民が立つよ。</li>
+    </ol>
+    <p style="margin:10px 0 0">しごとをえらぶなら、コメントに「しごと：木こり」のように書いてね（木こり・漁師・畑係・大工・探検家）。名前を出したくないときは「出たくない」と書けば外します。</p>
+   </div>
+  </section>
+
+  <section data-tab="people" id="card">
    <h2>あなたの<em>島民カード</em></h2>
    <p class="lead">YouTubeの名前かインスタのIDを入れると、レベル・ポイント・いま島でしていることがわかります。</p>
    <div class="card">
@@ -148,13 +236,13 @@ footer a{color:#ffd29a}
     <div id="cardOut" aria-live="polite"></div>
    </div>
   </section>
-  <section id="jobs">
+  <section data-tab="people" id="jobs">
    <h2>島での<em>しごと</em>をえらぼう</h2>
    <p class="lead">好きなしごとを1つえらんでね。しごとをえらんだ人は、動画にコメントするたびに「はたらいた」ことになって、ポイントがもらえます。みんなの働きで、島に物が集まって、島が育っていきます。</p>
    <div class="jobs" id="jobBox"></div>
    <p class="muted">えらび方：最新の動画のコメントに「しごと：木こり」のように書くだけ（YouTubeでもインスタでもOK）。いつでも変えられます。</p>
   </section>
-  <section id="shop">
+  <section data-tab="people" id="shop">
    <h2>コインで<em>アイコンをアンロック</em></h2>
    <p class="lead">ポイントがもらえるたびに、同じ数のコインももらえます。コインでアイコンやわくを手に入れて、自分の島民カードをかざろう。コインは使っても、ポイントとレベルは減りません。</p>
    <div class="card"><div class="shopbar" id="shopBar">上の「島民カード」で自分をさがすと、ここでこうかんできます。</div><div id="tradeBox" aria-live="polite"></div><b>アイコン</b><div class="shop" id="shopIcons"></div><b>わく</b><div class="shop" id="shopFrames"></div>
@@ -169,21 +257,21 @@ footer a{color:#ffd29a}
      <p class="muted">なんで安全なの？…「とうろく」のコメントは本人のアカウントからしか送れないし、番号を見てもあいことばはわかりません。だから、ほかの人があなたのカードでこうかんすることはできません。あいことばはだれにも教えないでね。わすれたら、同じやり方で作りなおせます。</p>
      <p class="muted">こうかんのやり方：あいことばでひらく → ほしいものの「こうかんする」→ 出てきた「こうかん：○○」の文を最新の動画にコメント。押したらすぐ自分の画面が変わって、次の更新で正式にこうかんされます。</p></div></div>
   </section>
-  <section id="vote">
+  <section data-tab="vote" id="vote">
    <h2>今日のお題の<em>途中経過</em></h2>
    <div class="card vote" id="voteBox"></div>
   </section>
-  <section id="ranking">
+  <section data-tab="people" id="ranking">
    <h2>島民<em>ランキング</em></h2>
    <p class="lead" id="rankLead"></p>
    <div class="card scroll"><table><thead><tr><th>順位</th><th>島民</th><th class="hide-sm">いましていること</th><th class="r">レベル</th><th class="r">ポイント</th></tr></thead><tbody id="rankBody"></tbody></table></div>
   </section>
-  <section id="ideas">
+  <section data-tab="vote" id="ideas">
    <h2>みんなの<em>アイデア</em></h2>
    <p class="lead">「島でこれをやりたい」「こんな島民になりたい」をコメントで送ってね。毎回いくつか採用して、本当に動画にします。採用はレベルに関係なし。</p>
    <div class="ideas" id="ideaBox"></div>
   </section>
-  <section id="rules">
+  <section data-tab="guide" id="rules">
    <h2>ポイントと<em>レベル</em></h2>
    <div class="rules">
     <div class="card"><b>ポイントのもらい方</b>
@@ -211,13 +299,13 @@ footer a{color:#ffd29a}
     </div>
    </div>
   </section>
-  <section id="events">
+  <section data-tab="events" id="events">
    <h2>登録者でおこる<em>イベント</em></h2>
    <p class="lead">YouTubeのチャンネル登録者が節目の人数をこえると、島でイベントがおこって、その回の動画になります。終わりはありません。</p>
    <div class="card"><p class="muted" id="evNow"></p><ol class="evl" id="evBox"></ol>
     <p style="margin:8px 0 0"><a class="btn" href="https://www.youtube.com/@chiisanashima_sekai?sub_confirmation=1">YouTubeでチャンネル登録</a></p></div>
   </section>
-  <section id="history">
+  <section data-tab="vote" id="history">
    <h2>これまでの<em>島</em></h2>
    <div class="card"><ul id="tl" style="margin:0;padding-left:20px"></ul></div>
   </section>
@@ -296,7 +384,7 @@ function linkBox(r){
  const url=r.platform==='yt'?D.links.instagram:D.links.youtube;
  return '<div class="linkbox">'+head+'<div class="msg">'+esc(msg)+'</div><div class="row2"><button class="btn" data-link="'+esc(msg)+'" data-url="'+esc(url)+'">コピーして'+other+'をひらく</button></div></div>';
 }
-$('cardOut').addEventListener('click',e=>{const sb=e.target.closest('button[data-see]');if(sb){const r=D.residents.find(x=>x.id===sb.dataset.see);if(r&&window.CS_FOCUS&&CS_FOCUS(r))$('fig').scrollIntoView({behavior:'smooth',block:'center'});return}const b=e.target.closest('button[data-link]');if(!b)return;const go=()=>{location.href=b.dataset.url};(navigator.clipboard?navigator.clipboard.writeText(b.dataset.link):Promise.reject()).then(go,()=>{b.textContent='文を長おしでコピーしてから、ひらいてね'})});
+$('cardOut').addEventListener('click',e=>{const sb=e.target.closest('button[data-see]');if(sb){const r=D.residents.find(x=>x.id===sb.dataset.see);if(r&&window.CS_FOCUS){showTab('map');setTimeout(()=>{CS_FOCUS(r);$('fig').scrollIntoView({behavior:'smooth',block:'center'})},60)}return}const b=e.target.closest('button[data-link]');if(!b)return;const go=()=>{location.href=b.dataset.url};(navigator.clipboard?navigator.clipboard.writeText(b.dataset.link):Promise.reject()).then(go,()=>{b.textContent='文を長おしでコピーしてから、ひらいてね'})});
 $('jobBox').addEventListener('click',e=>{const b=e.target.closest('button[data-c]');if(!b)return;const t=b.dataset.c;navigator.clipboard?.writeText(t).then(()=>{b.textContent='コピーしました：'+t},()=>{b.textContent='「'+t+'」と書いてね'}).catch(()=>{b.textContent='「'+t+'」と書いてね'})});
 $('findForm').addEventListener('submit',e=>{e.preventDefault();find($('q').value)});
 
@@ -458,7 +546,25 @@ $('isleFind').addEventListener('submit',e=>{e.preventDefault();const v=$('iq').v
 
 const ro=new ResizeObserver(()=>{if(W0)req(false)});ro.observe(fig);
 
-function start(data){D=data;render();W0=buildWorld();req(false)}
+const LAD=[['🏝️','無人島',0],['⛺','キャンプ',10],['🛖','集落',30],['🏘️','村',100],['🏙️','町',300],['🌆','都市',1000],['🗺️','国',3000],['🌏','世界',10000]];
+function renderTop(){const pop=(D.islanders.youtube||0)+(D.islanders.instagram||0);let cur=0;LAD.forEach((l,i)=>{if(pop>=l[2])cur=i});
+ $('ladder').innerHTML=LAD.map((l,i)=>'<div class="'+(i===cur?'on':i<cur?'done':'')+'"><i>'+l[0]+'</i>'+l[1]+'<small>'+l[2].toLocaleString()+'人</small></div>').join('');
+ const nx=LAD[cur+1];$('ladderNote').innerHTML='いまは<b>「'+LAD[cur][1]+'」</b>（島民 '+pop+'人）。'+(nx?'あと<b>'+(nx[2]-pop)+'人</b>で「'+nx[1]+'」になる。':'ついに世界へ！');
+ const tl=D.timeline||[];const last=tl[tl.length-1];$('tNow').textContent=last?(last.day+'日目：'+last.text):'島のはじまり';
+ const q=D.question;if(q){const tot=q.choices.reduce((a,c)=>a+(c[2]||0),0);const top=[...q.choices].sort((a,b)=>(b[2]||0)-(a[2]||0))[0];$('tQ').textContent=q.text+(tot?'（いまは '+top[0]+' '+top[1]+' がリード）':'')}
+ const busy=D.residents.filter(r=>r.job).slice(-60);const pick=busy.length?busy[(new Date().getHours()*7)%busy.length]:null;$('tJob').textContent=pick?pick.name+'さんは「'+pick.job+'」':'–';
+ const say=['ようこそ！ この島は、きみのコメントで動いているよ。','島の上の検索らんに名前を入れると、自分がなにしてるか見られるよ。','しごとをえらぶと、島でのすがたが変わるんだ。','YouTubeの登録者が節目をこえると、島でイベントが起きるよ。'];$('karin').textContent=say[new Date().getMinutes()%say.length];}
+const TABS=['top','map','people','vote','events','guide'];
+const SEC2TAB={card:'people',jobs:'people',shop:'people',ranking:'people',ideas:'vote',history:'vote',rules:'guide',join:'guide',hero:'top',rank:'top',today:'top',where:'top'};
+function showTab(t,scrollTo){if(!TABS.includes(t))t='top';document.querySelectorAll('[data-tab]').forEach(el=>{el.hidden=!el.dataset.tab.split(' ').includes(t)});
+ document.querySelectorAll('nav.tabs a').forEach(a=>a.setAttribute('aria-current',a.dataset.go===t?'page':'false'));
+ if(W0)setTimeout(()=>req(false),30);
+ if(scrollTo){const el=document.getElementById(scrollTo);el&&el.scrollIntoView({block:'start'})}else window.scrollTo({top:0});
+ if(location.hash!=='#'+t&&!scrollTo)history.replaceState(null,'','#'+t);}
+document.addEventListener('click',e=>{const a=e.target.closest('[data-go]');if(!a)return;e.preventDefault();showTab(a.dataset.go)});
+window.CS_TAB=showTab;
+const h0=location.hash.slice(1);showTab(TABS.includes(h0)?h0:(SEC2TAB[h0]||'top'),SEC2TAB[h0]?h0:null);
+function start(data){D=data;render();renderTop();W0=buildWorld();req(false)}
 fetch('data.json',{cache:'no-store'}).then(r=>r.json()).then(start).catch(()=>{if(window.CS_DATA)start(window.CS_DATA);else $('cardOut').textContent='データを読み込めませんでした。少しあとでもう一度ひらいてね。'});
 }
 </script>
