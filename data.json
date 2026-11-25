@@ -1041,18 +1041,25 @@
     "1日目（あそび方）：しごと「大工」",
     "2日目：大工で働いた",
     "2日目：投票A",
-    "2日目：とうろく"
+    "2日目：とうろく",
+    "2日目：YouTubeとつなぐ"
    ],
    "since_day": 2,
    "work": "大工",
    "work_days": 1,
-   "coins": 3,
+   "coins": 8,
    "icon": "shell",
    "frame": "wood",
-   "owned": [],
+   "owned": [
+    "bridge"
+   ],
    "appeared": 1,
    "rewarded_level": 0,
-   "code_reg": "3b2007"
+   "code_reg": "3b2007",
+   "linked": {
+    "platform": "yt",
+    "id": "@k1na5_0"
+   }
   },
   {
    "id": "rui2121212121",
@@ -1443,6 +1450,6 @@
   "every": 5,
   "rule": "Lv5ごとに、そのレベルと同じ数のコイン（Lv5→5枚、Lv10→10枚…Lv100→100枚）"
  },
- "last_sync": "2026-11-26 03:58",
+ "last_sync": "2026-11-26 08:55",
  "events_rule": "YouTubeのチャンネル登録者だけで数える。節目と名前は events.js（20,30,50,70,100,150,200,300,500,700,1000…と終わりなし）"
 }
