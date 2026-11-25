@@ -694,10 +694,11 @@
    "job": "岩場で魚のかげを見ている",
    "wish": null,
    "history": [
-    "1日目：投票B"
+    "1日目：投票B",
+    "1日目（まとめ#1）：しごと「漁師」"
    ],
    "since_day": 1,
-   "work": null,
+   "work": "漁師",
    "work_days": 0,
    "coins": 1,
    "icon": "palm",
@@ -715,10 +716,11 @@
    "job": "朝の鐘を鳴らして島のみんなを起こしている",
    "wish": "島のみんなに朝をお知らせしたい",
    "history": [
-    "1日目（あそび方）：アイデア「島のみんなに朝をお知らせする」"
+    "1日目（あそび方）：アイデア「島のみんなに朝をお知らせする」",
+    "1日目（まとめ#1）：しごと「畑係」"
    ],
    "since_day": 1,
-   "work": null,
+   "work": "畑係",
    "work_days": 0,
    "coins": 1,
    "icon": "shell",
@@ -830,6 +832,69 @@
    "work_days": 0,
    "coins": 1,
    "icon": "fish",
+   "frame": "wood",
+   "owned": [],
+   "appeared": 0,
+   "rewarded_level": 0
+  },
+  {
+   "id": "katorui1120",
+   "platform": "ig",
+   "name": "katorui1120",
+   "points": 0,
+   "level": 1,
+   "job": "島のまだ知らない場所を調べに出かけている",
+   "wish": null,
+   "history": [
+    "1日目（まとめ#1）：しごと「探検家」"
+   ],
+   "since_day": 1,
+   "work": "探検家",
+   "work_days": 0,
+   "coins": 0,
+   "icon": "shell",
+   "frame": "wood",
+   "owned": [],
+   "appeared": 0,
+   "rewarded_level": 0
+  },
+  {
+   "id": "hamu_2152",
+   "platform": "ig",
+   "name": "hamu_2152",
+   "points": 0,
+   "level": 1,
+   "job": "島のまだ知らない場所を調べに出かけている",
+   "wish": null,
+   "history": [
+    "1日目（まとめ#1）：しごと「探検家」"
+   ],
+   "since_day": 1,
+   "work": "探検家",
+   "work_days": 0,
+   "coins": 0,
+   "icon": "fish",
+   "frame": "wood",
+   "owned": [],
+   "appeared": 0,
+   "rewarded_level": 0
+  },
+  {
+   "id": "_koto1462",
+   "platform": "ig",
+   "name": "_koto1462",
+   "points": 0,
+   "level": 1,
+   "job": "木材で家や道具を作っている",
+   "wish": null,
+   "history": [
+    "1日目（まとめ#1）：しごと「大工」"
+   ],
+   "since_day": 1,
+   "work": "大工",
+   "work_days": 0,
+   "coins": 0,
+   "icon": "palm",
    "frame": "wood",
    "owned": [],
    "appeared": 0,
@@ -1028,6 +1093,6 @@
   "every": 5,
   "rule": "Lv5ごとに、そのレベルと同じ数のコイン（Lv5→5枚、Lv10→10枚…Lv100→100枚）"
  },
- "last_sync": "2026-11-25 15:58",
+ "last_sync": "2026-11-25 16:59",
  "events_rule": "YouTubeのチャンネル登録者だけで数える。節目と名前は events.js（20,30,50,70,100,150,200,300,500,700,1000…と終わりなし）"
 }
