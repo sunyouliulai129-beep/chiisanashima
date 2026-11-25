@@ -298,7 +298,7 @@ function showTab(t) {
   document.querySelectorAll("nav.tabs button").forEach(b => b.classList.toggle("on", b.dataset.t === t));
   document.querySelectorAll("main section").forEach(s => s.classList.toggle("on", s.id === "s-" + t));
   if (location.hash !== "#" + t) history.replaceState(null, "", "#" + t);
-  if (t === "map") requestAnimationFrame(() => { resizeMap(); if (!MAP.fitted) fitMap(); drawMap(); });
+  if (t === "map") requestAnimationFrame(() => { resizeMap(); if (!MAP.fitted) fitMap(); if (!MAP.tried3d) { MAP.tried3d = true; if (MAP.mode === "2d") { $("z3d").click(); return; } } if (MAP.mode === "3d") G3.resize(); drawMap(); });
   window.scrollTo(0, 0);
 }
 $("tabs").addEventListener("click", e => { const b = e.target.closest("button"); if (b) showTab(b.dataset.t); });
