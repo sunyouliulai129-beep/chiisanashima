@@ -324,13 +324,17 @@ function buildContinent() {
     elev[y * N + x] = h - d * 0.85 + 0.18;
     wet[y * N + x] = n2(x / 11, y / 11) * 0.7 + n3(x / 5, y / 5) * 0.3;
   }
+  const landE = []; for (let i = 0; i < N * N; i++) if (elev[i] >= 0) landE.push(elev[i]);
+  landE.sort((a, b) => a - b); const MT = landE[Math.floor(landE.length * 0.86)] || 1;
+  const landW = []; for (let i = 0; i < N * N; i++) if (elev[i] >= 0) landW.push(wet[i]);
+  landW.sort((a, b) => a - b); const DRY = landW[Math.floor(landW.length * 0.3)], WET = landW[Math.floor(landW.length * 0.62)];
   for (let i = 0; i < N * N; i++) {
     const x = i % N, y = (i / N) | 0, e = elev[i];
     if (e < 0) { t[i] = T.SEA; continue; }
-    if (e > 0.33) t[i] = T.MOUNT;
-    else if (y < 16 && e > 0.05) t[i] = T.SNOW;
-    else if (wet[i] < 0.33 && y > 55) t[i] = T.DESERT;
-    else if (wet[i] > 0.56) t[i] = T.FOREST;
+    if (e > MT) t[i] = T.MOUNT;
+    else if (y < 22) t[i] = T.SNOW;
+    else if (wet[i] < DRY && y > 50) t[i] = T.DESERT;
+    else if (wet[i] > WET) t[i] = T.FOREST;
     else t[i] = T.PLAIN;
   }
   // 湖
@@ -341,9 +345,9 @@ function buildContinent() {
   const peaks = []; for (let i = 0; i < N * N; i++) if (t[i] === T.MOUNT) peaks.push(i);
   for (let k = 0; k < 4 && peaks.length; k++) {
     let i = peaks[(r() * peaks.length) | 0], steps = 0;
-    while (steps++ < 200) { const x = i % N, y = (i / N) | 0; if (t[i] === T.SEA || t[i] === T.LAKE) break; if (t[i] !== T.MOUNT) t[i] = T.RIVER;
-      let best = -1, be = elev[i] + 0.02;
-      for (const [dx, dy] of [[1, 0], [-1, 0], [0, 1], [0, -1]]) { const xx = x + dx, yy = y + dy; if (xx < 0 || yy < 0 || xx >= N || yy >= N) continue; const j = yy * N + xx; const ee = elev[j] + (r() - 0.5) * 0.02; if (ee < be) { be = ee; best = j; } }
+    while (steps++ < 300) { const x = i % N, y = (i / N) | 0; if (t[i] === T.SEA || t[i] === T.LAKE) break; if (steps > 3) t[i] = T.RIVER;
+      let best = -1, be = elev[i] - Math.hypot(x - 50, y - 50) * 0.012 + 0.02;
+      for (const [dx, dy] of [[1, 0], [-1, 0], [0, 1], [0, -1]]) { const xx = x + dx, yy = y + dy; if (xx < 0 || yy < 0 || xx >= N || yy >= N) continue; const j = yy * N + xx; const ee = elev[j] - Math.hypot(xx - 50, yy - 50) * 0.012 + (r() - 0.5) * 0.02; if (ee < be) { be = ee; best = j; } }
       if (best < 0) { elev[i] -= 0.05; continue; } i = best; }
   }
   // 海沿い
@@ -425,7 +429,7 @@ function renderTop() {
   const steps = [30, 100, 300, 1000], nx = steps.find(s => s > p) || 1000, prev = [0, ...steps][steps.indexOf(nx)] || 0;
   $("nextBar").style.width = Math.min(100, (p - prev) / (nx - prev) * 100) + "%";
   $("nextText").textContent = p < 30 ? `あと${30 - p}人で、地形ごとに土地の値段がつきます（海沿いは1,000万円に）` : `あと${nx - p}人で、土地がもっと値上がりします`;
-  $("priceNow").textContent = p < 30 ? "どこでも50万円" : "地形で変わる";
+  $("priceNow").textContent = p < 30 ? "50万円" : "地形で変わる";
   $("unlocks").innerHTML = [[0, "国民登録・土地（どこでも50万円）・お店・「〇〇で買う」"], [10, "最初の駅・人をやとう・はたらく"], [30, "株式会社・土地の値段が地形で変わる・銀行"], [100, "県・税金・投資（ゼロ証券取引所）・CM枠"], [300, "電車・法律の国民投票・選挙"], [1000, "海の向こうに…？"]]
     .map(([n, t]) => `<div class="unlock ${p >= n ? "open" : ""}"><b>${n}人</b><span>${t}</span></div>`).join("");
 }
