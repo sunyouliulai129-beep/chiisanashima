@@ -38,6 +38,12 @@ header.top{background:linear-gradient(var(--sea2),var(--sea));color:#fff;padding
 .fig canvas{position:absolute;inset:0;width:100%;height:100%}
 .fig .hint{position:absolute;left:12px;bottom:10px;background:rgba(0,0,0,.45);color:#fff;font-size:13px;padding:4px 10px;border-radius:99px}
 .fig .zoom{position:absolute;right:10px;bottom:10px;display:flex;gap:6px}
+.fig .isle-find{position:absolute;left:10px;right:10px;top:10px;display:flex;gap:6px}
+.fig .isle-find input{flex:1;min-width:0;min-height:42px;border-radius:12px;border:2px solid rgba(90,56,28,.35);padding:0 12px;font:inherit;font-size:16px;background:rgba(255,255,255,.92)}
+.fig .isle-find button{min-height:42px;padding:0 14px;border-radius:12px;border:0;background:var(--or);color:#fff;font:800 15px/1 inherit}
+.fig .bubble{position:absolute;transform:translate(-50%,-100%);max-width:72%;background:#fffdf3;border:3px solid #5A381C;border-radius:14px;padding:6px 10px;font-size:14px;font-weight:800;color:#5A381C;pointer-events:none;box-shadow:0 3px 0 rgba(0,0,0,.15)}
+.fig .bubble small{display:block;font-weight:700;color:#8a5a2b}
+.fig .bubble:after{content:"";position:absolute;left:50%;bottom:-10px;margin-left:-8px;border:8px solid transparent;border-top-color:#5A381C}
 .fig .zoom button{width:44px;height:44px;border-radius:50%;border:0;background:rgba(255,255,255,.9);color:var(--wood2);font:800 22px/1 inherit;cursor:pointer}
 main{background:var(--sand);padding-bottom:40px}
 section{padding:30px 0 6px}
@@ -122,9 +128,11 @@ footer a{color:#ffd29a}
    <div class="stat"><span>島民（YouTube＋インスタ）</span><b id="sPop">–</b></div>
    <div class="stat"><span id="sEvName">次のイベントまで</span><b id="sNext">–</b><div class="bar"><i id="sBar" style="width:0"></i></div></div>
   </div>
-  <div class="fig" id="fig" aria-label="島の3Dジオラマ。ドラッグで回せます">
+  <div class="fig" id="fig" aria-label="島の3Dジオラマ。ドラッグで回せます。2本指で拡大できます">
    <canvas id="cv"></canvas>
-   <span class="hint">ドラッグで島を回せます</span>
+   <form class="isle-find" id="isleFind"><input id="iq" type="search" autocomplete="off" placeholder="名前を入れると、島で何をしているか見られる" aria-label="島民の名前"><button type="submit">さがす</button></form>
+   <div class="bubble" id="bubble" hidden></div>
+   <span class="hint" id="hint">ドラッグで回す・2本指で拡大</span>
    <div class="zoom"><button id="zin" aria-label="近づく">＋</button><button id="zout" aria-label="はなれる">－</button></div>
   </div>
   <div class="ytcta"><div><b>YouTubeチャンネルもよろしく！</b><br><span style="font-size:14px">毎日の島の動画はYouTubeでも見られます。登録しておくと、新しい回を見のがしません。</span></div><a id="ytSub" href="https://www.youtube.com/@chiisanashima_sekai?sub_confirmation=1">チャンネル登録</a></div>
@@ -272,7 +280,7 @@ function find(v,save=true){
  const own=new Set([...(r.owned||[]),...D.shop.icons.filter(x=>!x.cost&&!x.limited).map(x=>x.key),...D.shop.frames.filter(x=>!x.cost&&!x.limited).map(x=>x.key)]);
  out.innerHTML='<div class="pcard"><div>'+avatar(r,108)+'<div style="text-align:center;font-weight:800;margin-top:4px">Lv'+r.level+'</div><canvas class="me3d" width="216" height="270" aria-label="島でのすがた" style="width:108px;height:135px;display:block;margin-top:6px;border-radius:12px"></canvas><div class="muted" style="text-align:center;font-size:12px">島でのすがた</div></div><div><h3>'+esc(r.name)+'<span class="pf">'+(r.platform==='yt'?'YouTube':'インスタ')+'</span></h3>'
   +'<div>'+r.points+'ポイント・'+(nx?'次のレベルまで あと'+(nx-r.points)+'ポイント':'最高レベル')+(r.level<100?'・Lv'+(Math.floor(r.level/5)*5+5)+'でコイン'+(Math.floor(r.level/5)*5+5)+'枚もらえる':'')+'</div><div class="bar" style="background:var(--sand2)"><i style="width:'+pct.toFixed(0)+'%"></i></div>'
-  +'<div class="title">'+esc(titleOf(r.level))+'</div> <span class="coin">コイン '+(r.coins||0)+'枚</span>'+(unlocked(base)&&pend(base).length?' <span class="pend">申しこみ中</span>':'')+' <a href="#shop">アイコンをかえる</a>'+'<p class="now">いま島で：'+esc(r.job)+'</p>'+'<div>しごと：'+(r.work?esc(r.work)+'（'+(r.work_days||0)+'日はたらいた）':'まだえらんでいません。コメントに「しごと：木こり」のように書いてね')+'</div>'+(r.wish?'<div class="muted">なりたいもの：'+esc(r.wish)+'</div>':'')
+  +'<div class="title">'+esc(titleOf(r.level))+'</div> <span class="coin">コイン '+(r.coins||0)+'枚</span>'+(unlocked(base)&&pend(base).length?' <span class="pend">申しこみ中</span>':'')+' <a href="#shop">アイコンをかえる</a>'+'<p class="now">いま島で：'+esc(r.job)+' <button type="button" class="btn" data-see="'+esc(base.id)+'" style="min-height:36px;padding:0 12px;font-size:14px">島で見る</button></p>'+'<div>しごと：'+(r.work?esc(r.work)+'（'+(r.work_days||0)+'日はたらいた）':'まだえらんでいません。コメントに「しごと：木こり」のように書いてね')+'</div>'+(r.wish?'<div class="muted">なりたいもの：'+esc(r.wish)+'</div>':'')
   +'<div class="muted" style="margin-top:6px">もっているもの：'+esc([...D.shop.icons,...D.shop.frames].filter(x=>own.has(x.key)).map(x=>x.name).join('・'))+'</div>'+'<ul class="hist">'+r.history.map(h=>'<li>'+esc(h)+'</li>').join('')+'</ul>'+linkBox(base)+'</div></div>';
  const row=document.querySelector('tr[data-id="'+CSS.escape(norm(base.id))+'"]');if(row)row.classList.add('me');
  try{const cvs=out.querySelector('.me3d');if(cvs){const S=new Island3D.Scene();S.box(0,-0.2,0,2.2,0.2,2.2,'#7CCB5B');S.box(0,-0.45,0,2.3,0.25,2.3,'#C9A36B');
@@ -288,7 +296,7 @@ function linkBox(r){
  const url=r.platform==='yt'?D.links.instagram:D.links.youtube;
  return '<div class="linkbox">'+head+'<div class="msg">'+esc(msg)+'</div><div class="row2"><button class="btn" data-link="'+esc(msg)+'" data-url="'+esc(url)+'">コピーして'+other+'をひらく</button></div></div>';
 }
-$('cardOut').addEventListener('click',e=>{const b=e.target.closest('button[data-link]');if(!b)return;const go=()=>{location.href=b.dataset.url};(navigator.clipboard?navigator.clipboard.writeText(b.dataset.link):Promise.reject()).then(go,()=>{b.textContent='文を長おしでコピーしてから、ひらいてね'})});
+$('cardOut').addEventListener('click',e=>{const sb=e.target.closest('button[data-see]');if(sb){const r=D.residents.find(x=>x.id===sb.dataset.see);if(r&&window.CS_FOCUS&&CS_FOCUS(r))$('fig').scrollIntoView({behavior:'smooth',block:'center'});return}const b=e.target.closest('button[data-link]');if(!b)return;const go=()=>{location.href=b.dataset.url};(navigator.clipboard?navigator.clipboard.writeText(b.dataset.link):Promise.reject()).then(go,()=>{b.textContent='文を長おしでコピーしてから、ひらいてね'})});
 $('jobBox').addEventListener('click',e=>{const b=e.target.closest('button[data-c]');if(!b)return;const t=b.dataset.c;navigator.clipboard?.writeText(t).then(()=>{b.textContent='コピーしました：'+t},()=>{b.textContent='「'+t+'」と書いてね'}).catch(()=>{b.textContent='「'+t+'」と書いてね'})});
 $('findForm').addEventListener('submit',e=>{e.preventDefault();find($('q').value)});
 
@@ -383,25 +391,71 @@ function refreshMe(){renderShop();if(CUR)find(CUR.id,false)}
 
 /* ---- 3D island ---- */
 const cv=$('cv'),fig=$('fig'),ctx=cv.getContext('2d');
-let W0=null,ang=-2.2,dist=78,elev=0.8,drag=null,timer=0,lowres=false;
+let W0=null,ang=-2.2,dist=78,elev=0.8,drag=null,timer=0,lowres=false,POS={},TGT=[0,1.5,0],FOC=null;const PT=new Map();let pinch=0;
 function buildWorld(){
- const w=Island3D.bigWorld();
- Island3D.placeVillagers(w,D.residents.slice(0,80).map(r=>r.platform+':'+norm(r.id)));
+ const w=Island3D.bigWorld(),S=w.S,RES=D.residents.slice(0,80),spots=Island3D.villagerSpots(w,RES.length),taken=new Set();
+ POS={};const used=[];const free=(x,z)=>!used.some(p=>Math.hypot(p[0]-x,p[1]-z)<1.3);
+ const shore=(i)=>{for(let k=0;k<60;k++){const a=-2.7+((i*0.37+k*0.13)%2.4);for(let rr=20;rr<29;rr+=0.25){const x=Math.cos(a)*rr,z=Math.sin(a)*rr,y=w.hAt(x,z);if(y<0.3&&y>0.03&&free(x,z))return [x,y,z,a]}}return null};
+ const near=(c,rad,i,lo,hi)=>{for(let k=0;k<400;k++){const a=i*2.39+k*0.7,rr=rad*(0.35+((k*0.13)%0.65)),x=c[0]+Math.cos(a)*rr,z=c[1]+Math.sin(a)*rr,y=w.hAt(x,z);if(y>lo&&y<hi&&free(x,z))return [x,y,z]}return null};
+ const edge=(c,r0,r1,i,lo,hi)=>{for(let k=0;k<300;k++){const a=-1.6+i*2.39+k*0.53,rr=r0+((k*0.37)%(r1-r0)),x=c[0]+Math.cos(a)*rr,z=c[1]+Math.sin(a)*rr,y=w.hAt(x,z);if(y>lo&&y<hi&&free(x,z))return [x,y,z,a]}return null};
+ const out=q=>{if(!q)return null;rot=Math.atan2(Math.cos(q[3]),-Math.sin(q[3]));return [q[0],q[1],q[2]]};
+ const B=w.big;
+ RES.forEach((r,i)=>{
+  const act=actOf(r);let p=null,rot=i*2.4;
+  if(act==='fish'){const q=shore(i);if(q){p=[q[0],q[1],q[2]];rot=Math.atan2(Math.cos(q[3]),-Math.sin(q[3]))}}
+  else if(act==='wood'||act==='animal')p=out(edge(B.forest,8.8,10.5,i,0.7,4));
+  else if(act==='farm')p=near([-6,-12],5,i,0.6,2.6);
+  else if(act==='build')p=near([3,-14],5,i,0.6,2.6);
+  else if(act==='explore')p=out(edge(B.desert,8,10,i,0.5,4));
+  if(!p){const sp=spots.find(q=>free(q[0],q[2]));if(!sp)return;p=sp}
+  used.push([p[0],p[2]]);
+  Island3D.villager(S,p[0],p[1],p[2],0.9,rot,Island3D.lookFor(r.platform+':'+norm(r.id),taken));
+  prop(S,act,p,rot);POS[norm(r.id)]={p,rot,act};
+ });
  return w;
 }
+function actOf(r){const W={'漁師':'fish','木こり':'wood','畑係':'farm','大工':'build','探検家':'explore'};if(r.work&&W[r.work])return W[r.work];const t=r.job||'';
+ if(/漁師|釣|つり|魚/.test(t))return 'fish';if(/木こり|木を切|伐/.test(t))return 'wood';if(/畑|作物|たね|種まき|野菜/.test(t))return 'farm';
+ if(/大工|建て|小屋|家を|作って/.test(t))return 'build';if(/探検|調べ|地図/.test(t))return 'explore';if(/動物|犬|猫|鳥|ひよこ/.test(t))return 'animal';return 'idle'}
+function prop(S,act,p,rot){const [x,y,z]=p,fx=Math.sin(rot),fz=-Math.cos(rot),rx=Math.cos(rot),rz=Math.sin(rot);
+ const at=(f,r,h,sx,sy,sz,c)=>S.box(x+fx*f+rx*r,y+h,z+fz*f+rz*r,sx,sy,sz,c,rot);
+ if(act==='fish'){for(let k=0;k<7;k++)at(0.25+k*0.28,0.28,0.55+k*0.2,0.06,0.08,0.3,'#7A4E2A');
+  const tx=x+fx*2.25+rx*0.28,tz=z+fz*2.25+rz*0.28;S.box(tx,0.05,tz,0.02,1.95,0.02,'#EEEEEE');S.ico(tx,0.08,tz,0.09,'#E2453C',3);at(-0.1,-0.5,0,0.4,0.3,0.4,'#6E9FC9')}
+ else if(act==='wood'){at(0.35,0.35,0.35,0.06,0.6,0.06,'#7A4E2A');at(0.35,0.47,0.85,0.22,0.16,0.06,'#9AA3AA');for(let k=0;k<3;k++)S.cyl(x+fx*0.9+rx*(k*0.25-0.25),y,z+fz*0.9+rz*(k*0.25-0.25),0.12,0.25,6,'#8B5A2B')}
+ else if(act==='farm'){for(let a=-1;a<=1;a++)for(let b=0;b<3;b++){const cx=x+fx*(0.8+b*0.45)+rx*a*0.45,cz=z+fz*(0.8+b*0.45)+rz*a*0.45;S.box(cx,y-0.02,cz,0.4,0.08,0.4,'#7A5230',rot);S.cone(cx,y+0.05,cz,0.1,0.22,4,'#5DBB4A')}at(0.2,0.35,0,0.05,1.1,0.05,'#7A4E2A')}
+ else if(act==='build'){for(let k=0;k<4;k++)at(0.9,0,0.05+k*0.1,1.1,0.08,0.22,k%2?'#C98B4E':'#B5743B');at(0.3,0.35,0.4,0.05,0.35,0.05,'#7A4E2A');at(0.3,0.35,0.72,0.18,0.1,0.1,'#666666')}
+ else if(act==='explore'){at(0.7,0.4,0,0.05,1.2,0.05,'#7A4E2A');at(0.7,0.62,0.95,0.4,0.25,0.03,'#FF7A1A')}
+ else if(act==='animal'){const ax=x+fx*0.9+rx*0.4,az=z+fz*0.9+rz*0.4;S.box(ax,y+0.12,az,0.45,0.25,0.25,'#C9853E',rot);S.box(ax+fx*0.28,y+0.3,az+fz*0.28,0.22,0.2,0.2,'#C9853E',rot);for(const d of[-1,1])for(const e of[-1,1])S.box(ax+fx*0.14*e+rx*0.08*d,y,az+fz*0.14*e+rz*0.08*d,0.06,0.12,0.06,'#8B5A2B')}
+}
+
 function draw(){
  const r=fig.getBoundingClientRect(),dpr=Math.min(2,window.devicePixelRatio||1),k=lowres?0.45:0.85;
  const w=Math.max(160,Math.round(r.width*dpr*k)),h=Math.max(120,Math.round(r.height*dpr*k));
- const cam={pos:[Math.cos(ang)*dist,dist*elev,Math.sin(ang)*dist],target:[0,1.5,0],fov:42};
+ const cam={pos:[TGT[0]+Math.cos(ang)*dist,TGT[1]+dist*elev,TGT[2]+Math.sin(ang)*dist],target:TGT,fov:42};
  const img=Island3D.render(W0.S,cam,w,h,{ss:1,skyTop:'#7FD1FF',skyBot:'#FFF4D6'});
  cv.width=w;cv.height=h;ctx.putImageData(new ImageData(img.data,w,h),0,0);
+ const bb=$('bubble');if(FOC){const q=img.project([FOC.p[0],FOC.p[1]+1.9,FOC.p[2]]);if(q&&q[2]>0&&q[0]>0&&q[0]<w&&q[1]>0&&q[1]<h){bb.style.left=(q[0]/w*100)+'%';bb.style.top=(q[1]/h*100)+'%';bb.hidden=false}else bb.hidden=true}else bb.hidden=true;
 }
 function req(low){lowres=low;cancelAnimationFrame(timer);timer=requestAnimationFrame(()=>{draw();if(low){clearTimeout(req.t);req.t=setTimeout(()=>req(false),180)}})}
-fig.addEventListener('pointerdown',e=>{drag={x:e.clientX,y:e.clientY};fig.setPointerCapture(e.pointerId);fig.style.cursor='grabbing'});
-fig.addEventListener('pointermove',e=>{if(!drag)return;ang+=(e.clientX-drag.x)*0.008;elev=Math.min(1.6,Math.max(0.25,elev+(e.clientY-drag.y)*0.004));drag={x:e.clientX,y:e.clientY};req(true)});
-const up=()=>{drag=null;fig.style.cursor='grab';req(false)};fig.addEventListener('pointerup',up);fig.addEventListener('pointercancel',up);
-$('zin').addEventListener('click',()=>{dist=Math.max(30,dist-8);req(false)});
-$('zout').addEventListener('click',()=>{dist=Math.min(130,dist+8);req(false)});
+const MIND=6,MAXD=130,setD=d=>{dist=Math.min(MAXD,Math.max(MIND,d))};
+const pd=()=>{const a=[...PT.values()];return Math.hypot(a[0].x-a[1].x,a[0].y-a[1].y)};
+fig.addEventListener('pointerdown',e=>{if(e.target.closest('form,button'))return;PT.set(e.pointerId,{x:e.clientX,y:e.clientY});fig.setPointerCapture(e.pointerId);if(PT.size===2){pinch=pd();drag=null}else{drag={x:e.clientX,y:e.clientY};fig.style.cursor='grabbing'}});
+fig.addEventListener('pointermove',e=>{if(!PT.has(e.pointerId))return;PT.set(e.pointerId,{x:e.clientX,y:e.clientY});
+ if(PT.size>=2){const d=pd();if(pinch>0&&d>0){setD(dist*pinch/d);req(true)}pinch=d;return}
+ if(!drag)return;ang+=(e.clientX-drag.x)*0.008;elev=Math.min(1.6,Math.max(0.15,elev+(e.clientY-drag.y)*0.004));drag={x:e.clientX,y:e.clientY};req(true)});
+const up=e=>{PT.delete(e.pointerId);pinch=0;if(PT.size===1){const v=[...PT.values()][0];drag={x:v.x,y:v.y}}else{drag=null;fig.style.cursor='grab';req(false)}};fig.addEventListener('pointerup',up);fig.addEventListener('pointercancel',up);
+fig.addEventListener('wheel',e=>{e.preventDefault();setD(dist*(e.deltaY>0?1.12:0.89));req(true)},{passive:false});
+$('zin').addEventListener('click',()=>{setD(dist*0.8);req(false)});
+$('zout').addEventListener('click',()=>{setD(dist*1.25);req(false)});
+const ACTW={fish:'釣りをしている',wood:'木を切っている',farm:'畑をたがやしている',build:'物を作っている',explore:'探検している',animal:'動物と遊んでいる',idle:'島を歩いている'};
+function focusOn(r){const f=POS[norm(r.id)];const bb=$('bubble');if(!f){FOC=null;bb.hidden=true;return false}
+ FOC=f;TGT=[f.p[0],f.p[1]+0.8,f.p[2]];ang=Math.atan2(-Math.cos(f.rot),Math.sin(f.rot))+0.5;dist=10;elev=0.6;
+ bb.innerHTML=esc('Lv'+r.level+' '+r.name)+'<small>'+esc(r.job||ACTW[f.act])+'</small>';req(false);return true}
+window.CS_FOCUS=focusOn;
+$('isleFind').addEventListener('submit',e=>{e.preventDefault();const v=$('iq').value,k=norm(v);if(!k){FOC=null;TGT=[0,1.5,0];dist=78;elev=0.8;$('bubble').hidden=true;req(false);return}
+ const r=D.residents.find(x=>norm(x.id)===k||norm(x.name)===k)||D.residents.find(x=>norm(x.name).includes(k)||norm(x.id).includes(k));
+ if(!r||!focusOn(r)){FOC=null;$('bubble').hidden=true;$('hint').textContent='「'+v+'」さんは島で見つからなかった';return}$('hint').textContent='ドラッグで回す・2本指で拡大'});
+
 const ro=new ResizeObserver(()=>{if(W0)req(false)});ro.observe(fig);
 
 function start(data){D=data;render();W0=buildWorld();req(false)}
