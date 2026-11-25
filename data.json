@@ -120,7 +120,7 @@
    [
     "A",
     "小屋",
-    0
+    7
    ],
    [
     "B",
@@ -219,6 +219,18 @@
    "by": "rui2121212121",
    "text": "島の先生になりたい",
    "status": "候補"
+  },
+  {
+   "day": 2,
+   "by": "りきや",
+   "text": "小屋を建てて備蓄する",
+   "status": "候補"
+  },
+  {
+   "day": 2,
+   "by": "yy368313",
+   "text": "探検隊の隊長になりたい",
+   "status": "候補"
   }
  ],
  "timeline": [
@@ -242,7 +254,7 @@
    "id": "ren050554",
    "platform": "ig",
    "name": "ren_05",
-   "points": 3,
+   "points": 4,
    "level": 2,
    "job": "カフェオレさんと森で動物たちと遊んでいる",
    "wish": "動物になりたい",
@@ -250,12 +262,13 @@
     "1日目：投票B",
     "1日目：アイデア「動物になりたい」",
     "1日目：いいね",
-    "1日目：とうろく"
+    "1日目：とうろく",
+    "2日目：投票A"
    ],
    "since_day": 1,
    "work": null,
    "work_days": 0,
-   "coins": 3,
+   "coins": 4,
    "icon": "palm",
    "frame": "wood",
    "owned": [],
@@ -311,19 +324,21 @@
    "id": "yy368313",
    "platform": "ig",
    "name": "yy368313",
-   "points": 2,
-   "level": 1,
+   "points": 3,
+   "level": 2,
    "job": "島に着いたばかり。浜辺で寝床をさがし中",
    "wish": "島民になりたい",
    "history": [
     "1日目：投票B",
     "1日目：アイデア「島民になりたい」",
-    "1日目：とうろく"
+    "1日目：とうろく",
+    "2日目：アイデア「探検隊の隊長になりたい」",
+    "2日目：しごと「探検家」"
    ],
    "since_day": 1,
-   "work": null,
+   "work": "探検家",
    "work_days": 0,
-   "coins": 2,
+   "coins": 3,
    "icon": "palm",
    "frame": "wood",
    "owned": [],
@@ -708,20 +723,21 @@
    "id": "sz_nattouraionn",
    "platform": "ig",
    "name": "sz_nattouraionn",
-   "points": 2,
-   "level": 1,
+   "points": 3,
+   "level": 2,
    "job": "新しい桟橋で魚をつっている",
    "wish": null,
    "history": [
     "1日目：投票B",
     "1日目（まとめ#1）：しごと「漁師」",
     "1日目（あそび方）：とうろく",
-    "2日目：漁師で働いた"
+    "2日目：漁師で働いた",
+    "2日目：投票A"
    ],
    "since_day": 1,
    "work": "漁師",
    "work_days": 1,
-   "coins": 2,
+   "coins": 3,
    "icon": "palm",
    "frame": "wood",
    "owned": [],
@@ -976,24 +992,27 @@
    "id": "ha1u_u16",
    "platform": "ig",
    "name": "ha1u_u16",
-   "points": 2,
-   "level": 1,
+   "points": 3,
+   "level": 2,
    "job": "桟橋のとなりで小屋の柱を立てている",
    "wish": null,
    "history": [
     "1日目：投票A",
     "1日目（あそび方）：しごと「大工」",
-    "2日目：大工で働いた"
+    "2日目：大工で働いた",
+    "2日目：投票A",
+    "2日目：とうろく"
    ],
    "since_day": 2,
    "work": "大工",
    "work_days": 1,
-   "coins": 2,
+   "coins": 3,
    "icon": "shell",
    "frame": "wood",
    "owned": [],
    "appeared": 1,
-   "rewarded_level": 0
+   "rewarded_level": 0,
+   "code_reg": "3b2007"
   },
   {
    "id": "rui2121212121",
@@ -1011,6 +1030,95 @@
    "work_days": 0,
    "coins": 1,
    "icon": "shell",
+   "frame": "wood",
+   "owned": [],
+   "appeared": 0,
+   "rewarded_level": 0
+  },
+  {
+   "id": "otouhu04",
+   "platform": "ig",
+   "name": "otouhu04",
+   "points": 1,
+   "level": 1,
+   "job": "大工道具をそろえて小屋づくりを待っている",
+   "wish": null,
+   "history": [
+    "2日目：投票A",
+    "2日目：しごと「大工」"
+   ],
+   "since_day": 3,
+   "work": "大工",
+   "work_days": 0,
+   "coins": 1,
+   "icon": "fish",
+   "frame": "wood",
+   "owned": [],
+   "appeared": 0,
+   "rewarded_level": 0
+  },
+  {
+   "id": "a.san.0523",
+   "platform": "ig",
+   "name": "a.san.0523",
+   "points": 1,
+   "level": 1,
+   "job": "畑にする場所を探している",
+   "wish": null,
+   "history": [
+    "2日目：投票A",
+    "2日目：しごと「畑係」"
+   ],
+   "since_day": 3,
+   "work": "畑係",
+   "work_days": 0,
+   "coins": 1,
+   "icon": "palm",
+   "frame": "wood",
+   "owned": [],
+   "appeared": 0,
+   "rewarded_level": 0
+  },
+  {
+   "id": "azu68512",
+   "platform": "ig",
+   "name": "azu68512",
+   "points": 1,
+   "level": 1,
+   "job": "木材を運んで小屋の準備をしている",
+   "wish": null,
+   "history": [
+    "2日目：投票A",
+    "2日目：しごと「大工」"
+   ],
+   "since_day": 3,
+   "work": "大工",
+   "work_days": 0,
+   "coins": 1,
+   "icon": "shell",
+   "frame": "wood",
+   "owned": [],
+   "appeared": 0,
+   "rewarded_level": 0
+  },
+  {
+   "id": "@りきや-e6x",
+   "platform": "yt",
+   "name": "りきや",
+   "points": 2,
+   "level": 1,
+   "job": "小屋に食べ物をたくわえる計画を立てている",
+   "wish": null,
+   "history": [
+    "2日目：投票A",
+    "2日目：アイデア「小屋を建てて備蓄する」",
+    "2日目：しごと「大工」"
+   ],
+   "since_day": 3,
+   "work": "大工",
+   "work_days": 0,
+   "coins": 2,
+   "icon": "fish",
    "frame": "wood",
    "owned": [],
    "appeared": 0,
@@ -1209,6 +1317,6 @@
   "every": 5,
   "rule": "Lv5ごとに、そのレベルと同じ数のコイン（Lv5→5枚、Lv10→10枚…Lv100→100枚）"
  },
- "last_sync": "2026-11-25 16:59",
+ "last_sync": "2026-11-25 19:56",
  "events_rule": "YouTubeのチャンネル登録者だけで数える。節目と名前は events.js（20,30,50,70,100,150,200,300,500,700,1000…と終わりなし）"
 }
