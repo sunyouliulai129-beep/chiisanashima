@@ -1,981 +1,981 @@
 {
-  "updated": "2026-11-25 04:56",
+ "updated": "2026-11-25 04:56",
+ "day": 1,
+ "island_name": "？？？島",
+ "islanders": {
+  "youtube": 11,
+  "instagram": 10
+ },
+ "next_event": {
+  "at": 20,
+  "name": "旅人が流れ着く",
+  "counts": "youtube"
+ },
+ "levels": [
+  0,
+  3,
+  8,
+  16,
+  24,
+  34,
+  44,
+  56,
+  68,
+  81,
+  95,
+  109,
+  125,
+  141,
+  157,
+  174,
+  192,
+  210,
+  229,
+  248,
+  268,
+  289,
+  310,
+  331,
+  353,
+  375,
+  398,
+  421,
+  444,
+  469,
+  493,
+  518,
+  543,
+  569,
+  595,
+  621,
+  648,
+  675,
+  703,
+  731,
+  759,
+  788,
+  817,
+  846,
+  876,
+  906,
+  936,
+  967,
+  998,
+  1029,
+  1061,
+  1093,
+  1125,
+  1158,
+  1190,
+  1224,
+  1257,
+  1291,
+  1325,
+  1360,
+  1394,
+  1429,
+  1465,
+  1500,
+  1536,
+  1572,
+  1609,
+  1645,
+  1682,
+  1719,
+  1757,
+  1795,
+  1833,
+  1871,
+  1910,
+  1949,
+  1988,
+  2027,
+  2067,
+  2107,
+  2147,
+  2187,
+  2228,
+  2268,
+  2310,
+  2351,
+  2393,
+  2434,
+  2477,
+  2519,
+  2561,
+  2604,
+  2647,
+  2691,
+  2734,
+  2778,
+  2822,
+  2866,
+  2910,
+  2955
+ ],
+ "question": {
   "day": 1,
-  "island_name": "？？？島",
-  "islanders": {
-    "youtube": 11,
-    "instagram": 10
-  },
-  "next_event": {
-    "at": 20,
-    "name": "旅人が流れ着く",
-    "counts": "youtube"
-  },
-  "levels": [
-    0,
-    3,
-    8,
-    16,
-    24,
-    34,
-    44,
-    56,
-    68,
-    81,
-    95,
-    109,
-    125,
-    141,
-    157,
-    174,
-    192,
-    210,
-    229,
-    248,
-    268,
-    289,
-    310,
-    331,
-    353,
-    375,
-    398,
-    421,
-    444,
-    469,
-    493,
-    518,
-    543,
-    569,
-    595,
-    621,
-    648,
-    675,
-    703,
-    731,
-    759,
-    788,
-    817,
-    846,
-    876,
-    906,
-    936,
-    967,
-    998,
-    1029,
-    1061,
-    1093,
-    1125,
-    1158,
-    1190,
-    1224,
-    1257,
-    1291,
-    1325,
-    1360,
-    1394,
-    1429,
-    1465,
-    1500,
-    1536,
-    1572,
-    1609,
-    1645,
-    1682,
-    1719,
-    1757,
-    1795,
-    1833,
-    1871,
-    1910,
-    1949,
-    1988,
-    2027,
-    2067,
-    2107,
-    2147,
-    2187,
-    2228,
-    2268,
-    2310,
-    2351,
-    2393,
-    2434,
-    2477,
-    2519,
-    2561,
-    2604,
-    2647,
-    2691,
-    2734,
-    2778,
-    2822,
-    2866,
-    2910,
-    2955
+  "text": "男が最初に持ち出す道具は？",
+  "choices": [
+   [
+    "A",
+    "オノ",
+    4
+   ],
+   [
+    "B",
+    "つりざお",
+    12
+   ],
+   [
+    "C",
+    "たね",
+    2
+   ]
   ],
-  "question": {
-    "day": 1,
-    "text": "男が最初に持ち出す道具は？",
-    "choices": [
-      [
-        "A",
-        "オノ",
-        4
-      ],
-      [
-        "B",
-        "つりざお",
-        12
-      ],
-      [
-        "C",
-        "たね",
-        2
-      ]
-    ],
-    "note": "YouTubeとインスタの合計（途中経過）"
+  "note": "YouTubeとインスタの合計（途中経過）"
+ },
+ "ideas": [
+  {
+   "day": 1,
+   "by": "ren_05",
+   "text": "動物になりたい",
+   "status": "候補"
   },
-  "ideas": [
-    {
-      "day": 1,
-      "by": "ren_05",
-      "text": "動物になりたい",
-      "status": "候補"
-    },
-    {
-      "day": 1,
-      "by": "ik_0415",
-      "text": "島の長になりたい",
-      "status": "候補"
-    },
-    {
-      "day": 1,
-      "by": "horse.6315152",
-      "text": "島のまとめ役になりたい",
-      "status": "候補"
-    },
-    {
-      "day": 1,
-      "by": "ビッパ色違い",
-      "text": "斧で動物を狩る",
-      "status": "候補"
-    },
-    {
-      "day": 1,
-      "by": "しゅんと",
-      "text": "魚を釣って売ってスマホを買う",
-      "status": "候補"
-    },
-    {
-      "day": 1,
-      "by": "ゆきまろ",
-      "text": "家を建てる",
-      "status": "候補"
-    },
-    {
-      "day": 1,
-      "by": "カフェオレ",
-      "text": "動物になりたい",
-      "status": "候補"
-    },
-    {
-      "day": 1,
-      "by": "rin_rin2423",
-      "text": "島の大工長になりたい",
-      "status": "候補"
-    },
-    {
-      "day": 1,
-      "by": "chun0327",
-      "text": "お魚をたくさん釣って水槽に入れたい",
-      "status": "候補"
-    },
-    {
-      "day": 1,
-      "by": "nn1k2n",
-      "text": "島のみんなに朝をお知らせする",
-      "status": "候補"
-    },
-    {
-      "day": 1,
-      "by": "島のオーナー",
-      "text": "非常食用ひよこ",
-      "status": "採用（2日目で決定）"
-    },
-    {
-      "day": 1,
-      "by": "しゅんと",
-      "text": "この島のリーダーになる",
-      "status": "候補"
-    }
-  ],
-  "timeline": [
-    {
-      "day": 1,
-      "text": "何もない小さな島に、ひとりの男が流れ着いた"
-    }
-  ],
-  "built": [],
-  "residents": [
-    {
-      "id": "ren050554",
-      "platform": "ig",
-      "name": "ren_05",
-      "points": 3,
-      "level": 2,
-      "job": "森で動物たちと仲良くなる練習中",
-      "wish": "動物になりたい",
-      "history": [
-        "1日目：投票B",
-        "1日目：アイデア「動物になりたい」",
-        "1日目：いいね",
-        "1日目：とうろく"
-      ],
-      "since_day": 1,
-      "work": null,
-      "work_days": 0,
-      "coins": 3,
-      "icon": "palm",
-      "frame": "wood",
-      "owned": [],
-      "appeared": 0,
-      "rewarded_level": 0,
-      "code_reg": "bf2039"
-    },
-    {
-      "id": "ik_0415",
-      "platform": "ig",
-      "name": "ik_0415",
-      "points": 2,
-      "level": 1,
-      "job": "島の長をめざして浜辺を見回り中",
-      "wish": "島の長になりたい",
-      "history": [
-        "1日目：投票B",
-        "1日目：アイデア「島の長になりたい」"
-      ],
-      "since_day": 1,
-      "work": null,
-      "work_days": 0,
-      "coins": 2,
-      "icon": "shell",
-      "frame": "wood",
-      "owned": [],
-      "appeared": 0,
-      "rewarded_level": 0
-    },
-    {
-      "id": "horse.6315152",
-      "platform": "ig",
-      "name": "horse.6315152",
-      "points": 2,
-      "level": 1,
-      "job": "みんなの意見をメモにまとめている",
-      "wish": "島のまとめ役になりたい",
-      "history": [
-        "1日目：投票B",
-        "1日目：アイデア「島のまとめ役になりたい」"
-      ],
-      "since_day": 1,
-      "work": null,
-      "work_days": 0,
-      "coins": 2,
-      "icon": "fish",
-      "frame": "wood",
-      "owned": [],
-      "appeared": 0,
-      "rewarded_level": 0
-    },
-    {
-      "id": "yy368313",
-      "platform": "ig",
-      "name": "yy368313",
-      "points": 2,
-      "level": 1,
-      "job": "島に着いたばかり。浜辺で寝床をさがし中",
-      "wish": "島民になりたい",
-      "history": [
-        "1日目：投票B",
-        "1日目：アイデア「島民になりたい」",
-        "1日目：とうろく"
-      ],
-      "since_day": 1,
-      "work": null,
-      "work_days": 0,
-      "coins": 2,
-      "icon": "palm",
-      "frame": "wood",
-      "owned": [],
-      "appeared": 0,
-      "rewarded_level": 0,
-      "code_reg": "e30d2d"
-    },
-    {
-      "id": "m_q1e.5",
-      "platform": "ig",
-      "name": "M.",
-      "points": 2,
-      "level": 1,
-      "job": "木の実をさがして森を歩いている",
-      "wish": null,
-      "history": [
-        "1日目：投票B",
-        "1日目：いいね"
-      ],
-      "since_day": 1,
-      "work": null,
-      "work_days": 0,
-      "coins": 2,
-      "icon": "shell",
-      "frame": "wood",
-      "owned": [],
-      "appeared": 0,
-      "rewarded_level": 0
-    },
-    {
-      "id": "aist.ory751",
-      "platform": "ig",
-      "name": "aist.ory751",
-      "points": 2,
-      "level": 1,
-      "job": "砂浜に島の地図をかいている",
-      "wish": null,
-      "history": [
-        "1日目：投票B",
-        "1日目：いいね",
-        "1日目：しごと「木こり」"
-      ],
-      "since_day": 1,
-      "work": "木こり",
-      "work_days": 0,
-      "coins": 2,
-      "icon": "fish",
-      "frame": "wood",
-      "owned": [],
-      "appeared": 0,
-      "rewarded_level": 0
-    },
-    {
-      "id": "@ビッパ色違い",
-      "platform": "yt",
-      "name": "ビッパ色違い",
-      "points": 2,
-      "level": 1,
-      "job": "オノが届くのを待ちながら森を下見中",
-      "wish": "斧で動物を狩りたい",
-      "history": [
-        "1日目：投票A",
-        "1日目：アイデア「斧で動物を狩る」"
-      ],
-      "since_day": 1,
-      "work": null,
-      "work_days": 0,
-      "coins": 2,
-      "icon": "palm",
-      "frame": "wood",
-      "owned": [],
-      "appeared": 0,
-      "rewarded_level": 0
-    },
-    {
-      "id": "mizuki_tennis12",
-      "platform": "ig",
-      "name": "mizuki_tennis12",
-      "points": 1,
-      "level": 1,
-      "job": "浜辺で貝がらを集めている",
-      "wish": null,
-      "history": [
-        "1日目：投票C"
-      ],
-      "since_day": 1,
-      "work": null,
-      "work_days": 0,
-      "coins": 1,
-      "icon": "shell",
-      "frame": "wood",
-      "owned": [],
-      "appeared": 0,
-      "rewarded_level": 0
-    },
-    {
-      "id": "@いと-f7v",
-      "platform": "yt",
-      "name": "いと",
-      "points": 1,
-      "level": 1,
-      "job": "丘の上から海をながめている",
-      "wish": null,
-      "history": [
-        "1日目：投票B"
-      ],
-      "since_day": 1,
-      "work": null,
-      "work_days": 0,
-      "coins": 1,
-      "icon": "fish",
-      "frame": "wood",
-      "owned": [],
-      "appeared": 0,
-      "rewarded_level": 0
-    },
-    {
-      "id": "go20141224",
-      "platform": "ig",
-      "name": "go",
-      "points": 1,
-      "level": 1,
-      "job": "流木を拾って運んでいる",
-      "wish": null,
-      "history": [
-        "1日目：いいね"
-      ],
-      "since_day": 1,
-      "work": null,
-      "work_days": 0,
-      "coins": 1,
-      "icon": "palm",
-      "frame": "wood",
-      "owned": [],
-      "appeared": 0,
-      "rewarded_level": 0
-    },
-    {
-      "id": "kizuna._.potato",
-      "platform": "ig",
-      "name": "kizuna._.potato",
-      "points": 1,
-      "level": 1,
-      "job": "焚き火の番をしている",
-      "wish": null,
-      "history": [
-        "1日目：いいね"
-      ],
-      "since_day": 1,
-      "work": null,
-      "work_days": 0,
-      "coins": 1,
-      "icon": "shell",
-      "frame": "wood",
-      "owned": [],
-      "appeared": 0,
-      "rewarded_level": 0
-    },
-    {
-      "id": "sasukeeeeeee412",
-      "platform": "ig",
-      "name": "さすけ",
-      "points": 1,
-      "level": 1,
-      "job": "木の実をさがして森を歩いている",
-      "wish": null,
-      "history": [
-        "1日目：いいね"
-      ],
-      "since_day": 1,
-      "work": null,
-      "work_days": 0,
-      "coins": 1,
-      "icon": "fish",
-      "frame": "wood",
-      "owned": [],
-      "appeared": 0,
-      "rewarded_level": 0
-    },
-    {
-      "id": "tyhw__z09",
-      "platform": "ig",
-      "name": "Hayato",
-      "points": 1,
-      "level": 1,
-      "job": "砂浜に島の地図をかいている",
-      "wish": null,
-      "history": [
-        "1日目：いいね"
-      ],
-      "since_day": 1,
-      "work": null,
-      "work_days": 0,
-      "coins": 1,
-      "icon": "palm",
-      "frame": "wood",
-      "owned": [],
-      "appeared": 0,
-      "rewarded_level": 0
-    },
-    {
-      "id": "@しゅんと-u5o",
-      "platform": "yt",
-      "name": "しゅんと",
-      "points": 3,
-      "level": 2,
-      "job": "つりざおで魚をつる練習中",
-      "wish": "魚を売ってスマホを買いたい",
-      "history": [
-        "1日目：投票B",
-        "1日目：アイデア「魚を釣って売ってスマホを買う」",
-        "1日目（あそび方）：アイデア「この島のリーダーになる」"
-      ],
-      "since_day": 1,
-      "work": null,
-      "work_days": 0,
-      "coins": 3,
-      "icon": "shell",
-      "frame": "wood",
-      "owned": [],
-      "appeared": 0,
-      "rewarded_level": 0
-    },
-    {
-      "id": "@ゆきまろ-f9x",
-      "platform": "yt",
-      "name": "ゆきまろ",
-      "points": 2,
-      "level": 1,
-      "job": "家を建てる場所をさがしている",
-      "wish": "家を建てたい",
-      "history": [
-        "1日目：投票A",
-        "1日目：アイデア「家を建てる」"
-      ],
-      "since_day": 1,
-      "work": null,
-      "work_days": 0,
-      "coins": 2,
-      "icon": "fish",
-      "frame": "wood",
-      "owned": [],
-      "appeared": 0,
-      "rewarded_level": 0
-    },
-    {
-      "id": "@カフェオレ-b7z",
-      "platform": "yt",
-      "name": "カフェオレ",
-      "points": 2,
-      "level": 1,
-      "job": "森で動物たちを観察している",
-      "wish": "動物になりたい",
-      "history": [
-        "1日目：投票B",
-        "1日目：アイデア「動物になりたい」"
-      ],
-      "since_day": 1,
-      "work": null,
-      "work_days": 0,
-      "coins": 2,
-      "icon": "palm",
-      "frame": "wood",
-      "owned": [],
-      "appeared": 0,
-      "rewarded_level": 0
-    },
-    {
-      "id": "@おにぎり-o6z",
-      "platform": "yt",
-      "name": "おにぎり",
-      "points": 1,
-      "level": 1,
-      "job": "畑にまく種をえらんでいる",
-      "wish": null,
-      "history": [
-        "1日目（あそび方）：投票C"
-      ],
-      "since_day": 1,
-      "work": null,
-      "work_days": 0,
-      "coins": 1,
-      "icon": "shell",
-      "frame": "wood",
-      "owned": [],
-      "appeared": 0,
-      "rewarded_level": 0
-    },
-    {
-      "id": "rin_rin2423",
-      "platform": "ig",
-      "name": "rin_rin2423",
-      "points": 2,
-      "level": 1,
-      "job": "大工道具をそろえている",
-      "wish": "島の大工長になりたい",
-      "history": [
-        "1日目：投票A",
-        "1日目：アイデア「島の大工長になりたい」"
-      ],
-      "since_day": 1,
-      "work": null,
-      "work_days": 0,
-      "coins": 2,
-      "icon": "fish",
-      "frame": "wood",
-      "owned": [],
-      "appeared": 0,
-      "rewarded_level": 0
-    },
-    {
-      "id": "chun0327",
-      "platform": "ig",
-      "name": "chun0327",
-      "points": 2,
-      "level": 1,
-      "job": "水槽にする岩場をさがしている",
-      "wish": "魚を釣って水槽に入れたい",
-      "history": [
-        "1日目：投票B",
-        "1日目：アイデア「お魚をたくさん釣って水槽に入れたい」",
-        "1日目：しごと「漁師」"
-      ],
-      "since_day": 1,
-      "work": "漁師",
-      "work_days": 0,
-      "coins": 2,
-      "icon": "palm",
-      "frame": "wood",
-      "owned": [],
-      "appeared": 0,
-      "rewarded_level": 0
-    },
-    {
-      "id": "toma.k09",
-      "platform": "ig",
-      "name": "toma.k09",
-      "points": 1,
-      "level": 1,
-      "job": "森の入り口で木を見上げている",
-      "wish": null,
-      "history": [
-        "1日目：投票A"
-      ],
-      "since_day": 1,
-      "work": null,
-      "work_days": 0,
-      "coins": 1,
-      "icon": "shell",
-      "frame": "wood",
-      "owned": [],
-      "appeared": 0,
-      "rewarded_level": 0
-    },
-    {
-      "id": "jennfer_3112",
-      "platform": "ig",
-      "name": "jennfer_3112",
-      "points": 1,
-      "level": 1,
-      "job": "浜辺でつり場をさがしている",
-      "wish": null,
-      "history": [
-        "1日目：投票B"
-      ],
-      "since_day": 1,
-      "work": null,
-      "work_days": 0,
-      "coins": 1,
-      "icon": "fish",
-      "frame": "wood",
-      "owned": [],
-      "appeared": 0,
-      "rewarded_level": 0
-    },
-    {
-      "id": "sz_nattouraionn",
-      "platform": "ig",
-      "name": "sz_nattouraionn",
-      "points": 1,
-      "level": 1,
-      "job": "岩場で魚のかげを見ている",
-      "wish": null,
-      "history": [
-        "1日目：投票B"
-      ],
-      "since_day": 1,
-      "work": null,
-      "work_days": 0,
-      "coins": 1,
-      "icon": "palm",
-      "frame": "wood",
-      "owned": [],
-      "appeared": 0,
-      "rewarded_level": 0
-    },
-    {
-      "id": "nn1k2n",
-      "platform": "ig",
-      "name": "nn1k2n",
-      "points": 1,
-      "level": 1,
-      "job": "島のみんなに朝をお知らせしている",
-      "wish": "島のみんなに朝をお知らせしたい",
-      "history": [
-        "1日目（あそび方）：アイデア「島のみんなに朝をお知らせする」"
-      ],
-      "since_day": 1,
-      "work": null,
-      "work_days": 0,
-      "coins": 1,
-      "icon": "shell",
-      "frame": "wood",
-      "owned": [],
-      "appeared": 0,
-      "rewarded_level": 0
-    },
-    {
-      "id": "kure_0122",
-      "platform": "ig",
-      "name": "kure_0122",
-      "points": 0,
-      "level": 1,
-      "job": "島の広さにおどろきながら浜辺を歩いている",
-      "wish": null,
-      "history": [
-        "1日目（あそび方）：コメント「思ってたより島広い」"
-      ],
-      "since_day": 1,
-      "work": null,
-      "work_days": 0,
-      "coins": 0,
-      "icon": "palm",
-      "frame": "wood",
-      "owned": [],
-      "appeared": 0,
-      "rewarded_level": 0
-    },
-    {
-      "id": "hamduck.gwa98",
-      "platform": "ig",
-      "name": "hamduck.gwa98",
-      "points": 0,
-      "level": 1,
-      "job": null,
-      "wish": null,
-      "history": [
-        "1日目：しごと「畑係」"
-      ],
-      "since_day": 1,
-      "work": "畑係",
-      "work_days": 0,
-      "coins": 0,
-      "icon": "fish",
-      "frame": "wood",
-      "owned": [],
-      "appeared": 0,
-      "rewarded_level": 0
-    },
-    {
-      "id": "yuton_7359",
-      "platform": "ig",
-      "name": "yuton_7359",
-      "points": 0,
-      "level": 1,
-      "job": null,
-      "wish": null,
-      "history": [
-        "1日目：しごと「木こり」"
-      ],
-      "since_day": 1,
-      "work": "木こり",
-      "work_days": 0,
-      "coins": 0,
-      "icon": "palm",
-      "frame": "wood",
-      "owned": [],
-      "appeared": 0,
-      "rewarded_level": 0
-    }
-  ],
-  "links": {
-    "youtube": "https://www.youtube.com/@chiisanashima_sekai",
-    "instagram": "https://www.instagram.com/chiisanashima_sekai/"
+  {
+   "day": 1,
+   "by": "ik_0415",
+   "text": "島の長になりたい",
+   "status": "候補"
   },
-  "jobs": [
-    {
-      "key": "木こり",
-      "icon": "🪓",
-      "does": "森で木を切って、木材を集める",
-      "res": "木材"
-    },
-    {
-      "key": "漁師",
-      "icon": "🎣",
-      "does": "海で魚をとって、食べ物を集める",
-      "res": "食べ物"
-    },
-    {
-      "key": "畑係",
-      "icon": "🌱",
-      "does": "畑をたがやして、作物を育てる",
-      "res": "作物"
-    },
-    {
-      "key": "大工",
-      "icon": "🔨",
-      "does": "木材を使って、家や道具を作る",
-      "res": "建物の進み"
-    },
-    {
-      "key": "探検家",
-      "icon": "🧭",
-      "does": "島のまだ知らない場所を調べる",
-      "res": "見つけた場所"
-    }
+  {
+   "day": 1,
+   "by": "horse.6315152",
+   "text": "島のまとめ役になりたい",
+   "status": "候補"
+  },
+  {
+   "day": 1,
+   "by": "ビッパ色違い",
+   "text": "斧で動物を狩る",
+   "status": "候補"
+  },
+  {
+   "day": 1,
+   "by": "しゅんと",
+   "text": "魚を釣って売ってスマホを買う",
+   "status": "候補"
+  },
+  {
+   "day": 1,
+   "by": "ゆきまろ",
+   "text": "家を建てる",
+   "status": "候補"
+  },
+  {
+   "day": 1,
+   "by": "カフェオレ",
+   "text": "動物になりたい",
+   "status": "候補"
+  },
+  {
+   "day": 1,
+   "by": "rin_rin2423",
+   "text": "島の大工長になりたい",
+   "status": "候補"
+  },
+  {
+   "day": 1,
+   "by": "chun0327",
+   "text": "お魚をたくさん釣って水槽に入れたい",
+   "status": "候補"
+  },
+  {
+   "day": 1,
+   "by": "nn1k2n",
+   "text": "島のみんなに朝をお知らせする",
+   "status": "候補"
+  },
+  {
+   "day": 1,
+   "by": "島のオーナー",
+   "text": "非常食用ひよこ",
+   "status": "採用（2日目で決定）"
+  },
+  {
+   "day": 1,
+   "by": "しゅんと",
+   "text": "この島のリーダーになる",
+   "status": "候補"
+  }
+ ],
+ "timeline": [
+  {
+   "day": 1,
+   "text": "何もない小さな島に、ひとりの男が流れ着いた"
+  }
+ ],
+ "built": [],
+ "residents": [
+  {
+   "id": "ren050554",
+   "platform": "ig",
+   "name": "ren_05",
+   "points": 3,
+   "level": 2,
+   "job": "森で動物たちと仲良くなる練習中",
+   "wish": "動物になりたい",
+   "history": [
+    "1日目：投票B",
+    "1日目：アイデア「動物になりたい」",
+    "1日目：いいね",
+    "1日目：とうろく"
+   ],
+   "since_day": 1,
+   "work": null,
+   "work_days": 0,
+   "coins": 3,
+   "icon": "palm",
+   "frame": "wood",
+   "owned": [],
+   "appeared": 0,
+   "rewarded_level": 0,
+   "code_reg": "bf2039"
+  },
+  {
+   "id": "ik_0415",
+   "platform": "ig",
+   "name": "ik_0415",
+   "points": 2,
+   "level": 1,
+   "job": "島の長をめざして浜辺を見回り中",
+   "wish": "島の長になりたい",
+   "history": [
+    "1日目：投票B",
+    "1日目：アイデア「島の長になりたい」"
+   ],
+   "since_day": 1,
+   "work": null,
+   "work_days": 0,
+   "coins": 2,
+   "icon": "shell",
+   "frame": "wood",
+   "owned": [],
+   "appeared": 0,
+   "rewarded_level": 0
+  },
+  {
+   "id": "horse.6315152",
+   "platform": "ig",
+   "name": "horse.6315152",
+   "points": 2,
+   "level": 1,
+   "job": "みんなの意見をメモにまとめている",
+   "wish": "島のまとめ役になりたい",
+   "history": [
+    "1日目：投票B",
+    "1日目：アイデア「島のまとめ役になりたい」"
+   ],
+   "since_day": 1,
+   "work": null,
+   "work_days": 0,
+   "coins": 2,
+   "icon": "fish",
+   "frame": "wood",
+   "owned": [],
+   "appeared": 0,
+   "rewarded_level": 0
+  },
+  {
+   "id": "yy368313",
+   "platform": "ig",
+   "name": "yy368313",
+   "points": 2,
+   "level": 1,
+   "job": "島に着いたばかり。浜辺で寝床をさがし中",
+   "wish": "島民になりたい",
+   "history": [
+    "1日目：投票B",
+    "1日目：アイデア「島民になりたい」",
+    "1日目：とうろく"
+   ],
+   "since_day": 1,
+   "work": null,
+   "work_days": 0,
+   "coins": 2,
+   "icon": "palm",
+   "frame": "wood",
+   "owned": [],
+   "appeared": 0,
+   "rewarded_level": 0,
+   "code_reg": "e30d2d"
+  },
+  {
+   "id": "m_q1e.5",
+   "platform": "ig",
+   "name": "M.",
+   "points": 2,
+   "level": 1,
+   "job": "木の実をさがして森を歩いている",
+   "wish": null,
+   "history": [
+    "1日目：投票B",
+    "1日目：いいね"
+   ],
+   "since_day": 1,
+   "work": null,
+   "work_days": 0,
+   "coins": 2,
+   "icon": "shell",
+   "frame": "wood",
+   "owned": [],
+   "appeared": 0,
+   "rewarded_level": 0
+  },
+  {
+   "id": "aist.ory751",
+   "platform": "ig",
+   "name": "aist.ory751",
+   "points": 2,
+   "level": 1,
+   "job": "砂浜に島の地図をかいている",
+   "wish": null,
+   "history": [
+    "1日目：投票B",
+    "1日目：いいね",
+    "1日目：しごと「木こり」"
+   ],
+   "since_day": 1,
+   "work": "木こり",
+   "work_days": 0,
+   "coins": 2,
+   "icon": "fish",
+   "frame": "wood",
+   "owned": [],
+   "appeared": 0,
+   "rewarded_level": 0
+  },
+  {
+   "id": "@ビッパ色違い",
+   "platform": "yt",
+   "name": "ビッパ色違い",
+   "points": 2,
+   "level": 1,
+   "job": "オノが届くのを待ちながら森を下見中",
+   "wish": "斧で動物を狩りたい",
+   "history": [
+    "1日目：投票A",
+    "1日目：アイデア「斧で動物を狩る」"
+   ],
+   "since_day": 1,
+   "work": null,
+   "work_days": 0,
+   "coins": 2,
+   "icon": "palm",
+   "frame": "wood",
+   "owned": [],
+   "appeared": 0,
+   "rewarded_level": 0
+  },
+  {
+   "id": "mizuki_tennis12",
+   "platform": "ig",
+   "name": "mizuki_tennis12",
+   "points": 1,
+   "level": 1,
+   "job": "浜辺で貝がらを集めている",
+   "wish": null,
+   "history": [
+    "1日目：投票C"
+   ],
+   "since_day": 1,
+   "work": null,
+   "work_days": 0,
+   "coins": 1,
+   "icon": "shell",
+   "frame": "wood",
+   "owned": [],
+   "appeared": 0,
+   "rewarded_level": 0
+  },
+  {
+   "id": "@いと-f7v",
+   "platform": "yt",
+   "name": "いと",
+   "points": 1,
+   "level": 1,
+   "job": "丘の上から海をながめている",
+   "wish": null,
+   "history": [
+    "1日目：投票B"
+   ],
+   "since_day": 1,
+   "work": null,
+   "work_days": 0,
+   "coins": 1,
+   "icon": "fish",
+   "frame": "wood",
+   "owned": [],
+   "appeared": 0,
+   "rewarded_level": 0
+  },
+  {
+   "id": "go20141224",
+   "platform": "ig",
+   "name": "go",
+   "points": 1,
+   "level": 1,
+   "job": "流木を拾って運んでいる",
+   "wish": null,
+   "history": [
+    "1日目：いいね"
+   ],
+   "since_day": 1,
+   "work": null,
+   "work_days": 0,
+   "coins": 1,
+   "icon": "palm",
+   "frame": "wood",
+   "owned": [],
+   "appeared": 0,
+   "rewarded_level": 0
+  },
+  {
+   "id": "kizuna._.potato",
+   "platform": "ig",
+   "name": "kizuna._.potato",
+   "points": 1,
+   "level": 1,
+   "job": "焚き火の番をしている",
+   "wish": null,
+   "history": [
+    "1日目：いいね"
+   ],
+   "since_day": 1,
+   "work": null,
+   "work_days": 0,
+   "coins": 1,
+   "icon": "shell",
+   "frame": "wood",
+   "owned": [],
+   "appeared": 0,
+   "rewarded_level": 0
+  },
+  {
+   "id": "sasukeeeeeee412",
+   "platform": "ig",
+   "name": "さすけ",
+   "points": 1,
+   "level": 1,
+   "job": "木の実をさがして森を歩いている",
+   "wish": null,
+   "history": [
+    "1日目：いいね"
+   ],
+   "since_day": 1,
+   "work": null,
+   "work_days": 0,
+   "coins": 1,
+   "icon": "fish",
+   "frame": "wood",
+   "owned": [],
+   "appeared": 0,
+   "rewarded_level": 0
+  },
+  {
+   "id": "tyhw__z09",
+   "platform": "ig",
+   "name": "Hayato",
+   "points": 1,
+   "level": 1,
+   "job": "砂浜に島の地図をかいている",
+   "wish": null,
+   "history": [
+    "1日目：いいね"
+   ],
+   "since_day": 1,
+   "work": null,
+   "work_days": 0,
+   "coins": 1,
+   "icon": "palm",
+   "frame": "wood",
+   "owned": [],
+   "appeared": 0,
+   "rewarded_level": 0
+  },
+  {
+   "id": "@しゅんと-u5o",
+   "platform": "yt",
+   "name": "しゅんと",
+   "points": 3,
+   "level": 2,
+   "job": "つりざおで魚をつる練習中",
+   "wish": "魚を売ってスマホを買いたい",
+   "history": [
+    "1日目：投票B",
+    "1日目：アイデア「魚を釣って売ってスマホを買う」",
+    "1日目（あそび方）：アイデア「この島のリーダーになる」"
+   ],
+   "since_day": 1,
+   "work": null,
+   "work_days": 0,
+   "coins": 3,
+   "icon": "shell",
+   "frame": "wood",
+   "owned": [],
+   "appeared": 0,
+   "rewarded_level": 0
+  },
+  {
+   "id": "@ゆきまろ-f9x",
+   "platform": "yt",
+   "name": "ゆきまろ",
+   "points": 2,
+   "level": 1,
+   "job": "家を建てる場所をさがしている",
+   "wish": "家を建てたい",
+   "history": [
+    "1日目：投票A",
+    "1日目：アイデア「家を建てる」"
+   ],
+   "since_day": 1,
+   "work": null,
+   "work_days": 0,
+   "coins": 2,
+   "icon": "fish",
+   "frame": "wood",
+   "owned": [],
+   "appeared": 0,
+   "rewarded_level": 0
+  },
+  {
+   "id": "@カフェオレ-b7z",
+   "platform": "yt",
+   "name": "カフェオレ",
+   "points": 2,
+   "level": 1,
+   "job": "森で動物たちを観察している",
+   "wish": "動物になりたい",
+   "history": [
+    "1日目：投票B",
+    "1日目：アイデア「動物になりたい」"
+   ],
+   "since_day": 1,
+   "work": null,
+   "work_days": 0,
+   "coins": 2,
+   "icon": "palm",
+   "frame": "wood",
+   "owned": [],
+   "appeared": 0,
+   "rewarded_level": 0
+  },
+  {
+   "id": "@おにぎり-o6z",
+   "platform": "yt",
+   "name": "おにぎり",
+   "points": 1,
+   "level": 1,
+   "job": "畑にまく種をえらんでいる",
+   "wish": null,
+   "history": [
+    "1日目（あそび方）：投票C"
+   ],
+   "since_day": 1,
+   "work": null,
+   "work_days": 0,
+   "coins": 1,
+   "icon": "shell",
+   "frame": "wood",
+   "owned": [],
+   "appeared": 0,
+   "rewarded_level": 0
+  },
+  {
+   "id": "rin_rin2423",
+   "platform": "ig",
+   "name": "rin_rin2423",
+   "points": 2,
+   "level": 1,
+   "job": "大工道具をそろえている",
+   "wish": "島の大工長になりたい",
+   "history": [
+    "1日目：投票A",
+    "1日目：アイデア「島の大工長になりたい」"
+   ],
+   "since_day": 1,
+   "work": null,
+   "work_days": 0,
+   "coins": 2,
+   "icon": "fish",
+   "frame": "wood",
+   "owned": [],
+   "appeared": 0,
+   "rewarded_level": 0
+  },
+  {
+   "id": "chun0327",
+   "platform": "ig",
+   "name": "chun0327",
+   "points": 2,
+   "level": 1,
+   "job": "水槽にする岩場をさがしている",
+   "wish": "魚を釣って水槽に入れたい",
+   "history": [
+    "1日目：投票B",
+    "1日目：アイデア「お魚をたくさん釣って水槽に入れたい」",
+    "1日目：しごと「漁師」"
+   ],
+   "since_day": 1,
+   "work": "漁師",
+   "work_days": 0,
+   "coins": 2,
+   "icon": "palm",
+   "frame": "wood",
+   "owned": [],
+   "appeared": 0,
+   "rewarded_level": 0
+  },
+  {
+   "id": "toma.k09",
+   "platform": "ig",
+   "name": "toma.k09",
+   "points": 1,
+   "level": 1,
+   "job": "森の入り口で木を見上げている",
+   "wish": null,
+   "history": [
+    "1日目：投票A"
+   ],
+   "since_day": 1,
+   "work": null,
+   "work_days": 0,
+   "coins": 1,
+   "icon": "shell",
+   "frame": "wood",
+   "owned": [],
+   "appeared": 0,
+   "rewarded_level": 0
+  },
+  {
+   "id": "jennfer_3112",
+   "platform": "ig",
+   "name": "jennfer_3112",
+   "points": 1,
+   "level": 1,
+   "job": "浜辺でつり場をさがしている",
+   "wish": null,
+   "history": [
+    "1日目：投票B"
+   ],
+   "since_day": 1,
+   "work": null,
+   "work_days": 0,
+   "coins": 1,
+   "icon": "fish",
+   "frame": "wood",
+   "owned": [],
+   "appeared": 0,
+   "rewarded_level": 0
+  },
+  {
+   "id": "sz_nattouraionn",
+   "platform": "ig",
+   "name": "sz_nattouraionn",
+   "points": 1,
+   "level": 1,
+   "job": "岩場で魚のかげを見ている",
+   "wish": null,
+   "history": [
+    "1日目：投票B"
+   ],
+   "since_day": 1,
+   "work": null,
+   "work_days": 0,
+   "coins": 1,
+   "icon": "palm",
+   "frame": "wood",
+   "owned": [],
+   "appeared": 0,
+   "rewarded_level": 0
+  },
+  {
+   "id": "nn1k2n",
+   "platform": "ig",
+   "name": "nn1k2n",
+   "points": 1,
+   "level": 1,
+   "job": "島のみんなに朝をお知らせしている",
+   "wish": "島のみんなに朝をお知らせしたい",
+   "history": [
+    "1日目（あそび方）：アイデア「島のみんなに朝をお知らせする」"
+   ],
+   "since_day": 1,
+   "work": null,
+   "work_days": 0,
+   "coins": 1,
+   "icon": "shell",
+   "frame": "wood",
+   "owned": [],
+   "appeared": 0,
+   "rewarded_level": 0
+  },
+  {
+   "id": "kure_0122",
+   "platform": "ig",
+   "name": "kure_0122",
+   "points": 0,
+   "level": 1,
+   "job": "島の広さにおどろきながら浜辺を歩いている",
+   "wish": null,
+   "history": [
+    "1日目（あそび方）：コメント「思ってたより島広い」"
+   ],
+   "since_day": 1,
+   "work": null,
+   "work_days": 0,
+   "coins": 0,
+   "icon": "palm",
+   "frame": "wood",
+   "owned": [],
+   "appeared": 0,
+   "rewarded_level": 0
+  },
+  {
+   "id": "hamduck.gwa98",
+   "platform": "ig",
+   "name": "hamduck.gwa98",
+   "points": 0,
+   "level": 1,
+   "job": null,
+   "wish": null,
+   "history": [
+    "1日目：しごと「畑係」"
+   ],
+   "since_day": 1,
+   "work": "畑係",
+   "work_days": 0,
+   "coins": 0,
+   "icon": "fish",
+   "frame": "wood",
+   "owned": [],
+   "appeared": 0,
+   "rewarded_level": 0
+  },
+  {
+   "id": "yuton_7359",
+   "platform": "ig",
+   "name": "yuton_7359",
+   "points": 0,
+   "level": 1,
+   "job": null,
+   "wish": null,
+   "history": [
+    "1日目：しごと「木こり」"
+   ],
+   "since_day": 1,
+   "work": "木こり",
+   "work_days": 0,
+   "coins": 0,
+   "icon": "palm",
+   "frame": "wood",
+   "owned": [],
+   "appeared": 0,
+   "rewarded_level": 0
+  }
+ ],
+ "links": {
+  "youtube": "https://www.youtube.com/@chiisanashima_sekai",
+  "instagram": "https://www.instagram.com/chiisanashima_sekai/"
+ },
+ "jobs": [
+  {
+   "key": "木こり",
+   "icon": "🪓",
+   "does": "森で木を切って、木材を集める",
+   "res": "木材"
+  },
+  {
+   "key": "漁師",
+   "icon": "🎣",
+   "does": "海で魚をとって、食べ物を集める",
+   "res": "食べ物"
+  },
+  {
+   "key": "畑係",
+   "icon": "🌱",
+   "does": "畑をたがやして、作物を育てる",
+   "res": "作物"
+  },
+  {
+   "key": "大工",
+   "icon": "🔨",
+   "does": "木材を使って、家や道具を作る",
+   "res": "建物の進み"
+  },
+  {
+   "key": "探検家",
+   "icon": "🧭",
+   "does": "島のまだ知らない場所を調べる",
+   "res": "見つけた場所"
+  }
+ ],
+ "resources": {
+  "木材": 0,
+  "食べ物": 0,
+  "作物": 0,
+  "建物の進み": 0,
+  "見つけた場所": 0
+ },
+ "titles": [
+  "新入り",
+  "島の住人",
+  "働き者",
+  "島の顔",
+  "ベテラン",
+  "島の先輩",
+  "島の名人",
+  "島の守り神",
+  "伝説の島民",
+  "島そのもの"
+ ],
+ "shop": {
+  "icons": [
+   {
+    "key": "palm",
+    "name": "ヤシの木",
+    "cost": 0
+   },
+   {
+    "key": "shell",
+    "name": "貝がら",
+    "cost": 0
+   },
+   {
+    "key": "fish",
+    "name": "さかな",
+    "cost": 0
+   },
+   {
+    "key": "turtle",
+    "name": "カメ",
+    "cost": 3
+   },
+   {
+    "key": "crab",
+    "name": "カニ",
+    "cost": 3
+   },
+   {
+    "key": "boat",
+    "name": "小舟",
+    "cost": 4
+   },
+   {
+    "key": "starfish",
+    "name": "ヒトデ",
+    "cost": 6
+   },
+   {
+    "key": "sun",
+    "name": "たいよう",
+    "cost": 6
+   },
+   {
+    "key": "moon",
+    "name": "つき",
+    "cost": 8
+   },
+   {
+    "key": "whale",
+    "name": "クジラ",
+    "cost": 10
+   },
+   {
+    "key": "lighthouse",
+    "name": "灯台",
+    "cost": 12
+   },
+   {
+    "key": "treasure",
+    "name": "たからばこ",
+    "cost": 15
+   },
+   {
+    "key": "bridge",
+    "name": "かけ橋の島",
+    "cost": 0,
+    "limited": "げんてい：つなぐ"
+   }
   ],
-  "resources": {
-    "木材": 0,
-    "食べ物": 0,
-    "作物": 0,
-    "建物の進み": 0,
-    "見つけた場所": 0
-  },
-  "titles": [
-    "新入り",
-    "島の住人",
-    "働き者",
-    "島の顔",
-    "ベテラン",
-    "島の先輩",
-    "島の名人",
-    "島の守り神",
-    "伝説の島民",
-    "島そのもの"
-  ],
-  "shop": {
-    "icons": [
-      {
-        "key": "palm",
-        "name": "ヤシの木",
-        "cost": 0
-      },
-      {
-        "key": "shell",
-        "name": "貝がら",
-        "cost": 0
-      },
-      {
-        "key": "fish",
-        "name": "さかな",
-        "cost": 0
-      },
-      {
-        "key": "turtle",
-        "name": "カメ",
-        "cost": 3
-      },
-      {
-        "key": "crab",
-        "name": "カニ",
-        "cost": 3
-      },
-      {
-        "key": "boat",
-        "name": "小舟",
-        "cost": 4
-      },
-      {
-        "key": "starfish",
-        "name": "ヒトデ",
-        "cost": 6
-      },
-      {
-        "key": "sun",
-        "name": "たいよう",
-        "cost": 6
-      },
-      {
-        "key": "moon",
-        "name": "つき",
-        "cost": 8
-      },
-      {
-        "key": "whale",
-        "name": "クジラ",
-        "cost": 10
-      },
-      {
-        "key": "lighthouse",
-        "name": "灯台",
-        "cost": 12
-      },
-      {
-        "key": "treasure",
-        "name": "たからばこ",
-        "cost": 15
-      },
-      {
-        "key": "bridge",
-        "name": "かけ橋の島",
-        "cost": 0,
-        "limited": "げんてい：つなぐ"
-      }
-    ],
-    "frames": [
-      {
-        "key": "wood",
-        "name": "木のわく",
-        "cost": 0
-      },
-      {
-        "key": "rope",
-        "name": "なわのわく",
-        "cost": 3
-      },
-      {
-        "key": "shells",
-        "name": "貝がらのわく",
-        "cost": 5
-      },
-      {
-        "key": "silver",
-        "name": "銀のわく",
-        "cost": 8
-      },
-      {
-        "key": "gold",
-        "name": "金のわく",
-        "cost": 12
-      },
-      {
-        "key": "rainbow",
-        "name": "にじのわく",
-        "cost": 20
-      },
-      {
-        "key": "wave",
-        "name": "大波のわく",
-        "cost": 15
-      },
-      {
-        "key": "fire",
-        "name": "ほのおのわく",
-        "cost": 25
-      },
-      {
-        "key": "thunder",
-        "name": "いなずまのわく",
-        "cost": 25
-      },
-      {
-        "key": "galaxy",
-        "name": "星空のわく",
-        "cost": 30
-      },
-      {
-        "key": "wings",
-        "name": "つばさのわく",
-        "cost": 40
-      },
-      {
-        "key": "crown",
-        "name": "王者のわく",
-        "cost": 50
-      }
-    ]
-  },
-  "title_every": 10,
-  "level_reward": {
-    "every": 5,
-    "rule": "Lv5ごとに、そのレベルと同じ数のコイン（Lv5→5枚、Lv10→10枚…Lv100→100枚）"
-  },
-  "last_sync": "2026-11-25 10:58",
-  "events_rule": "YouTubeのチャンネル登録者だけで数える。節目と名前は events.js（20,30,50,70,100,150,200,300,500,700,1000…と終わりなし）"
+  "frames": [
+   {
+    "key": "wood",
+    "name": "木のわく",
+    "cost": 0
+   },
+   {
+    "key": "rope",
+    "name": "なわのわく",
+    "cost": 3
+   },
+   {
+    "key": "shells",
+    "name": "貝がらのわく",
+    "cost": 5
+   },
+   {
+    "key": "silver",
+    "name": "銀のわく",
+    "cost": 8
+   },
+   {
+    "key": "gold",
+    "name": "金のわく",
+    "cost": 12
+   },
+   {
+    "key": "rainbow",
+    "name": "にじのわく",
+    "cost": 20
+   },
+   {
+    "key": "wave",
+    "name": "大波のわく",
+    "cost": 15
+   },
+   {
+    "key": "fire",
+    "name": "ほのおのわく",
+    "cost": 25
+   },
+   {
+    "key": "thunder",
+    "name": "いなずまのわく",
+    "cost": 25
+   },
+   {
+    "key": "galaxy",
+    "name": "星空のわく",
+    "cost": 30
+   },
+   {
+    "key": "wings",
+    "name": "つばさのわく",
+    "cost": 40
+   },
+   {
+    "key": "crown",
+    "name": "王者のわく",
+    "cost": 50
+   }
+  ]
+ },
+ "title_every": 10,
+ "level_reward": {
+  "every": 5,
+  "rule": "Lv5ごとに、そのレベルと同じ数のコイン（Lv5→5枚、Lv10→10枚…Lv100→100枚）"
+ },
+ "last_sync": "2026-11-25 10:58",
+ "events_rule": "YouTubeのチャンネル登録者だけで数える。節目と名前は events.js（20,30,50,70,100,150,200,300,500,700,1000…と終わりなし）"
 }
