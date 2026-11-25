@@ -860,7 +860,7 @@ function renderMe() {
     <div><div class="big" style="font-size:22px">${esc(me.name)}</div><div class="note">国民No.${me.no}</div>${badgesOf(me)}</div></div>
     <p style="margin:10px 0 0">持っているお金：<b class="big" style="font-size:22px">${yen(me.money)}</b></p><p class="note">※国の中だけのお金です</p>`;
   $("igCard").style.display = me.verified ? "none" : ""; $("igForm").style.display = "none"; if (!me.verified) showIgPending();
-  drawLinkCard();
+  S.me = me; drawLinkCard();
   if (document.activeElement !== $("eBio")) $("eBio").value = me.bio || "";
   if (document.activeElement !== $("eIcon")) $("eIcon").value = me.icon || "";
   $("eColors").innerHTML = COLORS.map(c => `<button style="background:${c}" data-c="${c}" class="${c === me.color ? "on" : ""}"></button>`).join("");
