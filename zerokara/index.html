@@ -143,6 +143,8 @@ footer{text-align:center;color:var(--mut);font-size:12px;padding:20px}
   </div>
   <div id="mapWrap">
     <canvas id="map"></canvas>
+    <canvas id="map3d" style="display:none;position:absolute;inset:0;width:100%;height:100%;touch-action:none"></canvas>
+    <canvas id="map3dl" style="display:none;position:absolute;inset:0;width:100%;height:100%;pointer-events:none"></canvas>
     <div class="mapbar"><button id="z3d" style="font-size:14px">3D</button><button id="zrot" style="display:none">⟳</button><button id="zin">＋</button><button id="zout">－</button><button id="zhome">⌂</button><button id="zme" title="自分の土地">📍</button></div>
     <div id="mapInfo" style="position:absolute;left:8px;bottom:8px;background:rgba(255,255,255,.9);border-radius:10px;padding:4px 8px;font-size:12px;font-weight:700"></div>
   </div>
@@ -326,7 +328,7 @@ function buildContinent() {
   for (let y = 0; y < N; y++) for (let x = 0; x < N; x++) {
     const nx = x / N - 0.5, ny = y / N - 0.5, d = Math.sqrt(nx * nx * 1.1 + ny * ny) * 2;
     const h = n1(x / 9, y / 9) * 0.55 + n1(x / 4.5 + 31, y / 4.5 + 17) * 0.3 + n1(x / 2.2 + 5, y / 2.2 + 9) * 0.15;
-    elev[y * N + x] = h - d * 0.85 + 0.18;
+    elev[y * N + x] = h - Math.pow(d, 1.6) * 0.75 + 0.24 - Math.max(0, d - 0.78) * 2.2;
     wet[y * N + x] = n2(x / 11, y / 11) * 0.7 + n3(x / 5, y / 5) * 0.3;
   }
   const landE = []; for (let i = 0; i < N * N; i++) if (elev[i] >= 0) landE.push(elev[i]);
@@ -337,7 +339,7 @@ function buildContinent() {
     const x = i % N, y = (i / N) | 0, e = elev[i];
     if (e < 0) { t[i] = T.SEA; continue; }
     if (e > MT) t[i] = T.MOUNT;
-    else if (y < 22) t[i] = T.SNOW;
+    else if (y < 20 + n2(x / 6 + 40, 3) * 10) t[i] = T.SNOW;
     else if (wet[i] < DRY && y > 50) t[i] = T.DESERT;
     else if (e > HILL) t[i] = T.FOREST; // 森は山のまわりだけ
     else t[i] = T.PLAIN;
@@ -498,6 +500,7 @@ function screenToPlot(px, py) {
   return res;
 }
 function drawMap(fromTiles) {
+  if (MAP.mode === "3d") { G3.draw(); return; }
   const c = MAP.cv.getContext("2d"), W = MAP.cv.width, H = MAP.cv.height, C = content(), k = MAP.k, d = MAP.d || 1;
   const g = c.createLinearGradient(0, 0, 0, H); g.addColorStop(0, MAP.mode === "2d" ? "#5C9FD0" : "#BFE3F7"); g.addColorStop(1, MAP.mode === "2d" ? "#3E86BF" : "#7FB8DE");
   c.fillStyle = g; c.fillRect(0, 0, W, H);
@@ -540,9 +543,10 @@ function drawMap(fromTiles) {
     const km = [1, 2, 5, 10, 20, 50].find(v => v * z > 50 * d) || 50, len = km * z; c.fillStyle = "rgba(255,255,255,.92)"; c.fillRect(W - len - 22 * d, H - 30 * d, len + 14 * d, 22 * d); c.fillStyle = "#1D2B2A"; c.fillRect(W - len - 15 * d, H - 14 * d, len, 3 * d); c.font = `700 ${10 * d}px sans-serif`; c.fillText(`${km}km`, W - len / 2 - 15 * d, H - 22 * d); }
   $("mapInfo").textContent = MAP.mode === "2d" ? (zc < 8 ? "ゆびで拡大すると区画が見えます" : zc < 42 ? "もっと拡大すると区画の番号が見えます" : "区画をタップしてね") : "3Dで見ています（⟳で回転）";
 }
-addEventListener("resize", () => { if ($("s-map").classList.contains("on")) { resizeMap(); drawMap(); } });
+addEventListener("resize", () => { if ($("s-map").classList.contains("on")) { resizeMap(); if (MAP.mode === "3d") G3.resize(); drawMap(); } });
 let flyAnim = 0;
 function flyTo(x, y, targetZ) { // 区画へなめらかに移動
+  if (MAP.mode === "3d") { G3.fly(x, y); return; }
   const W = MAP.cv.width, H = MAP.cv.height, unit = MAP.mode === "2d" ? SPX : ISO.w, k0 = MAP.k, k1 = Math.max(k0 * .2, (targetZ * (MAP.d || 1)) / unit);
   let tx, ty; if (MAP.mode === "2d") { tx = (x + .5) * SPX; ty = (y + .5) * SPX; } else { const [a, b] = rotXY(Math.round(x), Math.round(y), MAP.rot), w = ISO.w; tx = (a - b) * w / 2 + ISO.X0; ty = (a + b) * w / 4 + ISO.Y0 - plotH(Math.round(x), Math.round(y)) + w / 4; }
   const c0x = (W / 2 - MAP.ox) / k0, c0y = (H * .45 - MAP.oy) / k0, t0 = performance.now(), id = ++flyAnim;
@@ -566,9 +570,12 @@ function flyTo(x, y, targetZ) { // 区画へなめらかに移動
   cv.addEventListener("pointerup", up); cv.addEventListener("pointercancel", e => { P.delete(e.pointerId); last = null; });
   cv.addEventListener("wheel", e => { e.preventDefault(); const p = pt(e); zoomAt(p.x, p.y, e.deltaY < 0 ? 1.15 : 1 / 1.15); }, { passive: false });
   cv.addEventListener("dblclick", e => { const p = pt(e); zoomAt(p.x, p.y, 2); });
-  $("zin").onclick = () => zoomAt(cv.width / 2, cv.height / 2, 1.5); $("zout").onclick = () => zoomAt(cv.width / 2, cv.height / 2, 1 / 1.5); $("zhome").onclick = () => { fitMap(); drawMap(); };
-  $("z3d").onclick = () => { MAP.mode = MAP.mode === "2d" ? "3d" : "2d"; $("z3d").textContent = MAP.mode === "2d" ? "3D" : "2D"; $("zrot").style.display = MAP.mode === "3d" ? "" : "none"; fitMap(); drawMap(); };
-  $("zrot").onclick = () => { MAP.rot = (MAP.rot + 1) % 4; fitMap(); drawMap(); };
+  $("zin").onclick = () => MAP.mode === "3d" ? G3.zoom(1.5) : zoomAt(cv.width / 2, cv.height / 2, 1.5); $("zout").onclick = () => MAP.mode === "3d" ? G3.zoom(1 / 1.5) : zoomAt(cv.width / 2, cv.height / 2, 1 / 1.5); $("zhome").onclick = () => { if (MAP.mode === "3d") return G3.home(); fitMap(); drawMap(); };
+  $("z3d").onclick = () => { const to3 = MAP.mode === "2d";
+    if (to3) { $("map3d").style.display = $("map3dl").style.display = ""; G3.resize(); if (!G3.init()) { $("map3d").style.display = $("map3dl").style.display = "none"; sheet("<p>このスマホでは3Dが使えませんでした。2Dの地図で見てね。</p>"); return; } }
+    else { $("map3d").style.display = $("map3dl").style.display = "none"; }
+    MAP.mode = to3 ? "3d" : "2d"; $("z3d").textContent = to3 ? "2D" : "3D"; $("zrot").style.display = to3 ? "" : "none"; if (to3) G3.draw(); else { fitMap(); drawMap(); } };
+  $("zrot").onclick = () => G3.rotate();
   $("zme").onclick = () => { const mine = [...S.lands.values()].find(l => l.owner === S.myNo); if (mine) { flyTo(mine.x, mine.y, 40); MAP.sel = { x: mine.x, y: mine.y }; } else sheet(`<p>${S.myNo ? "まだ土地を持っていません。区画をタップして申しこもう！" : "国民になると、自分の土地にすぐ飛べます。"}</p>`); };
 })();
 // 地図の検索
@@ -584,6 +591,159 @@ $("mapq").addEventListener("input", () => {
   R.style.display = ""; R.onclick = e => { const d = e.target.closest("[data-i]"); if (!d) return; const r = res[+d.dataset.i]; R.style.display = "none"; $("mapq").blur();
     if (r.x == null) { if (r.no) openCitizen(r.no); return; } MAP.sel = { x: Math.round(r.x), y: Math.round(r.y) }; flyTo(r.x, r.y, r.z); if (r.plot) setTimeout(() => openPlot(r.x, r.y), 700); };
 });
+
+// ---------- 3D（WebGLでなめらかな地形と木） ----------
+const G3 = (() => {
+  const cv = $("map3d"), lc = $("map3dl"); let gl = null, ok = false, prog, tprog, terrain, tree, house, water, treeInst = 0, houseInst = 0, housesDirty = true;
+  const cam = { tx: 50, tz: 52, dist: 95, yaw: -0.6, pitch: 0.82 };
+  const HS = 11; // 高さの倍率
+  const hAt = (fx, fy) => { const e = elevAt(fx, fy); if (e < 0) return Math.max(-1.2, e * 6); const l = lakeAt(fx, fy); return e * HS - Math.min(1, l * 1.6) * (e * HS + .15); };
+  const rnd = rng(SEED + 404);
+  function sh(src, type) { const s = gl.createShader(type); gl.shaderSource(s, src); gl.compileShader(s); if (!gl.getShaderParameter(s, gl.COMPILE_STATUS)) throw new Error(gl.getShaderInfoLog(s)); return s; }
+  function mk(vs, fs) { const p = gl.createProgram(); gl.attachShader(p, sh(vs, gl.VERTEX_SHADER)); gl.attachShader(p, sh(fs, gl.FRAGMENT_SHADER)); gl.linkProgram(p); if (!gl.getProgramParameter(p, gl.LINK_STATUS)) throw new Error(gl.getProgramInfoLog(p)); return p; }
+  const VS = `#version 300 es
+  in vec3 p; in vec3 n; in vec3 c; in vec4 inst; in vec3 icol; uniform mat4 vp; uniform int useInst; out vec3 vn; out vec3 vc; out vec3 wp;
+  void main(){ vec3 q=p; vec3 col=c; if(useInst==1){ float s=inst.w; float a=inst.x*13.0+inst.z*7.0; q=vec3(p.x*cos(a)-p.z*sin(a), p.y, p.x*sin(a)+p.z*cos(a))*s; q+=inst.xyz; col=c*icol; }
+    wp=q; vn=n; vc=col; gl_Position=vp*vec4(q,1.0); }`;
+  const FS = `#version 300 es
+  precision highp float; in vec3 vn; in vec3 vc; in vec3 wp; uniform vec3 eye; uniform vec3 sky; uniform float alpha; out vec4 o;
+  void main(){ vec3 N=normalize(vn); vec3 L=normalize(vec3(-0.5,0.85,-0.35)); float d=max(dot(N,L),0.0); float hemi=0.5+0.5*N.y;
+    vec3 col=vc*(0.42*hemi+0.78*d);
+    if(alpha<1.0){ vec3 V=normalize(eye-wp); vec3 H=normalize(L+V); col+=vec3(1.0)*pow(max(dot(N,H),0.0),80.0)*0.6; }
+    float f=clamp((length(eye-wp)-60.0)/180.0,0.0,1.0); col=mix(col,sky,f*0.85); o=vec4(col,alpha); }`;
+  function buf(data, size, loc, divisor) { const b = gl.createBuffer(); gl.bindBuffer(gl.ARRAY_BUFFER, b); gl.bufferData(gl.ARRAY_BUFFER, data, gl.STATIC_DRAW); gl.enableVertexAttribArray(loc); gl.vertexAttribPointer(loc, size, gl.FLOAT, false, 0, 0); if (divisor) gl.vertexAttribDivisor(loc, 1); return b; }
+  function mesh(pos, nor, col, idx, inst, icol) { const vao = gl.createVertexArray(); gl.bindVertexArray(vao); const L = n => gl.getAttribLocation(prog, n);
+    buf(pos, 3, L("p")); buf(nor, 3, L("n")); buf(col, 3, L("c"));
+    const o = { vao, n: idx.length, ib: gl.createBuffer() }; gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, o.ib); gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, idx, gl.STATIC_DRAW);
+    if (inst) { o.ibuf = buf(inst, 4, L("inst"), 1); o.cbuf = buf(icol, 3, L("icol"), 1); }
+    else { gl.disableVertexAttribArray(L("inst")); gl.vertexAttrib4f(L("inst"), 0, 0, 0, 1); gl.disableVertexAttribArray(L("icol")); gl.vertexAttrib3f(L("icol"), 1, 1, 1); }
+    gl.bindVertexArray(null); return o; }
+  function buildTerrain() {
+    const R = 3, M = N * R + 1, pos = new Float32Array(M * M * 3), nor = new Float32Array(M * M * 3), col = new Float32Array(M * M * 3), o = [0, 0, 0];
+    for (let j = 0; j < M; j++) for (let i = 0; i < M; i++) { const fx = i / R, fy = j / R, k = (j * M + i) * 3, y = hAt(fx, fy);
+      pos[k] = fx; pos[k + 1] = y; pos[k + 2] = fy;
+      const dx = hAt(fx + .3, fy) - hAt(fx - .3, fy), dz = hAt(fx, fy + .3) - hAt(fx, fy - .3); const nx = -dx / .6, nz = -dz / .6, l = Math.hypot(nx, 1, nz); nor[k] = nx / l; nor[k + 1] = 1 / l; nor[k + 2] = nz / l;
+      pix(fx, fy, o); col[k] = o[0] / 255 * 1.05; col[k + 1] = o[1] / 255 * 1.05; col[k + 2] = o[2] / 255 * 1.05; }
+    const idx = new Uint32Array((M - 1) * (M - 1) * 6); let q = 0;
+    for (let j = 0; j < M - 1; j++) for (let i = 0; i < M - 1; i++) { const a = j * M + i, b = a + 1, c2 = a + M, d = c2 + 1; idx[q++] = a; idx[q++] = c2; idx[q++] = b; idx[q++] = b; idx[q++] = c2; idx[q++] = d; }
+    terrain = mesh(pos, nor, col, idx);
+    const wp = new Float32Array([-200, 0, -200, 300, 0, -200, -200, 0, 300, 300, 0, 300]), wn = new Float32Array([0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0]), wc = new Float32Array([.2, .5, .78, .2, .5, .78, .2, .5, .78, .2, .5, .78]);
+    water = mesh(wp, wn, wc, new Uint32Array([0, 2, 1, 1, 2, 3]));
+  }
+  function cone(P, Nn, C, I, y0, y1, r, col, seg) { const base = P.length / 3;
+    for (let s = 0; s < seg; s++) { const a0 = s / seg * Math.PI * 2, a1 = (s + 1) / seg * Math.PI * 2, am = (a0 + a1) / 2; const ny = r / (y1 - y0), nl = Math.hypot(1, ny);
+      const v = [[Math.cos(a0) * r, y0, Math.sin(a0) * r], [0, y1, 0], [Math.cos(a1) * r, y0, Math.sin(a1) * r]];
+      v.forEach(p => { P.push(...p); Nn.push(Math.cos(am) / nl, ny / nl, Math.sin(am) / nl); C.push(...col); }); I.push(base + s * 3, base + s * 3 + 1, base + s * 3 + 2); } }
+  function cyl(P, Nn, C, I, y0, y1, r, col, seg) { const base = P.length / 3;
+    for (let s = 0; s <= seg; s++) { const a = s / seg * Math.PI * 2, x = Math.cos(a), z = Math.sin(a); P.push(x * r, y0, z * r, x * r, y1, z * r); Nn.push(x, 0, z, x, 0, z); C.push(...col, ...col); }
+    for (let s = 0; s < seg; s++) { const a = base + s * 2; I.push(a, a + 1, a + 2, a + 2, a + 1, a + 3); } }
+  function buildTrees() {
+    // 木の形（幹＋葉3段）
+    const P = [], Nn = [], C = [], I = [];
+    cyl(P, Nn, C, I, 0, .35, .06, [.45, .3, .18], 6);
+    cone(P, Nn, C, I, .25, 1.0, .42, [.2, .45, .22], 8); cone(P, Nn, C, I, .55, 1.25, .34, [.24, .52, .26], 8); cone(P, Nn, C, I, .85, 1.5, .24, [.28, .58, .3], 8);
+    const inst = [], icol = [];
+    for (let y = 0; y < N; y++) for (let x = 0; x < N; x++) { const tt = LAND[y * N + x]; let n = tt === T.MOUNT ? 7 : tt === T.FOREST ? 6 : tt === T.PLAIN ? (rnd() < .05 ? 1 : 0) : 0;
+      for (let k = 0; k < n; k++) { const fx = x + rnd(), fy = y + rnd(), e = elevAt(fx, fy); if (e < 0.02 || e > SNOWE * .86 || lakeAt(fx, fy) > .3) continue; if (x === MON.x && y === MON.y) continue;
+        if (S.lands.has(`${x}_${y}`)) continue;
+        const s = .32 + rnd() * .28; inst.push(fx, hAt(fx, fy) - .02, fy, s); const t = .8 + rnd() * .35; icol.push(t * (.9 + rnd() * .15), t, t * (.85 + rnd() * .2)); } }
+    // instの y を回転用に使う（シェーダー内で inst.y*7 を角度に）→ 高さは別に持たせる
+    const inst2 = new Float32Array(inst.length); for (let i = 0; i < inst.length; i += 4) { inst2[i] = inst[i]; inst2[i + 1] = inst[i + 1]; inst2[i + 2] = inst[i + 2]; inst2[i + 3] = inst[i + 3]; }
+    treeInst = inst.length / 4;
+    tree = mesh(new Float32Array(P), new Float32Array(Nn), new Float32Array(C), new Uint32Array(I), inst2, new Float32Array(icol));
+  }
+  function buildHouses() {
+    const P = [], Nn = [], C = [], I = [];
+    const box = (x0, y0, z0, x1, y1, z1, col) => { const f = [[[0, 1, 0], [[x0, y1, z0], [x1, y1, z0], [x1, y1, z1], [x0, y1, z1]]], [[0, 0, -1], [[x0, y0, z0], [x1, y0, z0], [x1, y1, z0], [x0, y1, z0]]], [[0, 0, 1], [[x0, y0, z1], [x0, y1, z1], [x1, y1, z1], [x1, y0, z1]]], [[-1, 0, 0], [[x0, y0, z0], [x0, y1, z0], [x0, y1, z1], [x0, y0, z1]]], [[1, 0, 0], [[x1, y0, z0], [x1, y0, z1], [x1, y1, z1], [x1, y1, z0]]]];
+      for (const [n, v] of f) { const b = P.length / 3; v.forEach(p => { P.push(...p); Nn.push(...n); C.push(...col); }); I.push(b, b + 1, b + 2, b, b + 2, b + 3); } };
+    box(-.32, 0, -.32, .32, .45, .32, [1, 1, 1]); cone(P, Nn, C, I, .45, .85, .48, [.75, .25, .2], 4);
+    const inst = [], icol = [];
+    for (const L of S.lands.values()) { const fx = L.x + .5, fy = L.y + .5; inst.push(fx, hAt(fx, fy), fy, .9); const h = hex(L.color || "#E8A317"); icol.push(h[0] / 255 + .2, h[1] / 255 + .2, h[2] / 255 + .2); }
+    const fx = MON.x + .5, fy = MON.y + .5; // 記念碑
+    houseInst = inst.length / 4;
+    house = houseInst ? mesh(new Float32Array(P), new Float32Array(Nn), new Float32Array(C), new Uint32Array(I), new Float32Array(inst), new Float32Array(icol)) : null;
+    housesDirty = false;
+  }
+  function mat() { // ビュー×プロジェクション
+    const W = cv.width, H = cv.height, a = W / H, f = 1 / Math.tan(0.5 * 0.9), nr = .3, fr = 600;
+    const ex = cam.tx + Math.sin(cam.yaw) * Math.cos(cam.pitch) * cam.dist, ey = Math.sin(cam.pitch) * cam.dist, ez = cam.tz + Math.cos(cam.yaw) * Math.cos(cam.pitch) * cam.dist;
+    const eye = [ex, ey, ez], ctr = [cam.tx, 0, cam.tz]; let zx = eye[0] - ctr[0], zy = eye[1] - ctr[1], zz = eye[2] - ctr[2], zl = Math.hypot(zx, zy, zz); zx /= zl; zy /= zl; zz /= zl;
+    let xx = zz, xy = 0, xz = -zx, xl = Math.hypot(xx, xz); xx /= xl; xz /= xl; const yx = zy * xz - zz * xy, yy = zz * xx - zx * xz, yz = zx * xy - zy * xx;
+    const V = [xx, yx, zx, 0, xy, yy, zy, 0, xz, yz, zz, 0, -(xx * ex + xy * ey + xz * ez), -(yx * ex + yy * ey + yz * ez), -(zx * ex + zy * ey + zz * ez), 1];
+    const Pm = [f / a, 0, 0, 0, 0, f, 0, 0, 0, 0, (fr + nr) / (nr - fr), -1, 0, 0, 2 * fr * nr / (nr - fr), 0];
+    const M = new Float32Array(16); for (let i = 0; i < 4; i++) for (let j = 0; j < 4; j++) { let s = 0; for (let k = 0; k < 4; k++) s += Pm[k * 4 + j] * V[i * 4 + k]; M[i * 4 + j] = s; }
+    return { M, eye };
+  }
+  function project(M, x, y, z) { const X = M[0] * x + M[4] * y + M[8] * z + M[12], Y = M[1] * x + M[5] * y + M[9] * z + M[13], Wv = M[3] * x + M[7] * y + M[11] * z + M[15]; if (Wv <= 0) return null; return [(X / Wv * .5 + .5) * cv.width, (1 - (Y / Wv * .5 + .5)) * cv.height]; }
+  let raf = 0;
+  function draw() { if (!ok) return; cancelAnimationFrame(raf); raf = requestAnimationFrame(render); }
+  function render() {
+    if (housesDirty) buildHouses();
+    const { M, eye } = mat(), sky = [.74, .86, .95];
+    gl.viewport(0, 0, cv.width, cv.height); gl.clearColor(...sky, 1); gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT); gl.enable(gl.DEPTH_TEST);
+    gl.useProgram(prog); gl.uniformMatrix4fv(gl.getUniformLocation(prog, "vp"), false, M); gl.uniform3fv(gl.getUniformLocation(prog, "eye"), eye); gl.uniform3fv(gl.getUniformLocation(prog, "sky"), sky);
+    const U = gl.getUniformLocation(prog, "useInst"), A = gl.getUniformLocation(prog, "alpha");
+    const drawM = (m, inst, cnt) => { gl.bindVertexArray(m.vao); gl.uniform1i(U, inst ? 1 : 0); if (inst) gl.drawElementsInstanced(gl.TRIANGLES, m.n, gl.UNSIGNED_INT, 0, cnt); else gl.drawElements(gl.TRIANGLES, m.n, gl.UNSIGNED_INT, 0); };
+    gl.uniform1f(A, 1); drawM(terrain); drawM(tree, true, treeInst); if (house) drawM(house, true, houseInst);
+    gl.enable(gl.BLEND); gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA); gl.depthMask(false); gl.uniform1f(A, .72); drawM(water); gl.depthMask(true); gl.disable(gl.BLEND);
+    // ラベル
+    const c = lc.getContext("2d"), d = MAP.d || 1; c.clearRect(0, 0, lc.width, lc.height); c.textAlign = "center"; c.textBaseline = "middle";
+    for (const p of PLACES) { const s = project(M, p.x, hAt(p.x, p.y) + 1.2, p.y); if (!s) continue; if (!p.big && !p.mon && cam.dist > 70) continue;
+      if (p.mon) { c.font = `${18 * d}px "Noto Color Emoji","Apple Color Emoji",sans-serif`; c.fillText("🗿", s[0], s[1] - 10 * d); }
+      c.font = `800 ${13 * d}px "Hiragino Sans","Noto Sans CJK JP",sans-serif`; c.lineWidth = 4 * d; c.strokeStyle = "rgba(255,255,255,.92)"; c.fillStyle = p.mon ? "#7A4E00" : "#33403F"; c.strokeText(p.name, s[0], s[1] + 6 * d); c.fillText(p.name, s[0], s[1] + 6 * d); }
+    if (MAP.sel) { const s = project(M, MAP.sel.x + .5, hAt(MAP.sel.x + .5, MAP.sel.y + .5) + .2, MAP.sel.y + .5); if (s) { c.fillStyle = "#D9534F"; c.strokeStyle = "#fff"; c.lineWidth = 2 * d; c.beginPath(); c.arc(s[0], s[1] - 18 * d, 9 * d, Math.PI * .85, Math.PI * .15); c.lineTo(s[0], s[1]); c.closePath(); c.fill(); c.stroke(); } }
+    $("mapInfo").textContent = "3D：1本指で移動、2本指で拡大・回転";
+  }
+  function pick(px, py) { // 画面の点 → 区画
+    const { M, eye } = mat(); const inv = invert(M); if (!inv) return null;
+    const un = (x, y, z) => { const X = inv[0] * x + inv[4] * y + inv[8] * z + inv[12], Y = inv[1] * x + inv[5] * y + inv[9] * z + inv[13], Z = inv[2] * x + inv[6] * y + inv[10] * z + inv[14], W = inv[3] * x + inv[7] * y + inv[11] * z + inv[15]; return [X / W, Y / W, Z / W]; };
+    const nx = px / cv.width * 2 - 1, ny = 1 - py / cv.height * 2, a = un(nx, ny, -1), b = un(nx, ny, 1); const dir = [b[0] - a[0], b[1] - a[1], b[2] - a[2]], L = Math.hypot(...dir); dir.forEach((v, i) => dir[i] = v / L);
+    let p = [...eye]; for (let t = 0; t < 1500; t++) { p = [p[0] + dir[0] * .25, p[1] + dir[1] * .25, p[2] + dir[2] * .25]; const g = Math.max(0, hAt(p[0], p[2])); if (p[1] <= g) return [Math.floor(p[0]), Math.floor(p[2])]; if (p[1] < -5) break; }
+    return null;
+  }
+  function invert(m) { const a = m, inv = new Float32Array(16);
+    inv[0] = a[5] * a[10] * a[15] - a[5] * a[11] * a[14] - a[9] * a[6] * a[15] + a[9] * a[7] * a[14] + a[13] * a[6] * a[11] - a[13] * a[7] * a[10];
+    inv[4] = -a[4] * a[10] * a[15] + a[4] * a[11] * a[14] + a[8] * a[6] * a[15] - a[8] * a[7] * a[14] - a[12] * a[6] * a[11] + a[12] * a[7] * a[10];
+    inv[8] = a[4] * a[9] * a[15] - a[4] * a[11] * a[13] - a[8] * a[5] * a[15] + a[8] * a[7] * a[13] + a[12] * a[5] * a[11] - a[12] * a[7] * a[9];
+    inv[12] = -a[4] * a[9] * a[14] + a[4] * a[10] * a[13] + a[8] * a[5] * a[14] - a[8] * a[6] * a[13] - a[12] * a[5] * a[10] + a[12] * a[6] * a[9];
+    inv[1] = -a[1] * a[10] * a[15] + a[1] * a[11] * a[14] + a[9] * a[2] * a[15] - a[9] * a[3] * a[14] - a[13] * a[2] * a[11] + a[13] * a[3] * a[10];
+    inv[5] = a[0] * a[10] * a[15] - a[0] * a[11] * a[14] - a[8] * a[2] * a[15] + a[8] * a[3] * a[14] + a[12] * a[2] * a[11] - a[12] * a[3] * a[10];
+    inv[9] = -a[0] * a[9] * a[15] + a[0] * a[11] * a[13] + a[8] * a[1] * a[15] - a[8] * a[3] * a[13] - a[12] * a[1] * a[11] + a[12] * a[3] * a[9];
+    inv[13] = a[0] * a[9] * a[14] - a[0] * a[10] * a[13] - a[8] * a[1] * a[14] + a[8] * a[2] * a[13] + a[12] * a[1] * a[10] - a[12] * a[2] * a[9];
+    inv[2] = a[1] * a[6] * a[15] - a[1] * a[7] * a[14] - a[5] * a[2] * a[15] + a[5] * a[3] * a[14] + a[13] * a[2] * a[7] - a[13] * a[3] * a[6];
+    inv[6] = -a[0] * a[6] * a[15] + a[0] * a[7] * a[14] + a[4] * a[2] * a[15] - a[4] * a[3] * a[14] - a[12] * a[2] * a[7] + a[12] * a[3] * a[6];
+    inv[10] = a[0] * a[5] * a[15] - a[0] * a[7] * a[13] - a[4] * a[1] * a[15] + a[4] * a[3] * a[13] + a[12] * a[1] * a[7] - a[12] * a[3] * a[5];
+    inv[14] = -a[0] * a[5] * a[14] + a[0] * a[6] * a[13] + a[4] * a[1] * a[14] - a[4] * a[2] * a[13] - a[12] * a[1] * a[6] + a[12] * a[2] * a[5];
+    inv[3] = -a[1] * a[6] * a[11] + a[1] * a[7] * a[10] + a[5] * a[2] * a[11] - a[5] * a[3] * a[10] - a[9] * a[2] * a[7] + a[9] * a[3] * a[6];
+    inv[7] = a[0] * a[6] * a[11] - a[0] * a[7] * a[10] - a[4] * a[2] * a[11] + a[4] * a[3] * a[10] + a[8] * a[2] * a[7] - a[8] * a[3] * a[6];
+    inv[11] = -a[0] * a[5] * a[11] + a[0] * a[7] * a[9] + a[4] * a[1] * a[11] - a[4] * a[3] * a[9] - a[8] * a[1] * a[7] + a[8] * a[3] * a[5];
+    inv[15] = a[0] * a[5] * a[10] - a[0] * a[6] * a[9] - a[4] * a[1] * a[10] + a[4] * a[2] * a[9] + a[8] * a[1] * a[6] - a[8] * a[2] * a[5];
+    let det = a[0] * inv[0] + a[1] * inv[4] + a[2] * inv[8] + a[3] * inv[12]; if (!det) return null; det = 1 / det; for (let i = 0; i < 16; i++) inv[i] *= det; return inv; }
+  function init() { if (ok) return true; try {
+      gl = cv.getContext("webgl2", { antialias: true, alpha: false }); if (!gl) return false;
+      prog = mk(VS, FS); buildTerrain(); buildTrees(); ok = true;
+      // 操作
+      const P = new Map(); let moved = 0, last = null;
+      const pt = e => { const r = cv.getBoundingClientRect(); return { x: (e.clientX - r.left) * MAP.d, y: (e.clientY - r.top) * MAP.d }; };
+      cv.addEventListener("pointerdown", e => { cv.setPointerCapture(e.pointerId); P.set(e.pointerId, pt(e)); moved = 0; last = null; flyAnim++; });
+      cv.addEventListener("pointermove", e => { if (!P.has(e.pointerId)) return; const p = pt(e), o = P.get(e.pointerId); P.set(e.pointerId, p);
+        if (P.size === 1) { const dx = p.x - o.x, dy = p.y - o.y; moved += Math.abs(dx) + Math.abs(dy);
+          if (e.buttons === 2 || e.shiftKey) { cam.yaw -= dx * .006; cam.pitch = Math.min(1.45, Math.max(.25, cam.pitch + dy * .004)); }
+          else { const s = cam.dist / cv.height * 1.1, s2 = s / Math.sin(cam.pitch), cy = Math.cos(cam.yaw), sy = Math.sin(cam.yaw); cam.tx += -cy * dx * s - sy * dy * s2; cam.tz += sy * dx * s - cy * dy * s2; cam.tx = Math.min(110, Math.max(-10, cam.tx)); cam.tz = Math.min(110, Math.max(-10, cam.tz)); }
+          draw(); }
+        else { const [a, b] = [...P.values()], dd = Math.hypot(a.x - b.x, a.y - b.y), ang = Math.atan2(b.y - a.y, b.x - a.x), my = (a.y + b.y) / 2;
+          if (last) { cam.dist = Math.min(220, Math.max(8, cam.dist * last.d / dd)); cam.yaw -= (ang - last.ang); cam.pitch = Math.min(1.45, Math.max(.25, cam.pitch + (my - last.my) * .004)); draw(); } last = { d: dd, ang, my }; moved = 99; } });
+      const up = e => { const p = P.get(e.pointerId); P.delete(e.pointerId); last = null; if (p && moved < 8 && P.size === 0) { const r = pick(p.x, p.y); if (r && r[0] >= 0 && r[1] >= 0 && r[0] < N && r[1] < N) openPlot(r[0], r[1]); } };
+      cv.addEventListener("pointerup", up); cv.addEventListener("pointercancel", e => { P.delete(e.pointerId); last = null; });
+      cv.addEventListener("contextmenu", e => e.preventDefault());
+      cv.addEventListener("wheel", e => { e.preventDefault(); cam.dist = Math.min(220, Math.max(8, cam.dist * (e.deltaY < 0 ? 1 / 1.12 : 1.12))); draw(); }, { passive: false });
+      return true; } catch (e) { console.warn("3D", e); return false; } }
+  function resize() { const r = cv.getBoundingClientRect(), d = MAP.d || devicePixelRatio || 1; cv.width = lc.width = r.width * d; cv.height = lc.height = r.height * d; }
+  function anim(to, ms = 700) { const from = { ...cam }, t0 = performance.now(), id = ++flyAnim; const step = now => { if (id !== flyAnim) return; const t = Math.min(1, (now - t0) / ms), e = t < .5 ? 2 * t * t : 1 - (-2 * t + 2) ** 2 / 2; for (const k in to) cam[k] = from[k] + (to[k] - from[k]) * e; render(); if (t < 1) requestAnimationFrame(step); }; requestAnimationFrame(step); }
+  return { init, resize, draw, dirty() { housesDirty = true; draw(); },
+    zoom(f) { anim({ dist: Math.min(220, Math.max(8, cam.dist / f)) }, 300); }, home() { anim({ tx: 50, tz: 52, dist: 95, pitch: .82 }); },
+    rotate() { anim({ yaw: cam.yaw + Math.PI / 4 }, 400); }, fly(x, y) { anim({ tx: x + .5, tz: y + .5, dist: 18, pitch: .7 }); }, get ok() { return ok; } };
+})();
 
 // ---------- 下から出るカード ----------
 function sheet(html) { $("sheetBody").innerHTML = html; $("sheet").classList.add("on"); }
@@ -655,7 +815,7 @@ function listen() {
   onSnapshot(doc(db, "meta", "counter"), s => { S.pop = Math.max(0, ((s.data() || {}).next || 1) - 1); renderTop(); });
   onSnapshot(query(collection(db, "citizens"), orderBy("no"), limit(500)), q => { S.citizens = q.docs.map(d => d.data()); renderPeople(); renderRank(); renderMe(); });
   onSnapshot(collection(db, "shops"), q => { S.shops = q.docs.map(d => ({ id: d.id, ...d.data() })); renderShops(); });
-  onSnapshot(collection(db, "lands"), q => { S.lands = new Map(q.docs.map(d => [d.id, d.data()])); ISO.img = []; if ($("s-map").classList.contains("on")) drawMap(); });
+  onSnapshot(collection(db, "lands"), q => { S.lands = new Map(q.docs.map(d => [d.id, d.data()])); ISO.img = []; if (G3.ok) G3.dirty(); if ($("s-map").classList.contains("on")) drawMap(); });
   onSnapshot(query(collection(db, "news"), orderBy("at", "desc"), limit(10)), q => { if (!q.empty) $("newsList").innerHTML = q.docs.map(d => { const n = d.data(); const t = n.at && n.at.toDate ? n.at.toDate() : null; return `<div class="news"><time>${t ? (t.getMonth() + 1) + "/" + t.getDate() : ""}</time>${esc(n.text)}</div>`; }).join(""); }, () => {});
   onSnapshot(query(collection(db, "history"), orderBy("at"), limit(50)), q => { if (!q.empty) $("historyList").innerHTML = q.docs.map(d => `<div class="news">🏁 ${esc(d.data().text)}</div>`).join(""); }, () => {});
 }
