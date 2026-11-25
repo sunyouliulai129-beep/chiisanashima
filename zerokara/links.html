@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>ゼロから共和国 | リンク</title>
+<meta name="description" content="コメントでつくる国「ゼロから共和国」。国民登録で国のお金100万円（先着50人は300万円）。">
+<meta name="theme-color" content="#0F3D3E">
+<style>
+*{box-sizing:border-box}
+body{margin:0;min-height:100vh;font-family:"Hiragino Sans","Yu Gothic UI","Noto Sans JP","Noto Sans CJK JP",sans-serif;color:#1D2B2A;
+  background:linear-gradient(170deg,#0F3D3E 0%,#2F7FB5 45%,#9ACD6B 100%);padding:28px 16px 40px}
+.wrap{max-width:460px;margin:0 auto;text-align:center}
+.owl{width:96px;height:96px;margin:0 auto 8px;background:#F6F1E4;border-radius:50%;display:grid;place-items:center;box-shadow:0 6px 18px rgba(0,0,0,.2)}
+h1{color:#fff;font-size:24px;margin:6px 0 4px;letter-spacing:.02em}
+.sub{color:#E8F3EA;font-size:14px;line-height:1.6;margin:0 0 14px}
+.seat{background:#fff;border-radius:18px;padding:12px;margin:0 0 16px;border:3px solid #E8A317;box-shadow:0 6px 18px rgba(0,0,0,.15)}
+.seat b{font-size:34px;color:#D9534F}
+.seat .s{font-size:13px;color:#6B7A78}
+a.l{display:flex;align-items:center;gap:12px;background:#FFFDF7;color:#1D2B2A;text-decoration:none;border-radius:16px;padding:14px 16px;margin:10px 0;font-weight:800;font-size:16px;box-shadow:0 4px 12px rgba(0,0,0,.12);transition:transform .1s}
+a.l:active{transform:scale(.98)}
+a.l .e{font-size:26px;width:36px;text-align:center}
+a.l .t{flex:1;text-align:left}
+a.l .t small{display:block;font-weight:600;color:#6B7A78;font-size:12px;margin-top:2px}
+a.l.main{background:#E8A317;color:#3A2600}
+a.l.main .t small{color:#5A3D00}
+.note{color:#E8F3EA;font-size:11px;margin-top:18px;line-height:1.6}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="owl"><svg width="80" height="80" viewBox="0 0 100 100" aria-label="ゼロ大統領">
+    <ellipse cx="50" cy="60" rx="34" ry="36" fill="#8B5A2B"/><ellipse cx="50" cy="70" rx="22" ry="24" fill="#E9C99A"/>
+    <path d="M22 36 L30 18 L40 32 Z M78 36 L70 18 L60 32 Z" fill="#8B5A2B"/>
+    <circle cx="36" cy="44" r="14" fill="#fff"/><circle cx="64" cy="44" r="14" fill="#fff"/>
+    <circle cx="38" cy="46" r="7" fill="#1D2B2A"/><circle cx="62" cy="46" r="7" fill="#1D2B2A"/>
+    <circle cx="40" cy="43" r="2.4" fill="#fff"/><circle cx="64" cy="43" r="2.4" fill="#fff"/>
+    <path d="M46 54 L54 54 L50 62 Z" fill="#E8A317"/><path d="M30 78 L70 66 L72 74 L32 86 Z" fill="#D9534F"/>
+    <path d="M38 14 L42 6 L46 12 L50 4 L54 12 L58 6 L62 14 Z" fill="#E8A317"/></svg></div>
+  <h1>ゼロから共和国</h1>
+  <p class="sub">何もない大陸から、コメントで国をつくる。<br>土地もお店も早い者勝ち！</p>
+  <div class="seat"><div class="s">300万円スタート のこり</div><b id="left">50</b><span class="s">席</span><div class="s" id="pop">いまの国民 0人</div></div>
+
+  <a class="l main" href="index.html#me"><span class="e">🪪</span><span class="t">国民になる（無料）<small>名前と合言葉だけ。先着50人は300万円スタート</small></span></a>
+  <a class="l" href="index.html#rules"><span class="e">🔰</span><span class="t">はじめての人へ・あそび方<small>コメントに書くのは3つだけ</small></span></a>
+  <a class="l" href="index.html#map"><span class="e">🗺️</span><span class="t">大陸の3Dマップ<small>空いている土地をさがそう</small></span></a>
+  <a class="l" href="https://www.youtube.com/@zerokara_kyowakoku" target="_blank" rel="noopener"><span class="e">▶️</span><span class="t">YouTube<small>毎日の国のようす</small></span></a>
+  <a class="l" href="https://www.instagram.com/zerokara_kyowakoku/" target="_blank" rel="noopener"><span class="e">📷</span><span class="t">Instagram<small>@zerokara_kyowakoku</small></span></a>
+  <a class="l" href="index.html#people"><span class="e">👥</span><span class="t">国民カード<small>どんな国民がいるかな？</small></span></a>
+  <a class="l" href="index.html#rank"><span class="e">🏆</span><span class="t">ランキング・建国の歴史</span></a>
+  <p class="note">※円は国の中だけのお金です。本物のお金とは関係ありません。<br>声：VOICEVOX:玄野武宏</p>
+</div>
+<script>
+fetch("https://firestore.googleapis.com/v1/projects/zerokara-kyowakoku/databases/(default)/documents/meta/counter?key=AIzaSyCk2v3ug6fbIMuVV06tUNlIuL6klPmkiZI")
+  .then(r => r.json()).then(d => { const next = +(d.fields && d.fields.next && d.fields.next.integerValue || 1), pop = Math.max(0, next - 1);
+    document.getElementById("left").textContent = Math.max(0, 50 - pop); document.getElementById("pop").textContent = "いまの国民 " + pop + "人"; }).catch(() => {});
+</script>
+</body>
+</html>

@@ -119,11 +119,11 @@ footer{text-align:center;color:var(--mut);font-size:12px;padding:20px}
   </div>
   <h2>参加はコメントするだけ</h2>
   <div class="card cmds">
-    <div class="cmd"><div class="n">1</div><div>国民になる<br><span class="bubble">国民登録 ゆうと</span></div></div>
+    <div class="cmd"><div class="n">1</div><div>国民になる<br><span class="bubble">インスタをフォロー</span> または YouTubeで <span class="bubble">国民登録</span></div></div>
     <div class="cmd"><div class="n">2</div><div>土地を買う（今ならどこでも50万円）<br><span class="bubble">土地 海</span></div></div>
     <div class="cmd"><div class="n">3</div><div>お店を開く（5万円）<br><span class="bubble">お店 たこ焼き屋</span></div></div>
-    <p class="note">YouTubeかインスタの動画にコメントしてね。サイトからでも登録できます👇</p>
-    <button class="btn wide" data-go="me">サイトで国民登録する</button>
+    <p class="note">インスタはフォロー、YouTubeはコメントで国民になれます。</p>
+    <button class="btn wide" data-go="me">国民になる方法を見る</button>
   </div>
   <h2>国のニュース</h2>
   <div class="card" id="newsList"><div class="note">まだニュースはありません。最初の国民はだれだ？</div></div>
@@ -179,7 +179,7 @@ footer{text-align:center;color:var(--mut);font-size:12px;padding:20px}
 <section id="s-rules">
   <h2>あそび方</h2>
   <div class="card small">
-    <p><b>1. 国民になる</b>：コメントに「国民登録 （名前）」。国民番号は先着順で一生変わりません。1〜10番は「建国の父・母」として記念碑に名前がきざまれます。</p>
+    <p><b>1. 国民になる</b>：サイトの「国民になる」で、インスタのID か YouTubeのハンドルを入れるとすぐ国民に。そのあと本人確認（インスタはフォローしてDM、YouTubeは動画にコメント）。国民名は、そのIDがそのまま使われます。国民番号は先着順で一生変わりません。1〜10番は「建国の父・母」として記念碑に名前がきざまれます。</p>
     <p><b>2. 土地を買う</b>：「土地 （海・森・山・川・平地・砂漠・雪原）」。今はどこでも50万円。国民が増えるほど値上がりします。</p>
     <p><b>3. お店を開く</b>：「お店 （店の名前）」。5万円。ほかの人は「（店の名前）で買う」で応援できます。</p>
     <p class="note">※円は国の中だけのお金です。本物のお金で買ったり交換したりはできません。フォローや登録でお金がもらえることもありません。</p>
@@ -193,43 +193,49 @@ footer{text-align:center;color:var(--mut);font-size:12px;padding:20px}
 <!-- マイページ -->
 <section id="s-me">
   <div id="meOut">
-    <h2>国民になる</h2>
+    <h2>国民になる（すぐ）</h2>
     <div class="card">
-      <label>国民名（12文字まで）</label>
-      <input id="rName" maxlength="12" placeholder="例：ゆうと">
-      <label>合言葉（4〜16文字）</label>
-      <input id="rPass" type="password" maxlength="16" placeholder="ほかのサービスのパスワードは使わないでね">
+      <div class="row" style="margin-bottom:6px"><button class="btn sec" id="svIg" style="background:#E8A317;color:#3A2600">📷 インスタ</button><button class="btn sec" id="svYt">▶️ YouTube</button></div>
+      <label id="rLabel">あなたのインスタのID</label>
+      <input id="rIg" placeholder="例：yuto_123（@はいらない）" autocomplete="off" autocapitalize="off" spellcheck="false">
       <div class="err" id="rErr"></div>
-      <button class="btn wide" id="rGo">国民登録する</button>
-      <p class="note">名前と合言葉だけで登録できます。メールアドレスなどはいりません。一度登録すれば、同じスマホ・同じブラウザなら次からは自動でログインします。</p>
+      <button class="btn wide" id="rGo">国民になる</button>
+      <p class="note" id="rNote"></p>
     </div>
-    <h2>もう国民の人（別のスマホなど）</h2>
-    <div class="card">
-      <div class="row"><div><label>国民番号</label><input id="lNo" type="number" inputmode="numeric" min="1"></div><div><label>合言葉</label><input id="lPass" type="password" maxlength="16"></div></div>
-      <div class="err" id="lErr"></div>
-      <button class="btn sec wide" id="lGo">ログイン</button>
+    <h2>もう国民の人</h2>
+    <div class="card small">
+      このスマホで登録した人は、開くだけで自動でログインします。別のスマホで開きたいときは、@zerokara_kyowakoku にDMで「<b>リンク</b>」と送ってね。ログイン用のリンクを送ります。
     </div>
   </div>
   <div id="meIn" style="display:none">
     <h2>マイページ</h2>
     <div class="card" id="myCard"></div>
+    <div class="card" id="igCard" style="display:none">
+      <label>✅ 本人確認（まだ確認中）</label>
+      <p class="small" style="margin:4px 0 8px">確認ずみになると「建国メンバー」マークがつきます。</p>
+      <div id="igForm"><input id="igId" placeholder="インスタのID（例：zerokara_kyowakoku）" autocomplete="off" autocapitalize="off"><button class="btn sec wide" id="igGo">コードを出す</button></div>
+      <div id="igWait" style="display:none"></div>
+      <div class="small" id="igMsg"></div>
+    </div>
+    <div class="card" id="linkCard" style="display:none"></div>
     <div class="card">
       <div class="row"><button class="btn wide" id="bonusBtn">今日のログインボーナス</button></div>
       <div class="small" id="bonusMsg"></div>
     </div>
-    <h2>申しこむ</h2>
+    <h2>買う・開く（すぐ反映）</h2>
     <div class="card">
       <label>土地を買う</label>
-      <select id="qLand"><option value="">地形をえらぶ</option></select>
-      <p class="note">地図で区画をタップしても申しこめます。</p>
-      <button class="btn sec wide" id="qLandGo">土地を申しこむ</button>
+      <p class="small" style="margin:4px 0 8px">地図で空いている区画をタップして「この区画を買う」を押すと、すぐ自分の土地になります。</p>
+      <button class="btn sec wide" id="qLandGo">🗺️ 地図で土地をえらぶ</button>
       <hr style="border:0;border-top:1px dashed var(--line);margin:14px 0">
-      <label>お店を開く（5万円）</label>
+      <label>お店を開く（<span id="shopCost">5万円</span>）</label>
       <input id="qShop" maxlength="16" placeholder="お店の名前">
       <input id="qShopWhat" maxlength="30" placeholder="何のお店？（例：たこ焼き）">
-      <button class="btn sec wide" id="qShopGo">お店を申しこむ</button>
+      <label>商品の値段（500円〜5万円）</label>
+      <input id="qShopPrice" type="number" inputmode="numeric" min="500" max="50000" step="100" value="1000">
+      <button class="btn sec wide" id="qShopGo">お店を開く</button>
       <div class="small" id="qMsg"></div>
-      <p class="note">申しこみは、毎日の更新で運営が確認してから反映されます。</p>
+      <p class="note">1人1店まで。ほかの国民がお店で「買う」と、その値段の売上がすぐあなたのお金に入ります。</p>
     </div>
     <h2>プロフィールを編集</h2>
     <div class="card">
@@ -252,7 +258,7 @@ footer{text-align:center;color:var(--mut);font-size:12px;padding:20px}
 
 <div class="sheet" id="sheet"><button class="x" id="sheetX">×</button><div id="sheetBody"></div></div>
 <div class="tip" id="tip"><button id="tipX">×</button><span id="tipText"></span></div>
-<footer>ゼロから共和国 ／ 声：VOICEVOX:ちび式じい ／ 円は国の中だけのお金です</footer>
+<footer>ゼロから共和国 ／ 声：VOICEVOX:玄野武宏 ／ 円は国の中だけのお金です</footer>
 
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
@@ -369,11 +375,11 @@ let ELEV = null; const RIVERS = [];
 const LAND = buildContinent();
 const isBuyable = (tt) => tt !== T.SEA && tt !== T.LAKE;
 $("legend").innerHTML = TNAME.map((n, i) => `<span><i style="background:${TCOL[i]}"></i>${n}</span>`).join("");
-$("qLand").innerHTML += ["海沿い", "平地", "森", "山", "川沿い", "砂漠", "雪原"].map(n => `<option>${n}</option>`).join("");
 
 // ---------- 状態 ----------
-const S = { pop: 0, citizens: [], shops: [], lands: new Map(), me: null, myNo: null };
+const S = { pop: 0, citizens: [], shops: [], lands: new Map(), me: null, myNo: null, prices: { land: 500000, shop: 50000 } };
 function priceOf(tt, pop) {
+  if (S.prices && S.prices.land) return Math.round(S.prices.land / 10000);
   if (pop < 30) return 50;
   const base = PRICE30[tt] || 500, mul = pop >= 1000 ? 3 : pop >= 300 ? 2 : pop >= 100 ? 1.5 : 1;
   return Math.round(base * mul);
@@ -755,17 +761,27 @@ function openPlot(x, y) {
   else if (!isBuyable(tt)) h += `<p class="note">${TNAME[tt]}なので、ここには住めません。</p>`;
   else if (L) h += `<p>持ち主：<b>${esc(L.ownerName || ("国民No." + L.owner))}</b><br>${esc(L.building || "空き地")}</p>`;
   else { h += `<p>空き地です。いまの値段：<b>${priceOf(tt, S.pop)}万円</b></p>`;
-    h += S.myNo ? `<button class="btn wide" id="plotReq">この区画を申しこむ</button><div class="small" id="plotMsg"></div>` : `<button class="btn wide" data-go="me">国民になって申しこむ</button>`; }
+    h += S.myNo ? `<button class="btn wide" id="plotReq">この区画を買う（${priceOf(tt, S.pop)}万円）</button><div class="small" id="plotMsg"></div>` : `<button class="btn wide" data-go="me">国民になって買う</button>`; }
   sheet(h);
-  const b = $("plotReq"); if (b) b.onclick = async () => { b.disabled = true; try { await sendReq("land", { x, y, terrain: TNAME[tt] }); $("plotMsg").innerHTML = `<span class="okm">申しこみました！毎日の更新で反映されます。</span>`; } catch (e) { $("plotMsg").innerHTML = `<span class="err">${esc(errText(e))}</span>`; b.disabled = false; } };
+  const b = $("plotReq"); if (b) b.onclick = async () => { b.disabled = true; const M = $("plotMsg");
+    try { const price = S.prices.land, me = S.citizens.find(c => c.no === S.myNo);
+      await runTransaction(db, async tx => {
+        const cs = await tx.get(doc(db, "citizens", String(S.myNo))), ls = await tx.get(doc(db, "lands", id));
+        if (ls.exists()) throw new Error("ざんねん！ほかの人が先に買いました");
+        const money = cs.data().money; if (money < price) throw new Error(`お金が足りません（あと${yen(price - money)}）`);
+        tx.set(doc(db, "lands", id), { x, y, owner: S.myNo, ownerName: cs.data().name, emoji: "🏠", color: cs.data().color || "#E8A317", building: "家", terrain: TNAME[tt], at: serverTimestamp() });
+        tx.update(doc(db, "citizens", String(S.myNo)), { money: money - price });
+      });
+      M.innerHTML = `<span class="okm">🎉 区画 ${x + 1}-${y + 1} があなたの土地になりました！</span>`; }
+    catch (e) { M.innerHTML = `<span class="err">${esc(e.code ? errText(e) : e.message)}</span>`; b.disabled = false; } };
 }
 
 // ---------- 表示を作る ----------
-function badgesOf(c) { const b = []; if (c.no <= 10) b.push(`<span class="badge f">建国の父・母</span>`); if (c.no <= 100) b.push(`<span class="badge">建国メンバー</span>`); if (c.via === "ai") b.push(`<span class="badge">🤖</span>`); return b.join(""); }
+function badgesOf(c) { const b = []; if (!c.verified && c.via === "site") b.push(`<span class="badge" style="background:#EEE;color:#666">確認中</span>`); if (c.verified) b.push(`<span class="badge" style="background:#DFF3E6;color:#1E6B3A">✅ 本人確認ずみ</span>`); if (c.verified && c.no <= 10) b.push(`<span class="badge f">建国の父・母</span>`); if (c.verified && c.no <= 100) b.push(`<span class="badge">建国メンバー</span>`); if (c.both) b.push(`<span class="badge" style="background:#E7E3FF;color:#4B3DB0">🔗 インスタ＋YouTube</span>`); if (c.via === "ai") b.push(`<span class="badge">🤖</span>`); return b.join(""); }
 function czCard(c) { return `<div class="cz" data-no="${c.no}"><div class="ic" style="background:${esc(c.color || "#2F7FB5")}">${esc(c.icon || "🙂")}</div><div class="nm">${esc(c.name)}</div><div class="no">国民No.${c.no}・${yen(c.money)}</div>${badgesOf(c)}</div>`; }
 function renderTop() {
   const p = S.pop; $("popNow").textContent = p + "人";
-  $("left50").textContent = Math.max(0, 50 - p); $("left100").textContent = Math.max(0, 100 - p);
+  const vc = S.citizens.filter(c => c.verified).length; $("left50").textContent = Math.max(0, 50 - vc); $("left100").textContent = Math.max(0, 100 - p);
   const steps = [30, 100, 300, 1000], nx = steps.find(s => s > p) || 1000, prev = [0, ...steps][steps.indexOf(nx)] || 0;
   $("nextBar").style.width = Math.min(100, (p - prev) / (nx - prev) * 100) + "%";
   $("nextText").textContent = p < 30 ? `あと${30 - p}人で、地形ごとに土地の値段がつきます（海沿いは1,000万円に）` : `あと${nx - p}人で、土地がもっと値上がりします`;
@@ -792,12 +808,23 @@ function openShop(id) { const s = S.shops.find(v => v.id === id); if (!s) return
   sheet(`<h3 style="margin:0">${esc(s.emoji || "🏪")} ${esc(s.name)}</h3><div class="note">社長：${esc(owner ? owner.name : "国民No." + s.owner)}${s.official ? "（運営の会社）" : ""}</div>
   <p>${esc(s.catch || "")}</p><p class="small">${esc(s.desc || s.what || "")}</p>
   ${(s.items || []).map(it => `<div class="rank"><span>${esc(it.name)}</span><span class="v">${yen(it.price)}</span></div>`).join("")}
-  <p class="small">売上：${yen(s.sales || 0)}</p>
+  <p class="small">商品の値段：<b>${yen(s.price || 1000)}</b>／売上：${yen(s.sales || 0)}</p>
   <button class="btn wide" id="buyBtn">${S.myNo ? "このお店で買う（1日1回）" : "コメント「" + esc(s.name) + "で買う」をコピー"}</button><div class="small" id="buyMsg"></div>`);
   $("buyBtn").onclick = async () => { const m = $("buyMsg");
     if (!S.myNo) { try { await navigator.clipboard.writeText(`${s.name}で買う`); m.innerHTML = `<span class="okm">コピーしました！動画のコメントにはってね</span>`; } catch { m.textContent = `「${s.name}で買う」とコメントしてね`; } return; }
-    try { const d = todayJST(); await setDoc(doc(db, "buys", `${S.myNo}_${d}`), { no: S.myNo, shop: s.id, day: d, at: serverTimestamp() }); m.innerHTML = `<span class="okm">買いました！売上は毎日の更新で入ります</span>`; }
-    catch (e) { m.innerHTML = `<span class="err">今日はもう買いました（1日1回）</span>`; } };
+    if (s.owner === S.myNo) { m.innerHTML = `<span class="note">自分のお店では買えません</span>`; return; }
+    try { const d = todayJST();
+      await runTransaction(db, async tx => {
+        const bs = await tx.get(doc(db, "buys", `${S.myNo}_${d}`)); if (bs.exists()) throw new Error("今日はもう買いました（1日1回）");
+        const sh = await tx.get(doc(db, "shops", s.id)), me = await tx.get(doc(db, "citizens", String(S.myNo))), ow = await tx.get(doc(db, "citizens", String(sh.data().owner)));
+        const price = sh.data().price || 1000; if (me.data().money < price) throw new Error("お金が足りません");
+        tx.set(doc(db, "buys", `${S.myNo}_${d}`), { no: S.myNo, shop: s.id, day: d, at: serverTimestamp() });
+        tx.update(doc(db, "shops", s.id), { sales: (sh.data().sales || 0) + price });
+        tx.update(doc(db, "citizens", String(sh.data().owner)), { money: ow.data().money + price });
+        tx.update(doc(db, "citizens", String(S.myNo)), { money: me.data().money - price });
+      });
+      m.innerHTML = `<span class="okm">買いました！${esc(s.name)}に売上が入りました</span>`; }
+    catch (e) { m.innerHTML = `<span class="err">${esc(e.code ? errText(e) : e.message)}</span>`; } };
 }
 function renderRank() {
   const top = [...S.citizens].sort((a, b) => (b.money || 0) - (a.money || 0)).slice(0, 10);
@@ -813,7 +840,8 @@ async function sendReq(type, payload) { if (!S.myNo) throw new Error("先に国�
 
 function listen() {
   onSnapshot(doc(db, "meta", "counter"), s => { S.pop = Math.max(0, ((s.data() || {}).next || 1) - 1); renderTop(); });
-  onSnapshot(query(collection(db, "citizens"), orderBy("no"), limit(500)), q => { S.citizens = q.docs.map(d => d.data()); renderPeople(); renderRank(); renderMe(); });
+  onSnapshot(doc(db, "meta", "prices"), s => { const p = s.data(); if (p && p.land) { S.prices = { land: p.land, shop: p.shop || 50000 }; $("shopCost").textContent = yen(S.prices.shop); } }, () => {});
+  onSnapshot(query(collection(db, "citizens"), orderBy("no"), limit(500)), q => { S.citizens = q.docs.map(d => d.data()); renderPeople(); renderRank(); renderMe(); renderTop(); });
   onSnapshot(collection(db, "shops"), q => { S.shops = q.docs.map(d => ({ id: d.id, ...d.data() })); renderShops(); });
   onSnapshot(collection(db, "lands"), q => { S.lands = new Map(q.docs.map(d => [d.id, d.data()])); ISO.img = []; if (G3.ok) G3.dirty(); if ($("s-map").classList.contains("on")) drawMap(); });
   onSnapshot(query(collection(db, "news"), orderBy("at", "desc"), limit(10)), q => { if (!q.empty) $("newsList").innerHTML = q.docs.map(d => { const n = d.data(); const t = n.at && n.at.toDate ? n.at.toDate() : null; return `<div class="news"><time>${t ? (t.getMonth() + 1) + "/" + t.getDate() : ""}</time>${esc(n.text)}</div>`; }).join(""); }, () => {});
@@ -831,6 +859,8 @@ function renderMe() {
   $("myCard").innerHTML = `<div class="row" style="align-items:center"><div style="flex:0 0 60px"><div class="ic" style="width:56px;height:56px;border-radius:50%;display:grid;place-items:center;font-size:30px;background:${esc(me.color)}">${esc(me.icon || "🙂")}</div></div>
     <div><div class="big" style="font-size:22px">${esc(me.name)}</div><div class="note">国民No.${me.no}</div>${badgesOf(me)}</div></div>
     <p style="margin:10px 0 0">持っているお金：<b class="big" style="font-size:22px">${yen(me.money)}</b></p><p class="note">※国の中だけのお金です</p>`;
+  $("igCard").style.display = me.verified ? "none" : ""; $("igForm").style.display = "none"; if (!me.verified) showIgPending();
+  drawLinkCard();
   if (document.activeElement !== $("eBio")) $("eBio").value = me.bio || "";
   if (document.activeElement !== $("eIcon")) $("eIcon").value = me.icon || "";
   $("eColors").innerHTML = COLORS.map(c => `<button style="background:${c}" data-c="${c}" class="${c === me.color ? "on" : ""}"></button>`).join("");
@@ -845,31 +875,100 @@ async function loadMyReqs() {
   } catch (e) { $("myReqs").innerHTML = `<div class="note">読みこめませんでした</div>`; }
 }
 
+// インスタとつなぐ
+const igKeyOf = async h => { const b = await crypto.subtle.digest("SHA-256", new TextEncoder().encode("ig:" + h)); return [...new Uint8Array(b)].map(x => x.toString(16).padStart(2, "0")).join(""); };
+function pendingHtml(d) { return d.sv === "yt" ? `<p>ゼロから共和国の動画に、YouTube（<b>@${esc(d.ig)}</b>）でこうコメントしてね👇</p><div class="bubble" style="font-size:20px">確認 ${esc(d.code)}</div>
+      <p class="note">1時間以内に確認して、本人確認ずみにします。</p><a class="btn wide" href="https://www.youtube.com/@zerokara_kyowakoku/shorts" target="_blank" rel="noopener">YouTubeを開く</a>`
+      : `<p>@zerokara_kyowakoku をフォローして、インスタ（<b>@${esc(d.ig)}</b>）から<b>DM</b>でこう送ってね👇</p><div class="bubble" style="font-size:20px">確認 ${esc(d.code)}</div>
+      <p class="note">1時間以内に確認して、本人確認ずみにします。</p><a class="btn wide" href="https://ig.me/m/zerokara_kyowakoku" target="_blank" rel="noopener">インスタのDMを開く</a>`; }
+async function showIgPending() {
+  let k = S.me && S.me.igKey; if (!k) { try { k = localStorage.getItem("zk_igkey"); } catch {} } if (!k) return;
+  try { const s = await getDoc(doc(db, "igids", k)); if (!s.exists() || s.data().no !== S.myNo) return;
+    $("igForm").style.display = "none"; $("igWait").style.display = ""; $("igWait").innerHTML = pendingHtml(s.data()); } catch {}
+}
+// インスタとYouTube、両方つなぐ（両方とも本人確認ずみになったら、名前を自由に決められる）
+const SVN = { ig: "インスタ", yt: "YouTube" };
+let linkDrawn = "";
+async function drawLinkCard() {
+  const me = S.me, C = $("linkCard"); if (!me || !me.igKey) { C.style.display = "none"; return; }
+  const mainSv = me.igKey.split("_")[0], other = mainSv === "ig" ? "yt" : "ig";
+  const state = me.both ? "both:" + me.name : me.linkKey ? "wait:" + me.linkKey : "new:" + other;
+  if (state === linkDrawn) return; linkDrawn = state; C.style.display = "";
+  if (me.both) {
+    C.innerHTML = `<label>✏️ 国民名を変える</label><p class="small" style="margin:4px 0 8px">インスタとYouTubeの両方がつながっているので、名前を自由に決められます（20文字まで）。</p>
+      <input id="nmIn" maxlength="20" placeholder="新しい国民名"><button class="btn wide" id="nmGo">この名前にする</button><div class="small" id="nmMsg"></div>`;
+    $("nmIn").value = me.name;
+    $("nmGo").onclick = async () => { const v = $("nmIn").value.trim(), M = $("nmMsg");
+      if (!v || v.length > 20) return M.innerHTML = `<span class="err">1〜20文字で入れてね</span>`;
+      if (/運営|ゼロ大統領/.test(v)) return M.innerHTML = `<span class="err">その名前は使えません</span>`;
+      try { await updateDoc(doc(db, "citizens", String(S.myNo)), { name: v }); M.textContent = "変えました！"; } catch (e) { M.innerHTML = `<span class="err">${esc(errText(e))}</span>`; } };
+  } else if (me.linkKey) {
+    C.innerHTML = `<label>🔗 ${SVN[me.linkKey.split("_")[0]]}をつなぐ（確認中）</label><div id="lkWait" class="small">読みこみ中…</div>`;
+    try { const d = await getDoc(doc(db, "igids", me.linkKey)); $("lkWait").innerHTML = d.exists() ? (d.data().verified ? "確認ずみ！もう少しで名前を変えられるようになります。" : pendingHtml(d.data()) + `<p class="note">インスタとYouTubeの両方が確認ずみになると、国民名を自由に決められます。</p>`) : ""; } catch { $("lkWait").textContent = ""; }
+  } else {
+    C.innerHTML = `<label>🔗 ${SVN[other]}もつなぐ</label><p class="small" style="margin:4px 0 8px">インスタとYouTubeの両方をこの国民につなぐと、<b>国民名を自由に決められる</b>ようになります（ふつうはIDがそのまま名前）。</p>
+      <input id="lkIn" placeholder="${other === "yt" ? "YouTubeのハンドル（@はいらない）" : "インスタのID（@はいらない）"}" autocomplete="off" autocapitalize="off" spellcheck="false">
+      <button class="btn sec wide" id="lkGo">つなぐ</button><div class="small" id="lkMsg"></div>`;
+    $("lkGo").onclick = async () => { const h = $("lkIn").value.trim().replace(/^@/, "").toLowerCase(), M = $("lkMsg");
+      if (!/^[a-z0-9._-]{1,30}$/.test(h)) return M.innerHTML = `<span class="err">IDを正しく入れてね（英数字と . _ - だけ）</span>`;
+      const key = other + "_" + h, code = String(Math.floor(1000 + Math.random() * 9000));
+      try { await runTransaction(db, async tx => {
+          const g = await tx.get(doc(db, "igids", key)); if (g.exists()) throw new Error("そのIDは、もうほかの国民とつながっています");
+          tx.set(doc(db, "igids", key), { no: S.myNo, sv: other, ig: h, code, verified: false, at: serverTimestamp() });
+          tx.update(doc(db, "citizens", String(S.myNo)), { linkKey: key }); });
+        M.textContent = ""; }
+      catch (e) { M.innerHTML = `<span class="err">${esc(e.message && !e.code ? e.message : e.code && e.code.includes("permission") ? "そのIDは、もうほかの国民とつながっています" : errText(e))}</span>`; } };
+  }
+}
+if ($("igGo")) $("igGo").onclick = async () => { const M = $("igMsg"); const h = $("igId").value.trim().replace(/^@/, "").toLowerCase();
+  if (!/^[a-z0-9._]{1,30}$/.test(h)) return M.innerHTML = `<span class="err">インスタのIDを正しく入れてね（英数字と . _ だけ）</span>`;
+  try { const k = await igKeyOf(h), code = String(Math.floor(1000 + Math.random() * 9000));
+    await setDoc(doc(db, "igids", k), { no: S.myNo, ig: h, code, verified: false, at: serverTimestamp() });
+    try { localStorage.setItem("zk_igkey", k); } catch {} M.textContent = ""; showIgPending(); }
+  catch (e) { M.innerHTML = `<span class="err">${e.code && e.code.includes("permission") ? "そのインスタIDは、もうほかの国民とつながっています" : esc(errText(e))}</span>`; } };
+// インスタのDMで送った専用リンク（?claim=...&no=...）
+async function useClaim(user) {
+  const u = new URL(location.href), token = u.searchParams.get("claim"), no = parseInt(u.searchParams.get("no"), 10); if (!token || !no) return false;
+  history.replaceState(null, "", location.pathname + "#me");
+  try { await runTransaction(db, async tx => { const c = await tx.get(doc(db, "claims", token)); if (!c.exists()) throw new Error("used"); tx.set(doc(db, "links", user.uid), { no, claim: token }); tx.delete(doc(db, "claims", token)); });
+    S.myNo = no; renderMe(); showTab("me"); sheet(`<div style="text-align:center">${owlSVG(90)}<h3>ようこそ、国民No.${no}！</h3><p>インスタとつながった国民ページです。<br>このスマホでは、次から自動でログインされるぞ。</p><button class="btn wide" data-go="map" onclick="document.getElementById('sheet').classList.remove('on')">土地をえらびに行く</button></div>`); return true; }
+  catch (e) { sheet(`<p>このリンクは、もう使われたか、期限が切れています。DMで「リンク」と送ると、新しいリンクを送ります。</p>`); return false; }
+}
 // 国民登録
-$("rGo").onclick = async () => {
-  const name = $("rName").value.trim(), pass = $("rPass").value, E = $("rErr"); E.textContent = "";
-  if (!name) return E.textContent = "国民名を入れてね"; if (name.length > 12) return E.textContent = "国民名は12文字まで";
-  if (hasNG(name)) return E.textContent = "その名前は使えません"; if (pass.length < 4) return E.textContent = "合言葉は4文字以上にしてね";
+let SV = "ig";
+function setSv(v) { SV = v; $("svIg").style.background = v === "ig" ? "#E8A317" : ""; $("svIg").style.color = v === "ig" ? "#3A2600" : ""; $("svYt").style.background = v === "yt" ? "#E8A317" : ""; $("svYt").style.color = v === "yt" ? "#3A2600" : "";
+  $("rLabel").textContent = v === "ig" ? "あなたのインスタのID" : "あなたのYouTubeのハンドル（@から始まるID）";
+  $("rIg").placeholder = v === "ig" ? "例：yuto_123（@はいらない）" : "例：yuto-123（@はいらない）";
+  $("rNote").innerHTML = v === "ig" ? "インスタのIDが、そのまま国民名になります。押したらすぐ国民になって、土地やお店で遊べます。<br>そのあと @zerokara_kyowakoku をフォローして、DMでコードを送ると「✅本人確認ずみ」になります（1時間以内）。24時間たっても確認できない国民は消えます。"
+    : "YouTubeのハンドルが、そのまま国民名になります。押したらすぐ国民になって、土地やお店で遊べます。<br>そのあと、ゼロから共和国の動画のどれかに、そのアカウントでコードをコメントすると「✅本人確認ずみ」になります（1時間以内）。24時間たっても確認できない国民は消えます。"; }
+if ($("svIg")) { $("svIg").onclick = () => setSv("ig"); $("svYt").onclick = () => setSv("yt"); setSv("ig"); }
+if ($("rGo")) $("rGo").onclick = async () => {
+  const h = $("rIg").value.trim().replace(/^@/, "").toLowerCase(), E = $("rErr"); E.textContent = "";
+  if (!/^[a-z0-9._-]{1,30}$/.test(h)) return E.textContent = SV === "ig" ? "インスタのIDを正しく入れてね（英数字と . _ だけ）" : "YouTubeのハンドルを正しく入れてね（英数字と . _ - だけ）";
+  if (hasNG(h)) return E.textContent = "そのIDは使えません";
   if (!auth.currentUser) return E.textContent = "通信の準備中です。少し待ってもう一度";
   $("rGo").disabled = true;
   try {
-    const uid = auth.currentUser.uid; let got = 0;
+    const uid = auth.currentUser.uid, key = SV + "_" + h, code = String(Math.floor(1000 + Math.random() * 9000)); let got = 0;
     await runTransaction(db, async tx => {
-      const cs = await tx.get(doc(db, "meta", "counter")); const no = cs.data().next; const h = await hashPass(no, pass);
-      tx.set(doc(db, "citizens", String(no)), { no, name, bio: "", color: COLORS[no % COLORS.length], icon: "🙂", money: no <= 50 ? 3000000 : 1000000, joinedAt: serverTimestamp(), via: "site" });
-      tx.set(doc(db, "secrets", String(no)), { h });
-      tx.set(doc(db, "links", uid), { no, h });
+      const cs = await tx.get(doc(db, "meta", "counter")); const no = cs.data().next;
+      tx.set(doc(db, "igids", key), { no, sv: SV, ig: h, code, verified: false, at: serverTimestamp() });
+      tx.set(doc(db, "citizens", String(no)), { no, name: h, bio: "", color: COLORS[no % COLORS.length], icon: "🙂", money: 1000000, joinedAt: serverTimestamp(), via: "site", verified: false, igKey: key });
+      tx.set(doc(db, "links", uid), { no });
       tx.update(doc(db, "meta", "counter"), { next: no + 1 });
       got = no;
     });
-    S.myNo = got; try { localStorage.setItem("zk_no", String(got)); } catch {}
+    S.myNo = got; try { localStorage.setItem("zk_igkey", key); localStorage.setItem("zk_no", String(got)); } catch {}
     renderMe(); showTab("me");
-    sheet(`<div style="text-align:center">${owlSVG(90)}<h3>ようこそ、国民No.${got}！</h3><p>${got <= 50 ? "先着50人なので<b>300万円スタート</b>じゃ！" : "100万円スタートじゃ！"}<br>${got <= 10 ? "建国の父・母として、記念碑に名前がきざまれるぞ。" : ""}</p><p class="small"><b>国民番号 ${got}</b> と合言葉は、メモしておいてね（別のスマホでログインするときに使います）。</p><button class="btn wide" data-go="map" onclick="document.getElementById('sheet').classList.remove('on')">土地をえらびに行く</button></div>`);
-  } catch (e) { E.textContent = errText(e); }
+    sheet(`<div style="text-align:center">${owlSVG(90)}<h3>ようこそ、国民No.${got}！</h3><p><b>${esc(h)}</b> さん、100万円スタートじゃ！<br>さっそく土地やお店で遊べるぞ。</p>
+      ${SV === "ig" ? `<p class="small">本人確認：@zerokara_kyowakoku をフォローして、DMで<br><span class="bubble" style="font-size:20px">確認 ${code}</span><br>と送ってね（確認ずみになると「建国メンバー」マークがつくよ）</p>
+      <a class="btn sec wide" href="https://ig.me/m/zerokara_kyowakoku" target="_blank" rel="noopener">インスタのDMを開く</a>` : `<p class="small">本人確認：ゼロから共和国の動画に、このYouTubeアカウントで<br><span class="bubble" style="font-size:20px">確認 ${code}</span><br>とコメントしてね（確認ずみになると「建国メンバー」マークがつくよ）</p>
+      <a class="btn sec wide" href="https://www.youtube.com/@zerokara_kyowakoku/shorts" target="_blank" rel="noopener">YouTubeを開く</a>`}
+      <button class="btn wide" style="margin-top:8px" data-go="map" onclick="document.getElementById('sheet').classList.remove('on')">土地をえらびに行く</button></div>`);
+  } catch (e) { E.textContent = e.code ? (e.code.includes("permission") ? "登録できませんでした（このスマホはもう国民になっているか、そのIDはもう使われています）" : errText(e)) : e.message; }
   $("rGo").disabled = false;
 };
-// ログイン（別のスマホ）
-$("lGo").onclick = async () => {
+if ($("lGo")) $("lGo").onclick = async () => {
   const no = parseInt($("lNo").value, 10), pass = $("lPass").value, E = $("lErr"); E.textContent = "";
   if (!no || !pass) return E.textContent = "国民番号と合言葉を入れてね";
   $("lGo").disabled = true;
@@ -885,18 +984,28 @@ $("eGo").onclick = async () => {
   try { await updateDoc(doc(db, "citizens", String(S.myNo)), { bio, icon, color }); M.innerHTML = `<span class="okm">保存しました</span>`; } catch (e) { M.innerHTML = `<span class="err">${esc(errText(e))}</span>`; }
 };
 // 申しこみ
-$("qLandGo").onclick = async () => { const t = $("qLand").value, M = $("qMsg"); if (!t) return M.innerHTML = `<span class="err">地形をえらんでね</span>`;
-  try { await sendReq("land", { terrain: t }); M.innerHTML = `<span class="okm">土地（${esc(t)}）を申しこみました！</span>`; } catch (e) { M.innerHTML = `<span class="err">${esc(errText(e))}</span>`; } };
+$("qLandGo").onclick = () => showTab("map");
 $("qShopGo").onclick = async () => { const n = $("qShop").value.trim(), w = $("qShopWhat").value.trim(), M = $("qMsg");
   if (!n) return M.innerHTML = `<span class="err">お店の名前を入れてね</span>`; if (hasNG(n + w)) return M.innerHTML = `<span class="err">使えない言葉が入っています</span>`;
-  try { await sendReq("shop", { name: n, what: w }); M.innerHTML = `<span class="okm">お店「${esc(n)}」を申しこみました！</span>`; $("qShop").value = ""; $("qShopWhat").value = ""; } catch (e) { M.innerHTML = `<span class="err">${esc(errText(e))}</span>`; } };
+  const price = Math.round(Number($("qShopPrice").value)); if (!(price >= 500 && price <= 50000)) return M.innerHTML = `<span class="err">値段は500円〜5万円にしてね</span>`;
+  try { const cost = S.prices.shop, sid = "s" + S.myNo;
+    await runTransaction(db, async tx => {
+      const ss = await tx.get(doc(db, "shops", sid)); if (ss.exists()) throw new Error("お店はもう持っています（1人1店）");
+      const cs = await tx.get(doc(db, "citizens", String(S.myNo))); const money = cs.data().money; if (money < cost) throw new Error("お金が足りません");
+      tx.set(doc(db, "shops", sid), { name: n, what: w, owner: S.myNo, emoji: "🏪", color: cs.data().color || "#E8A317", catch: "", desc: w, items: [], price, sales: 0, at: serverTimestamp() });
+      tx.update(doc(db, "citizens", String(S.myNo)), { money: money - cost });
+    });
+    M.innerHTML = `<span class="okm">🎉 お店「${esc(n)}」を開きました！</span>`; $("qShop").value = ""; $("qShopWhat").value = ""; }
+  catch (e) { M.innerHTML = `<span class="err">${esc(e.code ? errText(e) : e.message)}</span>`; } };
 // ログインボーナス
 $("bonusBtn").onclick = async () => { const d = todayJST(), M = $("bonusMsg");
-  try { await setDoc(doc(db, "bonus", `${S.myNo}_${d}`), { no: S.myNo, day: d, at: serverTimestamp() }); M.innerHTML = `<span class="okm">今日のボーナス1,000円ゲット！（毎日の更新で入ります）</span>`; }
+  try { await runTransaction(db, async tx => { const bs = await tx.get(doc(db, "bonus", `${S.myNo}_${d}`)); if (bs.exists()) throw new Error("x");
+      const cs = await tx.get(doc(db, "citizens", String(S.myNo))); tx.set(doc(db, "bonus", `${S.myNo}_${d}`), { no: S.myNo, day: d, at: serverTimestamp() }); tx.update(doc(db, "citizens", String(S.myNo)), { money: cs.data().money + 1000 }); });
+    M.innerHTML = `<span class="okm">今日のボーナス1,000円ゲット！</span>`; }
   catch (e) { M.innerHTML = `<span class="note">今日はもうもらいました。また明日！</span>`; } };
 
 if (auth) {
-  onAuthStateChanged(auth, u => { if (u) checkLink(u); });
+  onAuthStateChanged(auth, async u => { if (!u) return; if (await useClaim(u)) return; checkLink(u); });
   signInAnonymously(auth).catch(e => console.warn("auth", e));
   try { listen(); } catch (e) { console.warn(e); }
 }
