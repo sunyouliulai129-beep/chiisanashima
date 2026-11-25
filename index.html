@@ -410,20 +410,20 @@ function buildWorld(){
   if(!p){const sp=spots.find(q=>free(q[0],q[2]));if(!sp)return;p=sp}
   used.push([p[0],p[2]]);
   Island3D.villager(S,p[0],p[1],p[2],0.9,rot,Island3D.lookFor(r.platform+':'+norm(r.id),taken));
-  prop(S,act,p,rot);POS[norm(r.id)]={p,rot,act};
+  prop(S,act,p,rot,/家/.test(r.job||''));POS[norm(r.id)]={p,rot,act};
  });
  return w;
 }
 function actOf(r){const W={'漁師':'fish','木こり':'wood','畑係':'farm','大工':'build','探検家':'explore'};if(r.work&&W[r.work])return W[r.work];const t=r.job||'';
  if(/漁師|釣|つり|魚/.test(t))return 'fish';if(/木こり|木を切|伐/.test(t))return 'wood';if(/畑|作物|たね|種まき|野菜/.test(t))return 'farm';
  if(/大工|建て|小屋|家を|作って/.test(t))return 'build';if(/探検|調べ|地図/.test(t))return 'explore';if(/動物|犬|猫|鳥|ひよこ/.test(t))return 'animal';return 'idle'}
-function prop(S,act,p,rot){const [x,y,z]=p,fx=Math.sin(rot),fz=-Math.cos(rot),rx=Math.cos(rot),rz=Math.sin(rot);
+function prop(S,act,p,rot,house){const [x,y,z]=p,fx=Math.sin(rot),fz=-Math.cos(rot),rx=Math.cos(rot),rz=Math.sin(rot);
  const at=(f,r,h,sx,sy,sz,c)=>S.box(x+fx*f+rx*r,y+h,z+fz*f+rz*r,sx,sy,sz,c,rot);
  if(act==='fish'){for(let k=0;k<7;k++)at(0.25+k*0.28,0.28,0.55+k*0.2,0.06,0.08,0.3,'#7A4E2A');
   const tx=x+fx*2.25+rx*0.28,tz=z+fz*2.25+rz*0.28;S.box(tx,0.05,tz,0.02,1.95,0.02,'#EEEEEE');S.ico(tx,0.08,tz,0.09,'#E2453C',3);at(-0.1,-0.5,0,0.4,0.3,0.4,'#6E9FC9')}
  else if(act==='wood'){at(0.35,0.35,0.35,0.06,0.6,0.06,'#7A4E2A');at(0.35,0.47,0.85,0.22,0.16,0.06,'#9AA3AA');for(let k=0;k<3;k++)S.cyl(x+fx*0.9+rx*(k*0.25-0.25),y,z+fz*0.9+rz*(k*0.25-0.25),0.12,0.25,6,'#8B5A2B')}
  else if(act==='farm'){for(let a=-1;a<=1;a++)for(let b=0;b<3;b++){const cx=x+fx*(0.8+b*0.45)+rx*a*0.45,cz=z+fz*(0.8+b*0.45)+rz*a*0.45;S.box(cx,y-0.02,cz,0.4,0.08,0.4,'#7A5230',rot);S.cone(cx,y+0.05,cz,0.1,0.22,4,'#5DBB4A')}at(0.2,0.35,0,0.05,1.1,0.05,'#7A4E2A')}
- else if(act==='build'){for(let k=0;k<4;k++)at(0.9,0,0.05+k*0.1,1.1,0.08,0.22,k%2?'#C98B4E':'#B5743B');at(0.3,0.35,0.4,0.05,0.35,0.05,'#7A4E2A');at(0.3,0.35,0.72,0.18,0.1,0.1,'#666666')}
+ else if(act==='build'){if(house&&!prop.house){prop.house=1;for(const [f,r] of [[1.6,-1],[1.6,1],[3.2,-1],[3.2,1]])at(f,r,0,0.18,1.8,0.18,'#9C6B3C');at(1.6,0,1.75,2.2,0.16,0.16,'#8A5428');at(3.2,0,1.75,2.2,0.16,0.16,'#8A5428');at(2.4,-1,1.75,0.16,0.16,1.8,'#8A5428');at(2.4,1,1.75,0.16,0.16,1.8,'#8A5428');at(2.4,0,0,2.2,0.06,1.8,'#C9A36B');}for(let k=0;k<4;k++)at(0.9,0,0.05+k*0.1,1.1,0.08,0.22,k%2?'#C98B4E':'#B5743B');at(0.3,0.35,0.4,0.05,0.35,0.05,'#7A4E2A');at(0.3,0.35,0.72,0.18,0.1,0.1,'#666666')}
  else if(act==='explore'){at(0.7,0.4,0,0.05,1.2,0.05,'#7A4E2A');at(0.7,0.62,0.95,0.4,0.25,0.03,'#FF7A1A')}
  else if(act==='animal'){const ax=x+fx*0.9+rx*0.4,az=z+fz*0.9+rz*0.4;S.box(ax,y+0.12,az,0.45,0.25,0.25,'#C9853E',rot);S.box(ax+fx*0.28,y+0.3,az+fz*0.28,0.22,0.2,0.2,'#C9853E',rot);for(const d of[-1,1])for(const e of[-1,1])S.box(ax+fx*0.14*e+rx*0.08*d,y,az+fz*0.14*e+rz*0.08*d,0.06,0.12,0.06,'#8B5A2B')}
 }
