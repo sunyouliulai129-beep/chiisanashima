@@ -130,7 +130,7 @@
    [
     "C",
     "魚屋さん",
-    0
+    3
    ]
   ],
   "note": "YouTubeとインスタの合計"
@@ -231,6 +231,12 @@
    "by": "yy368313",
    "text": "探検隊の隊長になりたい",
    "status": "候補"
+  },
+  {
+   "day": 2,
+   "by": "ren_05",
+   "text": "探検家のリーダーをしたい",
+   "status": "候補"
   }
  ],
  "timeline": [
@@ -254,7 +260,7 @@
    "id": "ren050554",
    "platform": "ig",
    "name": "ren_05",
-   "points": 4,
+   "points": 5,
    "level": 2,
    "job": "カフェオレさんと森で動物たちと遊んでいる",
    "wish": "動物になりたい",
@@ -263,12 +269,13 @@
     "1日目：アイデア「動物になりたい」",
     "1日目：いいね",
     "1日目：とうろく",
-    "2日目：投票A"
+    "2日目：投票A",
+    "2日目：アイデア「探検家のリーダーをしたい」"
    ],
    "since_day": 1,
    "work": null,
    "work_days": 0,
-   "coins": 4,
+   "coins": 5,
    "icon": "palm",
    "frame": "wood",
    "owned": [],
@@ -1045,7 +1052,8 @@
    "wish": null,
    "history": [
     "2日目：投票A",
-    "2日目：しごと「大工」"
+    "2日目：しごと「大工」",
+    "2日目：とうろく"
    ],
    "since_day": 3,
    "work": "大工",
@@ -1055,7 +1063,8 @@
    "frame": "wood",
    "owned": [],
    "appeared": 0,
-   "rewarded_level": 0
+   "rewarded_level": 0,
+   "code_reg": "b7ed19"
   },
   {
    "id": "a.san.0523",
@@ -1118,6 +1127,69 @@
    "work": "大工",
    "work_days": 0,
    "coins": 2,
+   "icon": "fish",
+   "frame": "wood",
+   "owned": [],
+   "appeared": 0,
+   "rewarded_level": 0
+  },
+  {
+   "id": "@rururu3538",
+   "platform": "yt",
+   "name": "rururu3538",
+   "points": 1,
+   "level": 1,
+   "job": "魚屋さんができるのを待っている",
+   "wish": null,
+   "history": [
+    "2日目：投票C"
+   ],
+   "since_day": 3,
+   "work": null,
+   "work_days": 0,
+   "coins": 1,
+   "icon": "palm",
+   "frame": "wood",
+   "owned": [],
+   "appeared": 0,
+   "rewarded_level": 0
+  },
+  {
+   "id": "@きゃめんライダー",
+   "platform": "yt",
+   "name": "きゃめんライダー",
+   "points": 1,
+   "level": 1,
+   "job": "島の経済のために魚屋さんを考えている",
+   "wish": null,
+   "history": [
+    "2日目：投票C"
+   ],
+   "since_day": 3,
+   "work": null,
+   "work_days": 0,
+   "coins": 1,
+   "icon": "shell",
+   "frame": "wood",
+   "owned": [],
+   "appeared": 0,
+   "rewarded_level": 0
+  },
+  {
+   "id": "@zhuyun-in3gn",
+   "platform": "yt",
+   "name": "zhuyun",
+   "points": 1,
+   "level": 1,
+   "job": "魚屋さんの看板を考えている",
+   "wish": null,
+   "history": [
+    "2日目：投票C"
+   ],
+   "since_day": 3,
+   "work": null,
+   "work_days": 0,
+   "coins": 1,
    "icon": "fish",
    "frame": "wood",
    "owned": [],
@@ -1317,6 +1389,6 @@
   "every": 5,
   "rule": "Lv5ごとに、そのレベルと同じ数のコイン（Lv5→5枚、Lv10→10枚…Lv100→100枚）"
  },
- "last_sync": "2026-11-25 19:56",
+ "last_sync": "2026-11-25 20:56",
  "events_rule": "YouTubeのチャンネル登録者だけで数える。節目と名前は events.js（20,30,50,70,100,150,200,300,500,700,1000…と終わりなし）"
 }
