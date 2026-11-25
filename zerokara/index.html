@@ -317,7 +317,7 @@ function makeNoise(seed) {
 }
 const T = { SEA: 0, COAST: 1, PLAIN: 2, FOREST: 3, MOUNT: 4, RIVER: 5, LAKE: 6, DESERT: 7, SNOW: 8 };
 const TNAME = ["海", "海沿い", "平地", "森", "山", "川沿い", "湖", "砂漠", "雪原"];
-const TCOL = ["#2F7FB5", "#E9D9A6", "#9ACD6B", "#3E8E4E", "#8C7B6B", "#6FB3D9", "#4A9BD1", "#E3C27A", "#F3F6F8"];
+const TCOL = ["#2F7FB5", "#E9D9A6", "#9ACD6B", "#3E8E4E", "#2F6B3F", "#6FB3D9", "#4A9BD1", "#E3C27A", "#F3F6F8"];
 const TKEY = { "海": T.COAST, "海沿い": T.COAST, "平地": T.PLAIN, "森": T.FOREST, "山": T.MOUNT, "川": T.RIVER, "川沿い": T.RIVER, "砂漠": T.DESERT, "雪原": T.SNOW, "雪": T.SNOW };
 const PRICE30 = { [T.COAST]: 1000, [T.RIVER]: 1000, [T.PLAIN]: 500, [T.FOREST]: 300, [T.MOUNT]: 300, [T.DESERT]: 100, [T.SNOW]: 100 }; // 万円
 function buildContinent() {
@@ -330,7 +330,7 @@ function buildContinent() {
     wet[y * N + x] = n2(x / 11, y / 11) * 0.7 + n3(x / 5, y / 5) * 0.3;
   }
   const landE = []; for (let i = 0; i < N * N; i++) if (elev[i] >= 0) landE.push(elev[i]);
-  landE.sort((a, b) => a - b); const MT = landE[Math.floor(landE.length * 0.86)] || 1;
+  landE.sort((a, b) => a - b); const MT = landE[Math.floor(landE.length * 0.88)] || 1, HILL = landE[Math.floor(landE.length * 0.76)] || 1;
   const landW = []; for (let i = 0; i < N * N; i++) if (elev[i] >= 0) landW.push(wet[i]);
   landW.sort((a, b) => a - b); const DRY = landW[Math.floor(landW.length * 0.3)], WET = landW[Math.floor(landW.length * 0.62)];
   for (let i = 0; i < N * N; i++) {
@@ -339,7 +339,7 @@ function buildContinent() {
     if (e > MT) t[i] = T.MOUNT;
     else if (y < 22) t[i] = T.SNOW;
     else if (wet[i] < DRY && y > 50) t[i] = T.DESERT;
-    else if (wet[i] > WET) t[i] = T.FOREST;
+    else if (e > HILL) t[i] = T.FOREST; // 森は山のまわりだけ
     else t[i] = T.PLAIN;
   }
   // 湖
@@ -358,7 +358,10 @@ function buildContinent() {
   // 海沿い
   for (let i = 0; i < N * N; i++) { if (t[i] === T.SEA || t[i] === T.RIVER || t[i] === T.LAKE) continue; const x = i % N, y = (i / N) | 0;
     for (const [dx, dy] of [[1, 0], [-1, 0], [0, 1], [0, -1]]) { const xx = x + dx, yy = y + dy; if (xx < 0 || yy < 0 || xx >= N || yy >= N || t[yy * N + xx] === T.SEA) { t[i] = T.COAST; break; } } }
-  ELEV = elev; return t;
+  // 見た目の高さ：平地はほぼ平ら、山だけ高くする
+  const de = new Float32Array(N * N);
+  for (let i = 0; i < N * N; i++) { const e = elev[i]; de[i] = e < 0 ? e : e < HILL ? 0.02 + 0.05 * e : 0.02 + 0.05 * HILL + (e - HILL) * 1.4; }
+  ELEV = de; return t;
 }
 let ELEV = null; const RIVERS = [];
 const LAND = buildContinent();
@@ -375,8 +378,8 @@ function priceOf(tt, pop) {
 }
 
 // ---------- 地図（Googleマップ風・3D） ----------
-const SPX = 16; // 1区画あたりのテクスチャの画素数
-const SNOWE = (() => { const a = []; for (let i = 0; i < N * N; i++) if (LAND[i] === T.MOUNT) a.push(ELEV[i]); a.sort((x, y) => x - y); return a[Math.floor(a.length * .8)] || 1; })();
+const SPX = 12; // 1区画あたりのテクスチャの画素数
+const SNOWE = (() => { const a = []; for (let i = 0; i < N * N; i++) if (LAND[i] === T.MOUNT) a.push(ELEV[i]); a.sort((x, y) => x - y); return a[Math.floor(a.length * .92)] || 1; })();
 const MON = (() => { let best = 0, bd = 1e9; for (let i = 0; i < N * N; i++) { const tt = LAND[i]; if (tt !== T.PLAIN && tt !== T.FOREST) continue; const d = (i % N - 50) ** 2 + ((i / N | 0) - 50) ** 2; if (d < bd) { bd = d; best = i; } } return { x: best % N, y: best / N | 0 }; })();
 const hex = h => [parseInt(h.slice(1, 3), 16), parseInt(h.slice(3, 5), 16), parseInt(h.slice(5, 7), 16)];
 const LCOL = TCOL.map(hex); LCOL[T.SEA] = hex("#E9D9A6"); LCOL[T.RIVER] = hex("#A9D27A"); LCOL[T.LAKE] = hex("#9ACD6B");
@@ -385,37 +388,55 @@ function elevAt(fx, fy) { // 区画座標でなめらかな高さ
   const e = (a, b) => ELEV[Math.min(N - 1, b) * N + Math.min(N - 1, a)];
   return e(x0, y0) * (1 - tx) * (1 - ty) + e(x0 + 1, y0) * tx * (1 - ty) + e(x0, y0 + 1) * (1 - tx) * ty + e(x0 + 1, y0 + 1) * tx * ty;
 }
-const TEX = document.createElement("canvas"); TEX.width = TEX.height = N * SPX;
-(() => {
-  const c = TEX.getContext("2d"), W = N * SPX, im = c.createImageData(W, W), d = im.data;
-  for (let py = 0; py < W; py++) for (let px = 0; px < W; px++) {
-    const fx = (px + .5) / SPX, fy = (py + .5) / SPX, e = elevAt(fx, fy), k = (py * W + px) * 4;
-    const ix = Math.min(N - 1, fx | 0), iy = Math.min(N - 1, fy | 0), tt = LAND[iy * N + ix];
-    let r, g, b;
-    if (e < 0 && tt !== T.COAST) { const dp = Math.min(1, -e / 0.35); r = 120 - 75 * dp; g = 196 - 90 * dp; b = 225 - 50 * dp; }
-    else if ((() => { const X = Math.min(N - 1.001, Math.max(0, fx - .5)), Y = Math.min(N - 1.001, Math.max(0, fy - .5)), x0 = X | 0, y0 = Y | 0, tx = X - x0, ty = Y - y0, Lk = (a, bb) => LAND[Math.min(N - 1, bb) * N + Math.min(N - 1, a)] === T.LAKE ? 1 : 0;
-      return Lk(x0, y0) * (1 - tx) * (1 - ty) + Lk(x0 + 1, y0) * tx * (1 - ty) + Lk(x0, y0 + 1) * (1 - tx) * ty + Lk(x0 + 1, y0 + 1) * tx * ty > .45; })()) { r = 74; g = 155; b = 209; }
-    else {
-      // まわり4区画の色をまぜる
-      const X = Math.min(N - 1.001, Math.max(0, fx - .5)), Y = Math.min(N - 1.001, Math.max(0, fy - .5)), x0 = X | 0, y0 = Y | 0, tx = X - x0, ty = Y - y0;
-      const C = (a, bb) => LCOL[LAND[Math.min(N - 1, bb) * N + Math.min(N - 1, a)]];
-      const c00 = C(x0, y0), c10 = C(x0 + 1, y0), c01 = C(x0, y0 + 1), c11 = C(x0 + 1, y0 + 1);
-      const mix = j => c00[j] * (1 - tx) * (1 - ty) + c10[j] * tx * (1 - ty) + c01[j] * (1 - tx) * ty + c11[j] * tx * ty;
-      r = mix(0); g = mix(1); b = mix(2);
-      const ex = elevAt(fx + .35, fy) - elevAt(fx - .35, fy), ey = elevAt(fx, fy + .35) - elevAt(fx, fy - .35);
-      const sh = Math.max(.55, Math.min(1.35, 1 - (ex + ey) * 2.2));
-      r *= sh; g *= sh; b *= sh;
-      if (tt === T.MOUNT && e > SNOWE) { const s = Math.min(1, (e - SNOWE) * 8); r += (245 - r) * s; g += (245 - g) * s; b += (245 - b) * s; }
-    }
-    d[k] = r; d[k + 1] = g; d[k + 2] = b; d[k + 3] = 255;
+const DN1 = makeNoise(SEED + 51), DN2 = makeNoise(SEED + 77);
+const lakeAt = (fx, fy) => { const X = Math.min(N - 1.001, Math.max(0, fx - .5)), Y = Math.min(N - 1.001, Math.max(0, fy - .5)), x0 = X | 0, y0 = Y | 0, tx = X - x0, ty = Y - y0, Lk = (a, bb) => LAND[Math.min(N - 1, bb) * N + Math.min(N - 1, a)] === T.LAKE ? 1 : 0;
+  return Lk(x0, y0) * (1 - tx) * (1 - ty) + Lk(x0 + 1, y0) * tx * (1 - ty) + Lk(x0, y0 + 1) * (1 - tx) * ty + Lk(x0 + 1, y0 + 1) * tx * ty; };
+function pix(fx, fy, out) { // 区画座標(fx,fy)の色
+  const e = elevAt(fx, fy), ix = Math.min(N - 1, Math.max(0, fx | 0)), iy = Math.min(N - 1, Math.max(0, fy | 0)), tt = LAND[iy * N + ix];
+  const fine = DN2(fx * 9, fy * 9) - .5, mid = DN1(fx * 2.3, fy * 2.3) - .5;
+  let r, g, b;
+  if (e < 0) { const dp = Math.min(1, -e / 0.35); r = 120 - 75 * dp; g = 196 - 90 * dp; b = 225 - 50 * dp; const w = 1 + fine * .05; r *= w; g *= w; b *= w;
+    if (e > -0.012) { r = 236; g = 244; b = 246; } }
+  else if (lakeAt(fx, fy) > .45) { r = 74; g = 155; b = 209; if (lakeAt(fx, fy) < .52) { r = 210; g = 228; b = 232; } }
+  else {
+    const X = Math.min(N - 1.001, Math.max(0, fx - .5)), Y = Math.min(N - 1.001, Math.max(0, fy - .5)), x0 = X | 0, y0 = Y | 0, tx = X - x0, ty = Y - y0;
+    const C = (a, bb) => LCOL[LAND[Math.min(N - 1, bb) * N + Math.min(N - 1, a)]];
+    const c00 = C(x0, y0), c10 = C(x0 + 1, y0), c01 = C(x0, y0 + 1), c11 = C(x0 + 1, y0 + 1);
+    const mix = j => c00[j] * (1 - tx) * (1 - ty) + c10[j] * tx * (1 - ty) + c01[j] * (1 - tx) * ty + c11[j] * tx * ty;
+    r = mix(0); g = mix(1); b = mix(2);
+    if (e < 0.0212) { const s = Math.min(1, (0.0212 - e) / 0.0012); r += (233 - r) * s; g += (217 - g) * s; b += (166 - b) * s; } // 砂浜
+    const ex = elevAt(fx + .25, fy) - elevAt(fx - .25, fy), ey = elevAt(fx, fy + .25) - elevAt(fx, fy - .25);
+    let sh = Math.max(.55, Math.min(1.35, 1 - (ex + ey) * 3.0)) * (1 + mid * .10 + fine * .08);
+    if ((tt === T.FOREST || tt === T.MOUNT) && fine > .08) sh *= .8; // 木のかたまり
+    if (tt === T.MOUNT && e > SNOWE * .82) { const s = Math.min(1, (e - SNOWE * .82) / (SNOWE * .18)); r += (128 - r) * s * .7; g += (118 - g) * s * .7; b += (106 - b) * s * .7; } // 岩
+    r *= sh; g *= sh; b *= sh;
+    if (e > SNOWE) { const s = Math.min(1, (e - SNOWE) * 10 + mid * .15); if (s > 0) { r += (246 - r) * s; g += (248 - g) * s; b += (250 - b) * s; } }
   }
+  out[0] = r; out[1] = g; out[2] = b;
+}
+window.__zkTileTime = () => { const cv = document.createElement('canvas'); cv.width = cv.height = TPX; const t = performance.now(); renderRegion(cv, 40, 40, 64); return performance.now() - t; };
+function renderRegion(cv, px0, py0, R) { // px0,py0 = 区画座標の左上, R = 1区画の画素数
+  const c = cv.getContext("2d"), W = cv.width, H = cv.height, im = c.createImageData(W, H), d = im.data, o = [0, 0, 0];
+  for (let y = 0; y < H; y++) for (let x = 0; x < W; x++) { pix(px0 + (x + .5) / R, py0 + (y + .5) / R, o); const k = (y * W + x) * 4; d[k] = o[0]; d[k + 1] = o[1]; d[k + 2] = o[2]; d[k + 3] = 255; }
   c.putImageData(im, 0, 0);
-  // 川
-  c.strokeStyle = "#4A9BD1"; c.lineCap = c.lineJoin = "round";
-  for (const p of RIVERS) { if (p.length < 4) continue; c.lineWidth = 2.6; c.beginPath();
-    p.forEach((i, k) => { const x = (i % N + .5) * SPX, y = ((i / N | 0) + .5) * SPX; if (!k) c.moveTo(x, y); else { const j = p[k - 1], mx = ((j % N + .5) * SPX + x) / 2, my = (((j / N | 0) + .5) * SPX + y) / 2; c.quadraticCurveTo((j % N + .5) * SPX, ((j / N | 0) + .5) * SPX, mx, my); } });
+  c.strokeStyle = "#4A9BD1"; c.lineCap = c.lineJoin = "round"; c.lineWidth = Math.max(1.6, R * .2);
+  for (const p of RIVERS) { if (p.length < 4) continue; c.beginPath();
+    p.forEach((i, k) => { const x = (i % N + .5 - px0) * R, y = ((i / N | 0) + .5 - py0) * R; if (!k) c.moveTo(x, y); else { const j = p[k - 1], jx = (j % N + .5 - px0) * R, jy = ((j / N | 0) + .5 - py0) * R; c.quadraticCurveTo(jx, jy, (jx + x) / 2, (jy + y) / 2); } });
     c.stroke(); }
-})();
+}
+const TEX = document.createElement("canvas"); TEX.width = TEX.height = N * SPX; renderRegion(TEX, 0, 0, SPX);
+// 拡大したときは、見えているところだけ細かく描く（タイル）
+const TILES = new Map(), TQ = []; const TPX = 256;
+function tileKey(R, tx, ty) { return R + ":" + tx + ":" + ty; }
+function getTile(R, tx, ty) { const k = tileKey(R, tx, ty); const t = TILES.get(k); if (t) { TILES.delete(k); TILES.set(k, t); return t; } if (!TQ.some(q => q.k === k)) TQ.push({ k, R, tx, ty }); return null; }
+let tileBusy = false;
+function pumpTiles() { if (tileBusy || !TQ.length) return; tileBusy = true;
+  const run = () => { const t0 = performance.now(); let did = 0;
+    while (TQ.length && performance.now() - t0 < 24) { const q = TQ.pop(); if (TILES.has(q.k)) continue; const cv = document.createElement("canvas"); cv.width = cv.height = TPX; renderRegion(cv, q.tx * TPX / q.R, q.ty * TPX / q.R, q.R); TILES.set(q.k, cv); did++;
+      while (TILES.size > 160) TILES.delete(TILES.keys().next().value); }
+    if (did) drawMap(true);
+    if (TQ.length) requestAnimationFrame(run); else tileBusy = false; };
+  requestAnimationFrame(run); }
 // 地名（地形ごとのいちばん大きいかたまりの真ん中）
 const PLACES = (() => {
   const seen = new Uint8Array(N * N), out = [];
@@ -437,7 +458,7 @@ const PLACES = (() => {
 })();
 
 // 3D（ななめから見た図）を前もって描いておく
-const ISO = { w: 14, hs: 130, img: [], X0: 0, Y0: 0 };
+const ISO = { w: 26, hs: 240, img: [], X0: 0, Y0: 0 };
 function rotXY(x, y, r) { return r === 0 ? [x, y] : r === 1 ? [N - 1 - y, x] : r === 2 ? [N - 1 - x, N - 1 - y] : [y, N - 1 - x]; }
 function unrotXY(a, b, r) { return r === 0 ? [a, b] : r === 1 ? [b, N - 1 - a] : r === 2 ? [N - 1 - a, N - 1 - b] : [N - 1 - b, a]; }
 const plotH = (x, y) => { const tt = LAND[y * N + x]; if (tt === T.SEA || tt === T.LAKE) return 0; return Math.max(1, ELEV[y * N + x] * ISO.hs + 3); };
@@ -476,29 +497,38 @@ function screenToPlot(px, py) {
     if (a < 0 || b < 0 || a >= N || b >= N) return [-1, -1]; res = unrotXY(a, b, MAP.rot); h = plotH(res[0], res[1]); }
   return res;
 }
-function drawMap() {
+function drawMap(fromTiles) {
   const c = MAP.cv.getContext("2d"), W = MAP.cv.width, H = MAP.cv.height, C = content(), k = MAP.k, d = MAP.d || 1;
   const g = c.createLinearGradient(0, 0, 0, H); g.addColorStop(0, MAP.mode === "2d" ? "#5C9FD0" : "#BFE3F7"); g.addColorStop(1, MAP.mode === "2d" ? "#3E86BF" : "#7FB8DE");
   c.fillStyle = g; c.fillRect(0, 0, W, H);
   c.imageSmoothingEnabled = true; c.imageSmoothingQuality = "high"; c.drawImage(C, MAP.ox, MAP.oy, C.width * k, C.height * k);
-  const z = MAP.mode === "2d" ? SPX * k : ISO.w * k; // 1区画の画面上の大きさ
+  const z = MAP.mode === "2d" ? SPX * k : ISO.w * k; // 1区画の画面上の大きさ（実ピクセル）
+  const zc = z / d; // 1区画の大きさ（見た目）
+  if (MAP.mode === "2d" && z > SPX * 1.1) { // 細かいタイルで上から描く
+    const R = [32, 64, 128, 256].find(v => v >= z * .9) || 256, ts = TPX / R * z; // タイル1枚の画面上の大きさ
+    const tx0 = Math.max(0, Math.floor(-MAP.ox / ts)), ty0 = Math.max(0, Math.floor(-MAP.oy / ts)), tx1 = Math.min(Math.ceil(N * R / TPX) - 1, Math.floor((W - MAP.ox) / ts)), ty1 = Math.min(Math.ceil(N * R / TPX) - 1, Math.floor((H - MAP.oy) / ts));
+    TQ.length = 0;
+    for (let ty = ty0; ty <= ty1; ty++) for (let tx = tx0; tx <= tx1; tx++) { const t = getTile(R, tx, ty); if (t) c.drawImage(t, Math.floor(MAP.ox + tx * ts), Math.floor(MAP.oy + ty * ts), Math.ceil(ts) + 1, Math.ceil(ts) + 1); }
+    TQ.sort((a, b) => Math.hypot(b.tx * ts + MAP.ox - W / 2, b.ty * ts + MAP.oy - H / 2) - Math.hypot(a.tx * ts + MAP.ox - W / 2, a.ty * ts + MAP.oy - H / 2));
+    pumpTiles();
+  }
   if (MAP.mode === "2d") {
-    if (z > 14) { c.strokeStyle = `rgba(0,0,0,${Math.min(.12, (z - 14) / 120)})`; c.lineWidth = 1; c.beginPath();
+    if (zc > 14) { c.strokeStyle = `rgba(0,0,0,${Math.min(.12, (zc - 14) / 120)})`; c.lineWidth = 1; c.beginPath();
       const x0 = Math.max(0, Math.floor(-MAP.ox / z)), x1 = Math.min(N, Math.ceil((W - MAP.ox) / z)), y0 = Math.max(0, Math.floor(-MAP.oy / z)), y1 = Math.min(N, Math.ceil((H - MAP.oy) / z));
       for (let x = x0; x <= x1; x++) { c.moveTo(MAP.ox + x * z, MAP.oy + y0 * z); c.lineTo(MAP.ox + x * z, MAP.oy + y1 * z); }
       for (let y = y0; y <= y1; y++) { c.moveTo(MAP.ox + x0 * z, MAP.oy + y * z); c.lineTo(MAP.ox + x1 * z, MAP.oy + y * z); } c.stroke();
-      if (z > 42) { c.fillStyle = "rgba(0,0,0,.35)"; c.font = `${10 * d}px sans-serif`; c.textAlign = "left"; c.textBaseline = "top";
+      if (zc > 42) { c.fillStyle = "rgba(0,0,0,.35)"; c.font = `${10 * d}px sans-serif`; c.textAlign = "left"; c.textBaseline = "top";
         for (let y = y0; y < y1; y++) for (let x = x0; x < x1; x++) if (isBuyable(LAND[y * N + x])) c.fillText(`${x + 1}-${y + 1}`, MAP.ox + x * z + 3 * d, MAP.oy + y * z + 3 * d); } }
     for (const L of S.lands.values()) { const [sx, sy] = plotToScreen(L.x, L.y);
       c.fillStyle = L.color || "#E8A317"; c.beginPath(); c.arc(sx, sy, Math.max(3 * d, z * .32), 0, 7); c.fill(); c.lineWidth = 1.5 * d; c.strokeStyle = "#fff"; c.stroke();
-      if (z > 20) { c.font = `${Math.floor(z * .45)}px "Noto Color Emoji","Apple Color Emoji",sans-serif`; c.textAlign = "center"; c.textBaseline = "middle"; c.fillText(L.emoji || "🏠", sx, sy + 1); }
-      if (z > 34 && L.ownerName) { c.font = `700 ${11 * d}px sans-serif`; c.lineWidth = 3 * d; c.strokeStyle = "#fff"; c.fillStyle = "#1D2B2A"; c.strokeText(L.ownerName, sx, sy + z * .55); c.fillText(L.ownerName, sx, sy + z * .55); } }
+      if (zc > 20) { c.font = `${Math.floor(z * .45)}px "Noto Color Emoji","Apple Color Emoji",sans-serif`; c.textAlign = "center"; c.textBaseline = "middle"; c.fillText(L.emoji || "🏠", sx, sy + 1); }
+      if (zc > 34 && L.ownerName) { c.font = `700 ${11 * d}px sans-serif`; c.lineWidth = 3 * d; c.strokeStyle = "#fff"; c.fillStyle = "#1D2B2A"; c.strokeText(L.ownerName, sx, sy + z * .55); c.fillText(L.ownerName, sx, sy + z * .55); } }
   }
   // 地名ラベル
   c.textAlign = "center"; c.textBaseline = "middle";
   for (const p of PLACES) { const [sx, sy] = plotToScreen(p.x - .5, p.y - .5);
-    if (p.mon) { c.font = `${Math.max(14 * d, z * 1.1)}px "Noto Color Emoji","Apple Color Emoji",sans-serif`; if (MAP.mode === "2d") c.fillText("🗿", sx, sy); if (z < 8) continue; }
-    else if (!p.big && z < (MAP.mode === "3d" ? 12 : 7)) continue;
+    if (p.mon) { c.font = `${Math.max(14 * d, z * 1.1)}px "Noto Color Emoji","Apple Color Emoji",sans-serif`; if (MAP.mode === "2d") c.fillText("🗿", sx, sy); if (zc < 8) continue; }
+    else if (!p.big && zc < (MAP.mode === "3d" ? 12 : 7)) continue;
     const fs = (p.big ? 14 : 12) * d; c.font = `800 ${fs}px "Hiragino Sans","Noto Sans CJK JP",sans-serif`;
     c.lineWidth = 4 * d; c.strokeStyle = "rgba(255,255,255,.9)"; c.fillStyle = p.mon ? "#7A4E00" : "#33403F";
     const ty = p.mon ? sy + Math.max(14 * d, z * 1.1) * .8 : sy - (MAP.mode === "3d" ? 10 * d : 0);
@@ -508,7 +538,7 @@ function drawMap() {
   // 方位と縮尺
   if (MAP.mode === "2d") { c.fillStyle = "rgba(255,255,255,.92)"; c.beginPath(); c.arc(26 * d, 26 * d, 17 * d, 0, 7); c.fill(); c.fillStyle = "#D9534F"; c.beginPath(); c.moveTo(26 * d, 13 * d); c.lineTo(31 * d, 27 * d); c.lineTo(21 * d, 27 * d); c.fill(); c.fillStyle = "#1D2B2A"; c.font = `800 ${10 * d}px sans-serif`; c.fillText("N", 26 * d, 34 * d);
     const km = [1, 2, 5, 10, 20, 50].find(v => v * z > 50 * d) || 50, len = km * z; c.fillStyle = "rgba(255,255,255,.92)"; c.fillRect(W - len - 22 * d, H - 30 * d, len + 14 * d, 22 * d); c.fillStyle = "#1D2B2A"; c.fillRect(W - len - 15 * d, H - 14 * d, len, 3 * d); c.font = `700 ${10 * d}px sans-serif`; c.fillText(`${km}km`, W - len / 2 - 15 * d, H - 22 * d); }
-  $("mapInfo").textContent = MAP.mode === "2d" ? (z < 8 ? "ゆびで拡大すると区画が見えます" : z < 42 ? "もっと拡大すると区画の番号が見えます" : "区画をタップしてね") : "3Dで見ています（⟳で回転）";
+  $("mapInfo").textContent = MAP.mode === "2d" ? (zc < 8 ? "ゆびで拡大すると区画が見えます" : zc < 42 ? "もっと拡大すると区画の番号が見えます" : "区画をタップしてね") : "3Dで見ています（⟳で回転）";
 }
 addEventListener("resize", () => { if ($("s-map").classList.contains("on")) { resizeMap(); drawMap(); } });
 let flyAnim = 0;
