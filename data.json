@@ -261,6 +261,18 @@
    "by": "ビッパ色違い",
    "text": "魚屋さんで魚を育てる",
    "status": "候補"
+  },
+  {
+   "day": 2,
+   "by": "zhuyun",
+   "text": "探検家になりたい",
+   "status": "候補"
+  },
+  {
+   "day": 2,
+   "by": "zhuyun",
+   "text": "竹で湖から本部まで水をつなげる",
+   "status": "候補"
   }
  ],
  "timeline": [
@@ -1219,17 +1231,18 @@
    "id": "@zhuyun-in3gn",
    "platform": "yt",
    "name": "zhuyun",
-   "points": 1,
+   "points": 2,
    "level": 1,
    "job": "魚屋さんの看板を考えている",
    "wish": null,
    "history": [
-    "2日目：投票C"
+    "2日目：投票C",
+    "2日目（まとめ#2）：アイデア「探検家になりたい」"
    ],
    "since_day": 3,
    "work": null,
    "work_days": 0,
-   "coins": 1,
+   "coins": 2,
    "icon": "fish",
    "frame": "wood",
    "owned": [],
@@ -1471,6 +1484,6 @@
   "every": 5,
   "rule": "Lv5ごとに、そのレベルと同じ数のコイン（Lv5→5枚、Lv10→10枚…Lv100→100枚）"
  },
- "last_sync": "2026-11-26 15:56",
+ "last_sync": "2026-11-26 17:00",
  "events_rule": "YouTubeのチャンネル登録者だけで数える。節目と名前は events.js（20,30,50,70,100,150,200,300,500,700,1000…と終わりなし）"
 }
