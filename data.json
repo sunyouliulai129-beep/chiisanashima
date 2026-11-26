@@ -114,23 +114,23 @@
   2955
  ],
  "question": {
-  "day": 2,
-  "text": "魚がとれた！次につくるのは？",
+  "day": 3,
+  "text": "旅人の地図。探検隊はどこへ行く？",
   "choices": [
    [
     "A",
-    "小屋",
-    11
+    "森の奥",
+    1
    ],
    [
     "B",
-    "いかだ",
+    "雪山の頂上",
     0
    ],
    [
     "C",
-    "魚屋さん",
-    6
+    "砂漠の先",
+    0
    ]
   ],
   "note": "YouTubeとインスタの合計"
@@ -1238,18 +1238,19 @@
    "id": "@zhuyun-in3gn",
    "platform": "yt",
    "name": "zhuyun",
-   "points": 2,
-   "level": 1,
+   "points": 3,
+   "level": 2,
    "job": "魚屋さんの看板を考えている",
    "wish": null,
    "history": [
     "2日目：投票C",
-    "2日目（まとめ#2）：アイデア「探検家になりたい」"
+    "2日目（まとめ#2）：アイデア「探検家になりたい」",
+    "3日目：投票A"
    ],
    "since_day": 3,
    "work": null,
    "work_days": 0,
-   "coins": 2,
+   "coins": 3,
    "icon": "fish",
    "frame": "wood",
    "owned": [],
@@ -1314,6 +1315,27 @@
    "work_days": 0,
    "coins": 0,
    "icon": "palm",
+   "frame": "wood",
+   "owned": [],
+   "appeared": 0,
+   "rewarded_level": 0
+  },
+  {
+   "id": "@茂山雅",
+   "platform": "yt",
+   "name": "茂山雅",
+   "points": 0,
+   "level": 1,
+   "job": "浜辺に流れ着いたばかり。オノを手に森を見ている",
+   "wish": null,
+   "history": [
+    "3日目：しごと「木こり」"
+   ],
+   "since_day": 3,
+   "work": "木こり",
+   "work_days": 0,
+   "coins": 0,
+   "icon": "shell",
    "frame": "wood",
    "owned": [],
    "appeared": 0,
@@ -1512,6 +1534,6 @@
   "every": 5,
   "rule": "Lv5ごとに、そのレベルと同じ数のコイン（Lv5→5枚、Lv10→10枚…Lv100→100枚）"
  },
- "last_sync": "2026-11-26 17:00",
+ "last_sync": "2026-11-26 20:57",
  "events_rule": "YouTubeのチャンネル登録者だけで数える。節目と名前は events.js（20,30,50,70,100,150,200,300,500,700,1000…と終わりなし）"
 }
