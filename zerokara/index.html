@@ -1045,7 +1045,7 @@ async function sendItemReq(s) { const t = ($("rqText").value || "").trim(), M = 
 // ---- スロット（feats 'slot'）：結果は買った時刻（サーバーのマイクロ秒）で決まる。サイトのルールでも同じ計算でチェック ----
 const SLOT_T = [[1, 1000, "💎"], [4, 500, "👑"], [16, 100, "7️⃣"], [31, 40, "🍒"], [56, 30, "🔔"], [106, 20, "🍋"], [166, 15, "🍊"], [276, 10, "🍇"]];
 const slotM = r => { for (const [c, m] of SLOT_T) if (r < c) return m; return 0; }, slotE = m => (SLOT_T.find(x => x[1] === m) || [0, 0, "✖️"])[2];
-const slotR = (ts, i) => ((Math.floor(ts.nanoseconds / 1000) % 1000) * 337 + i * 619 + i * i * 71) % 1000, slotWin = (bet, r) => Math.floor(bet * slotM(r) / 10);
+const slotR = (ts, i) => ((ts.toMillis() % 1000) * 337 + i * 619 + i * i * 71) % 1000, slotWin = (bet, r) => Math.floor(bet * slotM(r) / 10);
 const spinsOf = nm => { const m = String(nm || "").match(/(?:^|[^0-9])(\d+)回転/), n = m ? +m[1] : 1; return [100, 50, 30, 20, 10, 5, 4, 3, 2].includes(n) ? n : 1; };
 const sleep = ms => new Promise(r => setTimeout(r, ms));
 async function slotAnim(box, res) { const sy = SLOT_T.map(x => x[2]).concat(["✖️", "✖️", "✖️"]);
