@@ -163,8 +163,9 @@ footer{text-align:center;color:var(--mut);font-size:12px;padding:20px}
 <!-- お店 -->
 <section id="s-shops">
   <h2>お店・会社</h2>
+  <button class="btn wide" id="shopOpenBtn" style="margin:0 0 12px">🏪 自分のお店を開く（サイトですぐ開店）</button>
   <div class="grid" id="shopGrid"></div>
-  <p class="note" id="shopNote">お店はコメント「お店 （名前）」か、マイページから申しこめます。</p>
+  <p class="note" id="shopNote">お店はこのボタンか、マイページ、コメント「お店 （名前）」で開けます。</p>
 </section>
 
 <!-- ランキング -->
@@ -1024,6 +1025,7 @@ if (auth) {
   $("tip").classList.add("on"); $("tipX").onclick = () => { $("tip").classList.remove("on"); try { localStorage.setItem("zk_tip", "1"); } catch {} };
 })();
 
+$("shopOpenBtn").onclick = () => { showTab("me"); setTimeout(() => { const i = $("qShop"); if (i && i.offsetParent) { i.scrollIntoView({ behavior: "smooth", block: "center" }); i.focus({ preventScroll: true }); } }, 250); };
 renderTop(); renderPeople(); renderRank(); renderShops();
 const h = location.hash.slice(1); if (["top", "map", "people", "shops", "rank", "rules", "me"].includes(h)) showTab(h);
 </script>
