@@ -203,9 +203,16 @@ footer{text-align:center;color:var(--mut);font-size:12px;padding:20px}
       <button class="btn wide" id="rGo">国民になる</button>
       <p class="note" id="rNote"></p>
     </div>
-    <h2>もう国民の人</h2>
-    <div class="card small">
-      このスマホで登録した人は、開くだけで自動でログインします。別のスマホで開きたいときは、@zerokara_kyowakoku にDMで「<b>リンク</b>」と送ってね。ログイン用のリンクを送ります。
+    <h2 id="loginH">🔐 ログイン（もう国民の人）</h2>
+    <div class="card" id="loginCard">
+      <p class="small" style="margin:0 0 8px">登録したスマホなら、開くだけで自動でログインします。別のスマホ・別のブラウザでは、<b>国民番号</b>と<b>合言葉</b>でログインしてね（合言葉はマイページで先につくっておく）。</p>
+      <label>国民番号</label>
+      <input id="lNo" type="number" inputmode="numeric" min="1" placeholder="例：7">
+      <label>合言葉</label>
+      <input id="lPass" type="password" autocomplete="current-password" placeholder="合言葉">
+      <div class="err" id="lErr"></div>
+      <button class="btn wide" id="lGo">ログイン</button>
+      <p class="note">合言葉をつくる前にスマホを変えた・忘れたときは、@zerokara_kyowakoku にDMで「ログインできない」と国民番号を送ってね。</p>
     </div>
   </div>
   <div id="meIn" style="display:none">
@@ -237,6 +244,14 @@ footer{text-align:center;color:var(--mut);font-size:12px;padding:20px}
       <button class="btn sec wide" id="qShopGo">お店を開く</button>
       <div class="small" id="qMsg"></div>
       <p class="note">1人1店まで。ほかの国民がお店で「買う」と、その値段の売上がすぐあなたのお金に入ります。</p>
+    </div>
+    <h2>🔐 合言葉（別のスマホでログインする用）</h2>
+    <div class="card" id="passCard">
+      <p class="small" style="margin:0 0 8px" id="passInfo">合言葉をつくると、別のスマホやパソコンでも「国民番号＋合言葉」でログインできます。だれにも教えないでね。</p>
+      <input id="pNew" type="password" autocomplete="new-password" maxlength="40" placeholder="合言葉（6文字以上）">
+      <input id="pNew2" type="password" autocomplete="new-password" maxlength="40" placeholder="もう一度">
+      <button class="btn sec wide" id="pGo">合言葉を保存</button>
+      <div class="small" id="pMsg"></div>
     </div>
     <h2>プロフィールを編集</h2>
     <div class="card">
@@ -850,9 +865,10 @@ function listen() {
   onSnapshot(query(collection(db, "news"), orderBy("at", "desc"), limit(10)), q => { if (!q.empty) $("newsList").innerHTML = q.docs.map(d => { const n = d.data(); const t = n.at && n.at.toDate ? n.at.toDate() : null; return `<div class="news"><time>${t ? (t.getMonth() + 1) + "/" + t.getDate() : ""}</time>${esc(n.text)}</div>`; }).join(""); }, () => {});
   onSnapshot(query(collection(db, "history"), orderBy("at"), limit(50)), q => { if (!q.empty) $("historyList").innerHTML = q.docs.map(d => `<div class="news">🏁 ${esc(d.data().text)}</div>`).join(""); }, () => {});
 }
+function passInfo() { const P = $("passInfo"), B = $("pGo"); if (!P) return; P.innerHTML = S.hasPass ? `✅ 合言葉はつくってあります。別のスマホでは「国民番号 ${S.myNo}」＋合言葉でログインできます。変えるときは下に新しい合言葉を入れてね。` : "合言葉をつくると、別のスマホやパソコンでも「国民番号＋合言葉」でログインできます。だれにも教えないでね。"; B.textContent = S.hasPass ? "合言葉を変える" : "合言葉を保存"; }
 async function checkLink(user) {
-  try { const l = await getDoc(doc(db, "links", user.uid)); S.myNo = l.exists() ? l.data().no : null; } catch { S.myNo = null; }
-  renderMe(); if (S.myNo) loadMyReqs();
+  try { const l = await getDoc(doc(db, "links", user.uid)); S.myNo = l.exists() ? l.data().no : null; S.hasPass = !!(l.exists() && l.data().h); } catch { S.myNo = null; }
+  renderMe(); if (S.myNo) loadMyReqs(); passInfo();
 }
 function renderMe() {
   const me = S.myNo ? S.citizens.find(c => c.no === S.myNo) : null;
@@ -975,11 +991,25 @@ if ($("rGo")) $("rGo").onclick = async () => {
 if ($("lGo")) $("lGo").onclick = async () => {
   const no = parseInt($("lNo").value, 10), pass = $("lPass").value, E = $("lErr"); E.textContent = "";
   if (!no || !pass) return E.textContent = "国民番号と合言葉を入れてね";
+  if (!auth.currentUser) return E.textContent = "通信の準備中です。少し待ってもう一度";
   $("lGo").disabled = true;
-  try { const h = await hashPass(no, pass); await setDoc(doc(db, "links", auth.currentUser.uid), { no, h }); S.myNo = no; try { localStorage.setItem("zk_no", String(no)); } catch {} renderMe(); loadMyReqs(); }
+  try { const h = await hashPass(no, pass); await setDoc(doc(db, "links", auth.currentUser.uid), { no, h }); S.myNo = no; S.hasPass = true; try { localStorage.setItem("zk_no", String(no)); } catch {} renderMe(); loadMyReqs(); passInfo(); showTab("me"); }
   catch (e) { E.textContent = "国民番号か合言葉がちがいます"; }
   $("lGo").disabled = false;
 };
+$("pGo").onclick = async () => { const a = $("pNew").value, b = $("pNew2").value, M = $("pMsg");
+  if (!S.myNo) return M.innerHTML = `<span class="err">先にログインしてね</span>`;
+  if (a.length < 6) return M.innerHTML = `<span class="err">合言葉は6文字以上にしてね</span>`;
+  if (a !== b) return M.innerHTML = `<span class="err">2つの合言葉がちがいます</span>`;
+  $("pGo").disabled = true;
+  try { const h = await hashPass(S.myNo, a), ref = doc(db, "secrets", String(S.myNo));
+    try { await setDoc(ref, { h }); } catch (e) { throw e; }
+    await setDoc(doc(db, "links", auth.currentUser.uid), { no: S.myNo, h });
+    $("pNew").value = ""; $("pNew2").value = ""; S.hasPass = true; passInfo();
+    M.innerHTML = `<span class="okm">保存しました！ 別のスマホでは「国民番号 ${S.myNo}」と、この合言葉でログインできます。</span>`;
+  } catch (e) { M.innerHTML = `<span class="err">保存できませんでした（${esc(errText(e))}）</span>`; }
+  $("pGo").disabled = false; };
+if (/^#login/.test(location.hash)) setTimeout(() => { showTab("me"); const i = $("lNo"); if (i && i.offsetParent) { i.scrollIntoView({ block: "center" }); i.focus({ preventScroll: true }); } }, 300);
 $("logout").onclick = async () => { if (!confirm("このスマホからログアウトしますか？")) return; try { await deleteDoc(doc(db, "links", auth.currentUser.uid)); } catch {} S.myNo = null; try { localStorage.removeItem("zk_no"); } catch {} renderMe(); };
 // プロフィール保存
 $("eGo").onclick = async () => {
