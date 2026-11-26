@@ -176,6 +176,20 @@ footer{text-align:center;color:var(--mut);font-size:12px;padding:20px}
   <div class="card" id="rankShop"></div>
   <h2>🍽️ いろんなお店ランキング</h2>
   <div class="card" id="rankVariety"></div>
+  <h2>🏪 お店の売上ランキング</h2>
+  <div class="card" id="rankShopSales"></div>
+  <h2>👑 社長ランキング（持っているお店の売上の合計）</h2>
+  <div class="card" id="rankOwner"></div>
+  <h2>🏬 お店の数ランキング</h2>
+  <div class="card" id="rankShopCount"></div>
+  <h2>🗺️ 土地持ちランキング</h2>
+  <div class="card" id="rankLand"></div>
+  <h2>👷 バイト代ランキング</h2>
+  <div class="card" id="rankWork"></div>
+  <h2>🧑‍🍳 バイトが多いお店ランキング</h2>
+  <div class="card" id="rankStaff"></div>
+  <h2>🎰 スロット回転数ランキング</h2>
+  <div class="card" id="rankSpin"></div>
   <h2>建国の歴史</h2>
   <div class="card" id="historyList"><div class="note">はじめての〇〇は、ここにずっと残ります。</div></div>
 </section>
@@ -1161,7 +1175,21 @@ function renderRank2() {
   const a = [...S.citizens].filter(c => (c.spent || 0) > 0).sort((x, y) => (y.spent || 0) - (x.spent || 0)).slice(0, 10);
   $("rankShop").innerHTML = a.map((c, i) => row(c, i, `${yen(c.spent)}（${c.nbuy || 0}回）`)).join("") || `<div class="note">まだだれも買っていません。人のお店で買うとのります</div>`;
   const b = [...S.citizens].filter(c => Object.keys(bagOf(c)).length).sort((x, y) => Object.keys(bagOf(y)).length - Object.keys(bagOf(x)).length).slice(0, 10);
-  $("rankVariety").innerHTML = b.map((c, i) => row(c, i, `${Object.keys(bagOf(c)).length}店`)).join("") || `<div class="note">まだだれもいません</div>`; }
+  $("rankVariety").innerHTML = b.map((c, i) => row(c, i, `${Object.keys(bagOf(c)).length}店`)).join("") || `<div class="note">まだだれもいません</div>`;
+  const nm = no => { const c = S.citizens.find(v => v.no === no); return c ? esc(c.name) : "No." + no; };
+  const srow = (sh, i, v) => `<div class="rank" data-rshop="${esc(sh.id)}" style="cursor:pointer"><span class="r">${i + 1}</span><span>${esc(sh.emoji || "🏪")} ${esc(sh.name)} <span class="note">${nm(sh.owner)}</span></span><span class="v">${v}</span></div>`;
+  const crank = (id, list, val, empty) => { $(id).innerHTML = list.slice(0, 10).map((c, i) => row(c, i, val(c))).join("") || `<div class="note">${empty}</div>`; };
+  const shops = S.shops || [];
+  $("rankShopSales").innerHTML = [...shops].filter(x => (x.sales || 0) > 0).sort((x, y) => (y.sales || 0) - (x.sales || 0)).slice(0, 10).map((x, i) => srow(x, i, yen(x.sales))).join("") || `<div class="note">まだ売れたお店はありません</div>`;
+  $("rankStaff").innerHTML = [...shops].filter(x => (x.staffN || 0) > 0).sort((x, y) => (y.staffN || 0) - (x.staffN || 0)).slice(0, 10).map((x, i) => srow(x, i, `${x.staffN}人`)).join("") || `<div class="note">まだバイトのいるお店はありません</div>`;
+  const per = {}; for (const x of shops) { const o = per[x.owner] || (per[x.owner] = { n: 0, sales: 0 }); o.n++; o.sales += x.sales || 0; }
+  crank("rankOwner", S.citizens.filter(c => per[c.no]?.sales > 0).sort((x, y) => per[y.no].sales - per[x.no].sales), c => yen(per[c.no].sales), "まだいません");
+  crank("rankShopCount", S.citizens.filter(c => per[c.no]?.n > 0).sort((x, y) => per[y.no].n - per[x.no].n), c => `${per[c.no].n}店`, "まだいません");
+  const ln = {}; for (const l of (S.lands ? S.lands.values() : [])) ln[l.owner] = (ln[l.owner] || 0) + 1;
+  crank("rankLand", S.citizens.filter(c => ln[c.no] > 0).sort((x, y) => ln[y.no] - ln[x.no]), c => `${ln[c.no]}区画`, "まだいません");
+  crank("rankWork", S.citizens.filter(c => (c.earned || 0) > 0).sort((x, y) => (y.earned || 0) - (x.earned || 0)), c => yen(c.earned), "まだいません");
+  crank("rankSpin", S.citizens.filter(c => (c.spins || 0) > 0).sort((x, y) => (y.spins || 0) - (x.spins || 0)), c => `${c.spins}回転`, "まだだれも回していません");
+  document.querySelectorAll("#s-rank [data-rshop]").forEach(e => e.onclick = () => openShop(e.dataset.rshop)); }
 function renderRank() { try { renderRank2(); } catch {}
   const top = [...S.citizens].sort((a, b) => (b.money || 0) - (a.money || 0)).slice(0, 10);
   $("rankMoney").innerHTML = top.map((c, i) => `<div class="rank"><span class="r">${i + 1}</span><span>${esc(c.icon || "🙂")} ${esc(c.name)} <span class="note">No.${c.no}</span></span><span class="v">${yen(c.money)}</span></div>`).join("") || `<div class="note">まだだれもいません</div>`;
@@ -1178,8 +1206,8 @@ function listen() {
   onSnapshot(doc(db, "meta", "counter"), s => { S.pop = Math.max(0, ((s.data() || {}).next || 1) - 1); renderTop(); });
   onSnapshot(doc(db, "meta", "prices"), s => { const p = s.data(); if (p && p.land) { S.prices = { land: p.land, shop: p.shop || 50000 }; $("shopCost").textContent = yen(S.prices.shop); } }, () => {});
   onSnapshot(query(collection(db, "citizens"), orderBy("no"), limit(500)), q => { S.citizens = q.docs.map(d => d.data()); renderPeople(); renderRank(); renderMe(); renderTop(); });
-  onSnapshot(collection(db, "shops"), q => { S.shops = q.docs.map(d => ({ id: d.id, ...d.data() })); renderShops(); try { renderMe(); } catch {} try { if (G3.ok) G3.dirty(); } catch {} });
-  onSnapshot(collection(db, "lands"), q => { S.lands = new Map(q.docs.map(d => [d.id, d.data()])); ISO.img = []; if (G3.ok) G3.dirty(); if ($("s-map").classList.contains("on")) drawMap(); });
+  onSnapshot(collection(db, "shops"), q => { S.shops = q.docs.map(d => ({ id: d.id, ...d.data() })); renderShops(); try { renderMe(); } catch {} try { renderRank2(); } catch {} try { if (G3.ok) G3.dirty(); } catch {} });
+  onSnapshot(collection(db, "lands"), q => { S.lands = new Map(q.docs.map(d => [d.id, d.data()])); ISO.img = []; try { renderRank2(); } catch {} if (G3.ok) G3.dirty(); if ($("s-map").classList.contains("on")) drawMap(); });
   onSnapshot(query(collection(db, "news"), orderBy("at", "desc"), limit(10)), q => { if (!q.empty) $("newsList").innerHTML = q.docs.map(d => { const n = d.data(); const t = n.at && n.at.toDate ? n.at.toDate() : null; return `<div class="news"><time>${t ? (t.getMonth() + 1) + "/" + t.getDate() : ""}</time>${esc(n.text)}</div>`; }).join(""); }, () => {});
   onSnapshot(query(collection(db, "history"), orderBy("at"), limit(50)), q => { if (!q.empty) $("historyList").innerHTML = q.docs.map(d => `<div class="news">🏁 ${esc(d.data().text)}</div>`).join(""); }, () => {});
 }
