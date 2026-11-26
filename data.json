@@ -120,7 +120,7 @@
    [
     "A",
     "小屋",
-    10
+    11
    ],
    [
     "B",
@@ -1256,6 +1256,27 @@
    "owned": [],
    "appeared": 0,
    "rewarded_level": 0
+  },
+  {
+   "id": "@さかみ-t7o",
+   "platform": "yt",
+   "name": "さかみ",
+   "points": 1,
+   "level": 1,
+   "job": "小屋づくりの木材を運んでいる",
+   "wish": null,
+   "history": [
+    "2日目：投票A"
+   ],
+   "since_day": 3,
+   "work": null,
+   "work_days": 0,
+   "coins": 1,
+   "icon": "shell",
+   "frame": "wood",
+   "owned": [],
+   "appeared": 0,
+   "rewarded_level": 0
   }
  ],
  "links": {
@@ -1450,6 +1471,6 @@
   "every": 5,
   "rule": "Lv5ごとに、そのレベルと同じ数のコイン（Lv5→5枚、Lv10→10枚…Lv100→100枚）"
  },
- "last_sync": "2026-11-26 08:55",
+ "last_sync": "2026-11-26 15:56",
  "events_rule": "YouTubeのチャンネル登録者だけで数える。節目と名前は events.js（20,30,50,70,100,150,200,300,500,700,1000…と終わりなし）"
 }
