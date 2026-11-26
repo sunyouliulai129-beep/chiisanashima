@@ -9,6 +9,8 @@ button{font:inherit;padding:6px 12px;border-radius:8px;border:1px solid #8b5a2b;
 button.p{background:#e8a317;border-color:#b07a00;color:#2a1a00;font-weight:700}button.d{border-color:#c33;color:#c33}
 table{border-collapse:collapse;width:100%;background:#fff;margin:8px 0 24px}td,th{border-bottom:1px solid #e5ddd0;padding:6px 8px;text-align:left;white-space:nowrap}
 .small{font-size:13px;color:#6b5a48}#log{white-space:pre-wrap;font-size:12px;background:#fff;padding:8px;max-height:200px;overflow:auto}
+.cards{display:flex;gap:10px;flex-wrap:wrap;margin:8px 0 20px}.card{background:#fff;border-radius:10px;padding:10px 14px;min-width:130px}.card b{display:block;font-size:20px}
+.wrap{overflow-x:auto}td.n,th.n{text-align:right}details{margin:0 0 20px}summary{cursor:pointer;font-weight:700;font-size:17px;margin:6px 0}
 </style></head><body>
 <header><b>ゼロから共和国 管理ページ</b><span id="who">読みこみ中…</span><button id="login" style="display:none">Googleでログイン</button><button id="logout" style="display:none">ログアウト</button></header>
 <main>
@@ -17,6 +19,16 @@ table{border-collapse:collapse;width:100%;background:#fff;margin:8px 0 24px}td,t
 <table><thead><tr><th>国民No.</th><th>サービス</th><th>ID</th><th>コード</th><th>登録</th><th>経過</th><th></th></tr></thead><tbody id="pend"></tbody></table>
 <h3>国民一覧</h3>
 <table><thead><tr><th>No.</th><th>名前</th><th>確認</th><th>両方</th><th>お金</th><th>ID</th><th>登録</th><th></th></tr></thead><tbody id="cits"></tbody></table>
+<h3>ぜんぶ見る（売上・お金・お店など） <button id="reload2">更新</button> <span class="small" id="asof"></span></h3>
+<div class="cards" id="sum"></div>
+<details open><summary>🏪 お店ごとの売上</summary><div class="wrap"><table><thead><tr><th>店ID</th><th>お店</th><th>店長</th><th class="n">商品数</th><th class="n">売れた回数</th><th class="n">お客の売上</th><th class="n">今日</th><th class="n">日次売上(受取計)</th><th class="n">バイト</th><th class="n">時給</th><th class="n">バイト割</th><th>ルール</th><th>開店</th></tr></thead><tbody id="shopT"></tbody></table></div></details>
+<details open><summary>👤 国民ごとのお金</summary><div class="wrap"><table><thead><tr><th>No.</th><th>名前</th><th class="n">所持金</th><th class="n">買い物額</th><th class="n">買った回数</th><th class="n">お店の売上</th><th class="n">バイト代</th><th class="n">バイト中</th><th class="n">土地</th><th class="n">お店</th></tr></thead><tbody id="moneyT"></tbody></table></div></details>
+<details><summary>🛒 買い物の記録（新しい順・最大300件）</summary><div class="wrap"><table><thead><tr><th>日時</th><th>買った人</th><th>お店</th><th>商品</th><th class="n">定価</th><th class="n">払った</th></tr></thead><tbody id="buyT"></tbody></table></div></details>
+<details><summary>💼 バイト（いま入っている人）</summary><div class="wrap"><table><thead><tr><th>国民</th><th>お店</th><th class="n">時給</th><th>最後に払われた</th></tr></thead><tbody id="jobT"></tbody></table></div></details>
+<details><summary>💴 バイト代の支払い記録（新しい順・最大300件）</summary><div class="wrap"><table><thead><tr><th>日時</th><th>国民</th><th>お店</th><th class="n">時間</th><th class="n">金額(目安)</th></tr></thead><tbody id="workT"></tbody></table></div></details>
+<details><summary>📈 日次売上の受け取り記録</summary><div class="wrap"><table><thead><tr><th>日</th><th>お店</th><th>店長</th><th class="n">金額</th></tr></thead><tbody id="dsT"></tbody></table></div></details>
+<details><summary>🗺 土地</summary><div class="wrap"><table><thead><tr><th>場所</th><th>持ち主</th><th>中身</th></tr></thead><tbody id="landT"></tbody></table></div></details>
+<details><summary>📮 申しこみ（requests）</summary><div class="wrap"><table><thead><tr><th>日時</th><th>国民</th><th>種類</th><th>中身</th><th>状態</th></tr></thead><tbody id="reqT"></tbody></table></div></details>
 <h3>記録</h3><div id="log"></div>
 </main>
 <script type="module">
@@ -114,7 +126,40 @@ const ZK = {
 };
 window.ZK = ZK;
 
+
+const yen = n => (Math.round(n || 0)).toLocaleString() + "円";
+const dt = t => t ? new Date(t).toLocaleString("ja-JP", { month: "numeric", day: "numeric", hour: "2-digit", minute: "2-digit" }) : "";
+const todayJ = () => new Date(Date.now() + 9 * 36e5).toISOString().slice(0, 10);
+async function all(col) { const s = await getDocs(collection(db, col)); return s.docs.map(d => ({ id: d.id, ...d.data() })); }
+ZK.everything = async () => { const [cs, shops, buys, jobs, works, ds, lands, reqs] = await Promise.all(["citizens", "shops", "buys", "jobs", "works", "dsales", "lands", "requests"].map(c => all(c).catch(e => { log(c + " 読めない: " + e.message); return []; })));
+  return { cs, shops, buys, jobs, works, ds, lands, reqs }; };
+async function drawAll() {
+  const { cs, shops, buys, jobs, works, ds, lands, reqs } = await ZK.everything();
+  const nm = no => { const c = cs.find(x => x.no == no || x.id == String(no)); return c ? `No.${no} ${esc(c.name)}` : `No.${esc(no)}`; };
+  const sh = new Map(shops.map(x => [x.id, x])), shn = id => esc(sh.get(id)?.name || id);
+  const td = todayJ(), per = {}; for (const s of shops) per[s.id] = { n: 0, sum: 0, today: 0, ds: 0 };
+  for (const b of buys) { const p = per[b.shop] || (per[b.shop] = { n: 0, sum: 0, today: 0, ds: 0 }); p.n++; p.sum += b.pay || 0; if (b.day === td) p.today += b.pay || 0; }
+  for (const d of ds) { (per[d.shop] || (per[d.shop] = { n: 0, sum: 0, today: 0, ds: 0 })).ds += d.amount || 0; }
+  const money = cs.reduce((a, c) => a + (c.money || 0), 0), bsum = buys.reduce((a, b) => a + (b.pay || 0), 0), btoday = buys.filter(b => b.day === td).reduce((a, b) => a + (b.pay || 0), 0);
+  const wage = w => (sh.get(w.shop)?.wage || 0) * (w.k || 0), wsum = works.reduce((a, w) => a + wage(w), 0), dsum = ds.reduce((a, d) => a + (d.amount || 0), 0);
+  $("sum").innerHTML = [["国民", cs.length + "人"], ["お店", shops.length + "店"], ["土地", lands.length + "区画"], ["国のお金の合計", yen(money)], ["買い物の合計", yen(bsum) + `（${buys.length}回）`], ["今日の買い物", yen(btoday)], ["日次売上の受取合計", yen(dsum)], ["バイト代(目安)", yen(wsum)], ["バイト中", jobs.length + "人分"]].map(([a, b]) => `<div class="card"><span class="small">${a}</span><b>${b}</b></div>`).join("");
+  $("shopT").innerHTML = shops.sort((a, b) => (per[b.id].sum + per[b.id].ds) - (per[a.id].sum + per[a.id].ds)).map(s => { const p = per[s.id]; return `<tr><td class="small">${esc(s.id)}</td><td>${esc(s.emoji || "")} ${esc(s.name)}</td><td>${nm(s.owner)}</td><td class="n">${(s.items || []).length}</td><td class="n">${p.n}</td><td class="n"><b>${yen(p.sum)}</b></td><td class="n">${yen(p.today)}</td><td class="n">${yen(p.ds)}</td><td class="n">${s.staffN || 0}</td><td class="n">${yen(s.wage || 0)}</td><td class="n">${s.bdisc ?? 20}%</td><td class="small">${s.rule ? esc(s.ruleSt || "pending") + "：" + esc(String(s.rule).slice(0, 30)) : ""}</td><td class="small">${dt(ms(s.at))}</td></tr>`; }).join("") || `<tr><td colspan="13">なし</td></tr>`;
+  const own = {}; for (const s of shops) { const o = own[s.owner] || (own[s.owner] = { n: 0, sales: 0 }); o.n++; o.sales += per[s.id].sum + per[s.id].ds; }
+  const ld = {}; for (const l of lands) ld[l.owner] = (ld[l.owner] || 0) + 1;
+  const jb = {}; for (const j of jobs) jb[j.no] = (jb[j.no] || 0) + 1;
+  const wk = {}; for (const w of works) wk[w.no] = (wk[w.no] || 0) + wage(w);
+  $("moneyT").innerHTML = cs.map(c => ({ ...c, no: +c.id })).sort((a, b) => (b.money || 0) - (a.money || 0)).map(c => `<tr><td>${c.no}</td><td>${esc(c.name)}</td><td class="n"><b>${yen(c.money)}</b></td><td class="n">${yen(c.spent)}</td><td class="n">${c.nbuy || 0}</td><td class="n">${yen(own[c.no]?.sales)}</td><td class="n">${yen(c.earned ?? wk[c.no])}</td><td class="n">${jb[c.no] || 0}</td><td class="n">${ld[c.no] || 0}</td><td class="n">${own[c.no]?.n || 0}</td></tr>`).join("");
+  const byT = (a, b) => ms(b.at) - ms(a.at);
+  $("buyT").innerHTML = buys.sort(byT).slice(0, 300).map(b => { const it = b.it >= 0 ? (sh.get(b.shop)?.items || [])[b.it]?.name || ("#" + b.it) : "（ふつう）"; return `<tr><td class="small">${dt(ms(b.at))}</td><td>${nm(b.no)}</td><td>${shn(b.shop)}</td><td>${esc(it)}</td><td class="n">${yen(b.base ?? b.pay)}</td><td class="n">${yen(b.pay)}</td></tr>`; }).join("") || `<tr><td colspan="6">なし</td></tr>`;
+  $("jobT").innerHTML = jobs.map(j => `<tr><td>${nm(j.no)}</td><td>${shn(j.shop)}</td><td class="n">${yen(sh.get(j.shop)?.wage)}</td><td class="small">${j.last ? new Date(j.last * 36e5).toLocaleString("ja-JP") : ""}</td></tr>`).join("") || `<tr><td colspan="4">なし</td></tr>`;
+  $("workT").innerHTML = works.sort(byT).slice(0, 300).map(w => `<tr><td class="small">${dt(ms(w.at))}</td><td>${nm(w.no)}</td><td>${shn(w.shop)}</td><td class="n">${w.k || 0}</td><td class="n">${yen(wage(w))}</td></tr>`).join("") || `<tr><td colspan="5">なし</td></tr>`;
+  $("dsT").innerHTML = ds.sort(byT).map(d => `<tr><td>${esc(d.day)}</td><td>${shn(d.shop)}</td><td>${nm(d.no)}</td><td class="n">${yen(d.amount)}</td></tr>`).join("") || `<tr><td colspan="4">なし</td></tr>`;
+  $("landT").innerHTML = lands.map(l => `<tr><td>${l.x},${l.y}</td><td>${nm(l.owner)}</td><td class="small">${esc(l.kind || l.type || l.name || "")}</td></tr>`).join("") || `<tr><td colspan="3">なし</td></tr>`;
+  $("reqT").innerHTML = reqs.sort(byT).slice(0, 200).map(r => `<tr><td class="small">${dt(ms(r.at))}</td><td>${nm(r.no)}</td><td>${esc(r.type)}</td><td class="small">${esc(JSON.stringify(r.payload ?? "")).slice(0, 80)}</td><td>${esc(r.status || "")}</td></tr>`).join("") || `<tr><td colspan="5">なし</td></tr>`;
+  $("asof").textContent = new Date().toLocaleTimeString("ja-JP") + " 時点";
+}
 async function draw() {
+  drawAll().catch(e => log("ぜんぶ見る 失敗: " + e.message));
   const [p, cs] = await Promise.all([ZK.pending(), ZK.citizens()]);
   $("pend").innerHTML = p.map(x => `<tr><td>${x.no}</td><td>${x.sv === "yt" ? "▶️YouTube" : "📷インスタ"}</td><td>@${esc(x.ig)}</td><td><b>${esc(x.code)}</b></td><td>${new Date(x.at).toLocaleString("ja-JP")}</td><td>${x.hours}時間</td><td><button class="p" data-v="${esc(x.key)}">確認ずみにする</button></td></tr>`).join("") || `<tr><td colspan="7">なし</td></tr>`;
   $("cits").innerHTML = cs.map(c => `<tr><td>${c.no}</td><td>${esc(c.name)}</td><td>${c.verified ? "✅" : "—"}</td><td>${c.both ? "🔗" : ""}</td><td>${(c.money || 0).toLocaleString()}円</td><td class="small">${esc(c.igKey || "")} ${esc(c.linkKey || "")}</td><td class="small">${c.joinedAt ? new Date(c.joinedAt).toLocaleString("ja-JP") : ""}</td><td><button class="d" data-x="${c.no}">消す</button></td></tr>`).join("");
@@ -124,6 +169,7 @@ async function draw() {
 const prov = new GoogleAuthProvider(); prov.setCustomParameters({ login_hint: ADMIN, prompt: "select_account" });
 $("login").onclick = () => signInWithPopup(auth, prov).catch(() => signInWithRedirect(auth, prov));
 $("logout").onclick = () => signOut(auth);
+$("reload2").onclick = () => drawAll().catch(e => log("失敗: " + e.message));
 $("reload").onclick = () => draw().catch(e => log("失敗: " + e.message));
 getRedirectResult(auth).catch(e => log("ログイン失敗: " + e.message));
 onAuthStateChanged(auth, async u => {
