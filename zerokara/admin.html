@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="ja"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="robots" content="noindex">
+<title>ゼロから共和国 管理</title>
+<style>
+body{margin:0;font:15px/1.5 system-ui,'Yu Gothic',sans-serif;background:#f4f1ea;color:#2a2117}
+header{background:#2a2117;color:#fff;padding:12px 16px;display:flex;gap:12px;align-items:center;flex-wrap:wrap}
+header b{font-size:17px}main{padding:16px;max-width:1100px;margin:auto}
+button{font:inherit;padding:6px 12px;border-radius:8px;border:1px solid #8b5a2b;background:#fff;cursor:pointer}
+button.p{background:#e8a317;border-color:#b07a00;color:#2a1a00;font-weight:700}button.d{border-color:#c33;color:#c33}
+table{border-collapse:collapse;width:100%;background:#fff;margin:8px 0 24px}td,th{border-bottom:1px solid #e5ddd0;padding:6px 8px;text-align:left;white-space:nowrap}
+.small{font-size:13px;color:#6b5a48}#log{white-space:pre-wrap;font-size:12px;background:#fff;padding:8px;max-height:200px;overflow:auto}
+</style></head><body>
+<header><b>ゼロから共和国 管理ページ</b><span id="who">読みこみ中…</span><button id="login" style="display:none">Googleでログイン</button><button id="logout" style="display:none">ログアウト</button></header>
+<main>
+<p class="small">運営（sunyouliulai129@gmail.com）だけが使えます。ほかの人がログインしても、守りのルールで何も変えられません。</p>
+<h3>本人確認まち <button id="reload">更新</button></h3>
+<table><thead><tr><th>国民No.</th><th>サービス</th><th>ID</th><th>コード</th><th>登録</th><th>経過</th><th></th></tr></thead><tbody id="pend"></tbody></table>
+<h3>国民一覧</h3>
+<table><thead><tr><th>No.</th><th>名前</th><th>確認</th><th>両方</th><th>お金</th><th>ID</th><th>登録</th><th></th></tr></thead><tbody id="cits"></tbody></table>
+<h3>記録</h3><div id="log"></div>
+</main>
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+import { getAuth, GoogleAuthProvider, signInWithRedirect, signInWithPopup, getRedirectResult, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+import { getFirestore, doc, getDoc, getDocs, deleteDoc, collection, query, where, runTransaction, writeBatch, serverTimestamp, increment } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+const app = initializeApp({ apiKey: "AIzaSyCk2v3ug6fbIMuVV06tUNlIuL6klPmkiZI", authDomain: "zerokara-kyowakoku.firebaseapp.com", projectId: "zerokara-kyowakoku", storageBucket: "zerokara-kyowakoku.firebasestorage.app", messagingSenderId: "495540611145", appId: "1:495540611145:web:bd56f007bef6618e3fb798" });
+const auth = getAuth(app), db = getFirestore(app);
+const ADMIN = "sunyouliulai129@gmail.com", BONUS = 2000000, FIRST = 50, HOURS = 24;
+const $ = id => document.getElementById(id);
+const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+const log = m => { $("log").textContent = new Date().toLocaleTimeString("ja-JP") + " " + m + "\n" + $("log").textContent; };
+const ms = t => t?.toMillis ? t.toMillis() : (t ? +new Date(t) : 0);
+
+// ---------- 管理の関数（予定タスクからも window.ZK で使う） ----------
+const ZK = {
+  ready: false, user: null,
+  // 確認まちの一覧（igids で verified が false のもの）
+  async pending() {
+    const s = await getDocs(query(collection(db, "igids"), where("verified", "==", false)));
+    return s.docs.map(d => { const x = d.data(); return { key: d.id, sv: x.sv, ig: x.ig, code: x.code, no: x.no, at: ms(x.at), hours: Math.round((Date.now() - ms(x.at)) / 36e5 * 10) / 10 }; }).sort((a, b) => a.at - b.at);
+  },
+  async citizens() {
+    const s = await getDocs(collection(db, "citizens"));
+    return s.docs.map(d => ({ no: +d.id, ...d.data(), joinedAt: ms(d.data().joinedAt) })).sort((a, b) => a.no - b.no);
+  },
+  // 本人確認ずみにする。key = 'ig_ID' か 'yt_ID'。code を渡すと、合っているときだけ確認する
+  async verify(key, code) {
+    const r = await runTransaction(db, async tx => {
+      const gRef = doc(db, "igids", key), g = await tx.get(gRef);
+      if (!g.exists()) throw new Error("ID の登録がありません: " + key);
+      const gd = g.data();
+      if (code != null && String(code) !== String(gd.code)) throw new Error("コードがちがいます");
+      if (gd.verified) return { key, already: true };
+      const cRef = doc(db, "citizens", String(gd.no)), c = await tx.get(cRef);
+      if (!c.exists()) throw new Error("国民がいません: No." + gd.no);
+      const cd = c.data(), stRef = doc(db, "meta", "stats"), st = await tx.get(stRef);
+      let other = null; const otherKey = cd.igKey === key ? cd.linkKey : cd.linkKey === key ? cd.igKey : null;
+      if (otherKey) other = await tx.get(doc(db, "igids", otherKey));
+      const upd = {}; let bonus = false;
+      if (cd.igKey === key && !cd.verified) {
+        upd.verified = true; upd.verifiedAt = serverTimestamp();
+        const n = st.exists() ? (st.data().verifiedCount || 0) : 0;
+        if (n < FIRST && !cd.bonus300) { upd.money = (cd.money || 0) + BONUS; upd.bonus300 = true; bonus = true; }
+        tx.set(stRef, { verifiedCount: n + 1 }, { merge: true });
+      }
+      if (otherKey && other?.exists() && other.data().verified) upd.both = true;
+      tx.update(gRef, { verified: true });
+      if (Object.keys(upd).length) tx.update(cRef, upd);
+      return { key, no: gd.no, citizenVerified: !!upd.verified, bonus, both: !!upd.both };
+    });
+    log("確認: " + JSON.stringify(r)); return r;
+  },
+  // 国民を消す（本人確認が24時間なかった人など）。土地・お店・ID・ログインのつながりもいっしょに消す
+  async removeCitizen(no) {
+    no = +no; const b = writeBatch(db); let n = 0; const add = r => { b.delete(r); n++; };
+    const c = await getDoc(doc(db, "citizens", String(no)));
+    if (c.exists()) { add(c.ref); for (const k of [c.data().igKey, c.data().linkKey]) if (k) add(doc(db, "igids", k)); }
+    for (const col of ["lands", "links", "igids"]) { const s = await getDocs(query(collection(db, col), where(col === "lands" ? "owner" : "no", "==", no))); s.docs.forEach(d => add(d.ref)); }
+    const sh = await getDoc(doc(db, "shops", "s" + no)); if (sh.exists()) add(sh.ref);
+    await b.commit(); log("消した: No." + no + "（" + n + "件）"); return n;
+  },
+  // 24時間たっても本人確認がない国民を消す。dry=true なら消さずに一覧だけ返す
+  async expire(dry = true) {
+    const cs = await ZK.citizens(), old = cs.filter(c => c.via === "site" && !c.verified && c.joinedAt && Date.now() - c.joinedAt > HOURS * 36e5);
+    if (!dry) for (const c of old) await ZK.removeCitizen(c.no);
+    return old.map(c => ({ no: c.no, name: c.name, hours: Math.round((Date.now() - c.joinedAt) / 36e5) }));
+  },
+  async refresh() { await draw(); }
+};
+window.ZK = ZK;
+
+async function draw() {
+  const [p, cs] = await Promise.all([ZK.pending(), ZK.citizens()]);
+  $("pend").innerHTML = p.map(x => `<tr><td>${x.no}</td><td>${x.sv === "yt" ? "▶️YouTube" : "📷インスタ"}</td><td>@${esc(x.ig)}</td><td><b>${esc(x.code)}</b></td><td>${new Date(x.at).toLocaleString("ja-JP")}</td><td>${x.hours}時間</td><td><button class="p" data-v="${esc(x.key)}">確認ずみにする</button></td></tr>`).join("") || `<tr><td colspan="7">なし</td></tr>`;
+  $("cits").innerHTML = cs.map(c => `<tr><td>${c.no}</td><td>${esc(c.name)}</td><td>${c.verified ? "✅" : "—"}</td><td>${c.both ? "🔗" : ""}</td><td>${(c.money || 0).toLocaleString()}円</td><td class="small">${esc(c.igKey || "")} ${esc(c.linkKey || "")}</td><td class="small">${c.joinedAt ? new Date(c.joinedAt).toLocaleString("ja-JP") : ""}</td><td><button class="d" data-x="${c.no}">消す</button></td></tr>`).join("");
+  document.querySelectorAll("[data-v]").forEach(b => b.onclick = async () => { try { await ZK.verify(b.dataset.v); await draw(); } catch (e) { log("失敗: " + e.message); } });
+  document.querySelectorAll("[data-x]").forEach(b => b.onclick = async () => { if (!confirm("国民No." + b.dataset.x + " を消しますか？（元にもどせません）")) return; try { await ZK.removeCitizen(b.dataset.x); await draw(); } catch (e) { log("失敗: " + e.message); } });
+}
+const prov = new GoogleAuthProvider(); prov.setCustomParameters({ login_hint: ADMIN, prompt: "select_account" });
+$("login").onclick = () => signInWithPopup(auth, prov).catch(() => signInWithRedirect(auth, prov));
+$("logout").onclick = () => signOut(auth);
+$("reload").onclick = () => draw().catch(e => log("失敗: " + e.message));
+getRedirectResult(auth).catch(e => log("ログイン失敗: " + e.message));
+onAuthStateChanged(auth, async u => {
+  ZK.user = u?.email || null; ZK.ready = !!u && u.email === ADMIN;
+  $("who").textContent = u ? (u.email || "（匿名）") + (ZK.ready ? " ✅運営" : " ⚠運営ではありません") : "ログインしていません";
+  $("login").style.display = ZK.ready ? "none" : ""; $("logout").style.display = u ? "" : "none";
+  if (ZK.ready) draw().catch(e => log("読みこみ失敗: " + e.message));
+});
+</script>
+</body></html>
