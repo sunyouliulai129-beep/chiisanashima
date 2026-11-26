@@ -19,6 +19,7 @@ table{border-collapse:collapse;width:100%;background:#fff;margin:8px 0 24px}td,t
 <table><thead><tr><th>国民No.</th><th>サービス</th><th>ID</th><th>コード</th><th>登録</th><th>経過</th><th></th></tr></thead><tbody id="pend"></tbody></table>
 <h3>国民一覧</h3>
 <table><thead><tr><th>No.</th><th>名前</th><th>確認</th><th>両方</th><th>お金</th><th>ID</th><th>登録</th><th></th></tr></thead><tbody id="cits"></tbody></table>
+<p><button class="p" id="fixSlot">🎰 スロットのバグを直す（1回だけ）</button> <span class="small" id="fixSlotMsg"></span></p>
 <h3>📜 お店ルールの申請 <button id="reload3">更新</button></h3>
 <p id="needLogin" style="display:none;background:#FDECEA;color:#B3261E;padding:10px;border-radius:8px;font-weight:700">⚠ いまは運営としてログインしていないので、承認できません。いちばん上の「Googleでログイン」を押してね（国民ページを開くとログインが切れることがあります）</p>
 <p class="small">承認するとお店のページに「✅ 採用」、却下すると「見送り」と出ます。メモに書いたことは「運営より：」としてお店のページに表示されます。</p>
@@ -38,7 +39,7 @@ table{border-collapse:collapse;width:100%;background:#fff;margin:8px 0 24px}td,t
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
 import { getAuth, GoogleAuthProvider, signInWithRedirect, signInWithPopup, getRedirectResult, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
-import { getFirestore, doc, getDoc, getDocs, deleteDoc, collection, query, where, runTransaction, writeBatch, updateDoc, serverTimestamp, increment } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+import { getFirestore, doc, getDoc, getDocs, setDoc, deleteDoc, collection, query, where, runTransaction, writeBatch, updateDoc, serverTimestamp, increment } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 const app = initializeApp({ apiKey: "AIzaSyCk2v3ug6fbIMuVV06tUNlIuL6klPmkiZI", authDomain: "zerokara-kyowakoku.firebaseapp.com", projectId: "zerokara-kyowakoku", storageBucket: "zerokara-kyowakoku.firebasestorage.app", messagingSenderId: "495540611145", appId: "1:495540611145:web:bd56f007bef6618e3fb798" });
 const auth = getAuth(app), db = getFirestore(app);
 const ADMIN = "sunyouliulai129@gmail.com", BONUS = 2000000, FIRST = 50, HOURS = 24;
@@ -129,6 +130,17 @@ const ZK = {
   // 採用したルールの機能をオン/オフ（'stock' 株券、'req' 商品リクエスト）。built=true で「機能づくり済み」
   async setFeats(id, feats, built = true) { if (feats.includes("stockAll") && !feats.includes("stock")) feats = ["stock", ...feats]; await updateDoc(doc(db, "shops", id), { feats, ruleBuilt: built });
     if (feats.includes("stockAll")) { const sh = (await getDoc(doc(db, "shops", id))).data(), all = (await getDocs(collection(db, "shops"))).docs.map(d => d.data()).filter(x => x.owner === sh.owner), sum = all.reduce((a, x) => a + (x.sales || 0), 0), c = (await getDoc(doc(db, "citizens", String(sh.owner)))).data(); if ((c.osales || 0) < sum) await updateDoc(doc(db, "citizens", String(sh.owner)), { osales: sum }); log("全店の売上: No." + sh.owner + " → " + sum); } log("機能: " + id + " → " + JSON.stringify(feats)); return true; },
+  // スロットのバグ（11/27 3時まで全部100倍）を直す：当たりを取り消して、店長が回すのに払ったお金を返す（1回だけ）
+  async fixSlot(dry = true) { const m = await getDoc(doc(db, "meta", "slotfix")); if (m.exists()) return { done: "もう直し済み" };
+    const CUT = Date.parse("2026-11-26T18:06:00Z"), all = async c => (await getDocs(collection(db, c))).docs.map(d => ({ id: d.id, ...d.data() })), d = {}, add = (no, v) => d[no] = (d[no] || 0) + v;
+    const self = new Map((await all("slotself")).map(x => [x.id, x])), free = new Map((await all("slotfree")).map(x => [x.id, x])), old = t => t && t.toMillis() < CUT;
+    for (const x of self.values()) if (old(x.at)) add(x.no, x.pay);
+    for (const x of await all("slotswin")) if (old(self.get(x.src)?.at)) add(x.no, -x.win);
+    for (const x of await all("slotfwin")) if (old(free.get(x.id)?.at)) add(x.no, -x.win);
+    for (const x of await all("slotwin")) { const b = await getDoc(doc(db, "buys", x.buy)); if (old(b.data()?.at)) add(x.no, -x.win); }
+    if (dry) return d;
+    for (const [no, v] of Object.entries(d)) if (v) await updateDoc(doc(db, "citizens", String(no)), { money: increment(v) });
+    await setDoc(doc(db, "meta", "slotfix"), { at: serverTimestamp(), d }); log("スロットのバグ修正: " + JSON.stringify(d)); return d; },
   async refresh() { await draw(); }
 };
 window.ZK = ZK;
@@ -190,6 +202,7 @@ async function draw() {
 const prov = new GoogleAuthProvider(); prov.setCustomParameters({ login_hint: ADMIN, prompt: "select_account" });
 $("login").onclick = () => signInWithPopup(auth, prov).catch(() => signInWithRedirect(auth, prov));
 $("logout").onclick = () => signOut(auth);
+$("fixSlot").onclick = async () => { if (!ZK.ready) return $("fixSlotMsg").textContent = "先にGoogleでログインしてね"; try { const d = await ZK.fixSlot(false); $("fixSlotMsg").textContent = "できた： " + JSON.stringify(d); } catch (er) { $("fixSlotMsg").textContent = "失敗: " + er.message; } };
 $("reload3").onclick = () => drawRules().catch(e => log("失敗: " + e.message));
 $("reload2").onclick = () => drawAll().catch(e => log("失敗: " + e.message));
 $("reload").onclick = () => draw().catch(e => log("失敗: " + e.message));
