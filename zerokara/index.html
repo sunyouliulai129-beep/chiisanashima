@@ -1008,8 +1008,11 @@ function featHtml(s) { const f = s.feats || [], hr = `<hr style="border:0;border
     <div id="stkMine" class="small" style="margin:6px 0"></div>${S.myNo && s.owner !== S.myNo ? `<div style="display:flex;gap:8px"><button class="btn" id="stkBuy" style="flex:1">1株買う</button><button class="btn sec" id="stkSell" style="flex:1">1株売る</button></div>` : ""}<div class="small" id="stkMsg"></div><div id="stkHolders" class="small" style="margin-top:6px"></div>`;
   if (f.includes("req")) h += hr + `<h4 style="margin:0 0 6px">📝 商品リクエスト</h4><div class="small">「こんな商品ほしい！」を社長に送れます（40文字まで）</div>
     ${S.myNo && s.owner !== S.myNo ? `<div style="display:flex;gap:6px;margin:6px 0"><input id="rqText" maxlength="40" placeholder="例：メロンパン" style="flex:1;font:inherit;padding:8px;border:1px solid #ccc;border-radius:8px"><button class="btn" id="rqSend">送る</button></div>` : ""}<div class="small" id="rqMsg"></div><div id="rqList" class="small"></div>`;
+  if (f.includes("slot")) h += hr + `<h4 style="margin:0 0 6px">🎰 スロット</h4><div class="small">商品を買うと、そのぶんスロットが回ります（「〇回転」の商品はその回数）。当たりのお金は国から出ます！<br>💎100倍 0.1％／👑50倍 0.3％／7️⃣10倍 1.2％／🍒4倍 1.5％／🔔3倍 2.5％／🍋2倍 5％／🍊1.5倍 6％／🍇1倍 11％<br>🎁 50回転ごとに5回無料！</div>
+    <div id="slotBox" style="margin:8px 0;padding:10px;border-radius:12px;background:#1d1433;color:#fff;min-height:40px;text-align:center;font-weight:800"></div><div id="slotMine" class="small"></div>`;
   return h; }
 async function bindFeat(s) { const f = s.feats || [];
+  if (f.includes("slot")) drawSlot(s);
   if (f.includes("stock")) { if ($("stkBuy")) $("stkBuy").onclick = () => stockTrade(s, "buy"); if ($("stkSell")) $("stkSell").onclick = () => stockTrade(s, "sell"); drawStock(s); }
   if (f.includes("req")) { if ($("rqSend")) $("rqSend").onclick = () => sendItemReq(s); drawReqs(s); } }
 async function drawStock(s) { try { const q = await getDocs(query(collection(db, "stocks"), where("shop", "==", s.id))), hs = q.docs.map(d => d.data()).filter(x => x.n > 0).sort((a, b) => b.n - a.n);
@@ -1038,6 +1041,41 @@ async function drawReqs(s) { try { const q = await getDocs(query(collection(db, 
 async function sendItemReq(s) { const t = ($("rqText").value || "").trim(), M = $("rqMsg"); if (!t) return M.innerHTML = `<span class="err">ほしい商品を書いてね</span>`;
   try { await addDoc(collection(db, "itemreqs"), { no: S.myNo, shop: s.id, text: t.slice(0, 40), at: serverTimestamp() }); $("rqText").value = ""; M.innerHTML = `<span class="okm">社長に送りました！</span>`; drawReqs(s); }
   catch (e) { M.innerHTML = `<span class="err">${esc(e.code ? errText(e) : e.message)}</span>`; } }
+// ---- スロット（feats 'slot'）：結果は買った時刻（サーバーのマイクロ秒）で決まる。サイトのルールでも同じ計算でチェック ----
+const SLOT_T = [[1, 1000, "💎"], [4, 500, "👑"], [16, 100, "7️⃣"], [31, 40, "🍒"], [56, 30, "🔔"], [106, 20, "🍋"], [166, 15, "🍊"], [276, 10, "🍇"]];
+const slotM = r => { for (const [c, m] of SLOT_T) if (r < c) return m; return 0; }, slotE = m => (SLOT_T.find(x => x[1] === m) || [0, 0, "✖️"])[2];
+const slotR = (ts, i) => ((Math.floor(ts.nanoseconds / 1000) % 1000) * 337 + i * 619 + i * i * 71) % 1000, slotWin = (bet, r) => Math.floor(bet * slotM(r) / 10);
+const spinsOf = nm => { const m = String(nm || "").match(/(?:^|[^0-9])(\d+)回転/), n = m ? +m[1] : 1; return [100, 50, 30, 20, 10, 5, 4, 3, 2].includes(n) ? n : 1; };
+const sleep = ms => new Promise(r => setTimeout(r, ms));
+async function slotAnim(box, res) { const sy = SLOT_T.map(x => x[2]).concat(["✖️", "✖️", "✖️"]);
+  for (let k = 0; k < 12; k++) { box.innerHTML = `<div style="font-size:34px;letter-spacing:6px">${[0, 1, 2].map(() => sy[Math.floor(Math.random() * sy.length)]).join("")}</div>`; await sleep(90); }
+  box.innerHTML = res.length === 1 ? `<div style="font-size:34px;letter-spacing:6px">${slotE(res[0].m).repeat(3)}</div><div>${res[0].m ? `${res[0].m / 10}倍！ ${yen(res[0].win)}` : "はずれ…"}</div>`
+    : `<div style="display:flex;flex-wrap:wrap;gap:4px;justify-content:center">${res.map(x => `<span title="${x.m / 10}倍" style="font-size:20px">${slotE(x.m)}</span>`).join("")}</div>`; }
+async function drawSlot(s) { const M = $("slotMine"); if (!M || !S.myNo) return; const me = S.citizens.find(c => c.no === S.myNo) || {}, free = Math.floor((me.spins || 0) / 50) * 5 - (me.fspins || 0);
+  try { const bs = (await getDocs(query(collection(db, "buys"), where("no", "==", S.myNo), where("shop", "==", s.id)))).docs.map(d => d.id), pl = new Set((await getDocs(query(collection(db, "slotplay"), where("no", "==", S.myNo)))).docs.map(d => d.id)), todo = bs.filter(id => !pl.has(id));
+    M.innerHTML = `これまで ${me.spins || 0}回転／次の無料まであと ${50 - (me.spins || 0) % 50}回転` + (free > 0 ? `<br><button class="btn" id="slotFree" style="margin-top:6px">🎁 無料で回す（のこり${free}回）</button>` : "") + (todo.length ? `<br><button class="btn sec" id="slotTodo" style="margin-top:6px">▶ まだ回していない ${todo.length}件を回す</button>` : "");
+    if ($("slotFree")) $("slotFree").onclick = () => slotFree(s); if ($("slotTodo")) $("slotTodo").onclick = async () => { for (const id of todo) await slotPlay(s, id); }; } catch (e) { } }
+async function slotPlay(s, buyId) { const box = $("slotBox"); if (!box) return; box.textContent = "🎰 …";
+  try { const b = await getDoc(doc(db, "buys", buyId)); if (!b.exists()) throw new Error("買った記録が見つかりません"); const bd = b.data(), sh = S.shops.find(v => v.id === bd.shop) || s;
+    const n = bd.it >= 0 ? spinsOf(((sh.items || [])[bd.it] || {}).name) : 1, bet = Math.floor(bd.pay / n);
+    await runTransaction(db, async tx => { const pr = doc(db, "slotplay", buyId), p2 = await tx.get(pr); if (p2.exists()) return; const me = await tx.get(doc(db, "citizens", String(S.myNo)));
+      tx.set(pr, { no: S.myNo, n }); tx.update(doc(db, "citizens", String(S.myNo)), { spins: (me.data().spins || 0) + n, sp: buyId }); });
+    const res = []; for (let i = 0; i < n; i++) { const r = slotR(bd.at, i); res.push({ i, m: slotM(r), win: slotWin(bet, r) }); }
+    await slotAnim(box, res); let got = 0;
+    for (const x of res) if (x.win > 0) { try { await runTransaction(db, async tx => { const w = doc(db, "slotwin", `${buyId}_${x.i}`), ws = await tx.get(w); if (ws.exists()) throw new Error("dup"); const me = await tx.get(doc(db, "citizens", String(S.myNo)));
+          tx.set(w, { no: S.myNo, buy: buyId, i: x.i, win: x.win }); tx.update(doc(db, "citizens", String(S.myNo)), { money: me.data().money + x.win, sw: `${buyId}_${x.i}` }); }); got += x.win; } catch (e) { if (e.message !== "dup") throw e; } }
+    const best = Math.max(...res.map(x => x.m)); box.innerHTML += `<div style="margin-top:6px">${n}回転 → ${got ? `<span style="color:#FFD54A">${yen(got)} ゲット！</span>${best >= 100 ? " 🎉大当たり！" : ""}` : "ぜんぶはずれ…"}</div>`; }
+  catch (e) { box.innerHTML = `<span style="color:#ff9c9c">${esc(e.code ? errText(e) : e.message)}</span>`; }
+  setTimeout(() => drawSlot(s), 800); }
+async function slotFree(s) { const box = $("slotBox"); box.textContent = "🎁 …";
+  try { let fid = ""; const bet = s.price || 1000;
+    await runTransaction(db, async tx => { const cr = doc(db, "citizens", String(S.myNo)), me = (await tx.get(cr)).data(), k = (me.fspins || 0) + 1; if (k > Math.floor((me.spins || 0) / 50) * 5) throw new Error("無料の回転はもうありません");
+      fid = `${S.myNo}_f${k}`; tx.set(doc(db, "slotfree", fid), { no: S.myNo, shop: s.id, bet, at: serverTimestamp() }); tx.update(cr, { fspins: k }); });
+    const fd = (await getDoc(doc(db, "slotfree", fid))).data(), r = slotR(fd.at, 0), x = { i: 0, m: slotM(r), win: slotWin(fd.bet, r) };
+    await slotAnim(box, [x]);
+    if (x.win > 0) await runTransaction(db, async tx => { const me = await tx.get(doc(db, "citizens", String(S.myNo))); tx.set(doc(db, "slotfwin", fid), { no: S.myNo, win: x.win }); tx.update(doc(db, "citizens", String(S.myNo)), { money: me.data().money + x.win, sfw: fid }); }); }
+  catch (e) { box.innerHTML = `<span style="color:#ff9c9c">${esc(e.code ? errText(e) : e.message)}</span>`; }
+  setTimeout(() => drawSlot(s), 800); }
 function ownerPanel(s) { return `<hr style="border:0;border-top:1px dashed #ddd;margin:14px 0"><h4 style="margin:0 0 6px">🔧 店長メニュー</h4>
   <div class="card small" style="margin:0 0 6px">💰 このお店の1日の売上 <b>${yen(dailySales(s))}</b> は、毎日<b>自動で</b>あなたのお金に入ります（サイトを開いたときにまとめて。受けとりわすれの日の分も全部入ります）</div><div class="small" id="clMsg"></div>
   <p class="note">1日の売上 ＝ 5,000円 ×（人のバイト×2 ＋ AIバイト）。バイトが多いほど売上がふえます。</p>
@@ -1102,7 +1140,7 @@ function openShop(id) { const s = S.shops.find(v => v.id === id); if (!s) return
         tx.update(doc(db, "citizens", String(S.myNo)), { money: me.data().money - price + back + bonus, nbuy: nb, bag, spent: (me.data().spent || 0) + price });
         window.__lastBuy = { back, bonus, nb };
       });
-      const lb = window.__lastBuy || {}; m.innerHTML = `<span class="okm">買いました！ ${yen(lb.back || 0)}還元＋スタンプ1つ（${(lb.nb || 0) % STAMP_N || STAMP_N}/${STAMP_N}）${lb.bonus ? `<br>🎉 スタンプ${STAMP_N}個たまった！ ${yen(lb.bonus)}ゲット！` : ""}</span>`; }
+      const lb = window.__lastBuy || {}; if ((s.feats || []).includes("slot")) setTimeout(() => slotPlay(s, `${S.myNo}_b${lb.nb}`), 200); m.innerHTML = `<span class="okm">買いました！ ${yen(lb.back || 0)}還元＋スタンプ1つ（${(lb.nb || 0) % STAMP_N || STAMP_N}/${STAMP_N}）${lb.bonus ? `<br>🎉 スタンプ${STAMP_N}個たまった！ ${yen(lb.bonus)}ゲット！` : ""}</span>`; }
     catch (e) { m.innerHTML = `<span class="err">${esc(e.code ? errText(e) : e.message)}</span>`; } };
 }
 function renderRank2() {
