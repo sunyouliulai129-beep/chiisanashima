@@ -98,6 +98,15 @@ const ZK = {
     });
     log("メンション: " + JSON.stringify(r)); return r;
   },
+  // 大陸を160×160にしたときの一回だけの引っこし：土地の区画番号を1.6倍にする（meta/map.scaled が無いときだけ）
+  async scaleLands(dry = true) {
+    const m = await getDoc(doc(db, "meta", "map")); if (m.exists() && m.data().scaled) return { done: "もう引っこし済み" };
+    const s = await getDocs(collection(db, "lands")), plan = [];
+    for (const d of s.docs) { const L = d.data(); const nx = Math.round(L.x * 1.6), ny = Math.round(L.y * 1.6); plan.push({ from: d.id, to: nx + "_" + ny, data: { ...L, x: nx, y: ny } }); }
+    if (dry) return plan.map(p => p.from + " → " + p.to);
+    const b = writeBatch(db); for (const p of plan) b.delete(doc(db, "lands", p.from)); for (const p of plan) b.set(doc(db, "lands", p.to), p.data);
+    b.set(doc(db, "meta", "map"), { scaled: true, n: 160, at: serverTimestamp() }); await b.commit(); log("土地の引っこし: " + plan.length + "件"); return plan.length;
+  },
   async refresh() { await draw(); }
 };
 window.ZK = ZK;

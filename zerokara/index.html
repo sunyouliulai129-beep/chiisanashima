@@ -136,7 +136,7 @@ footer{text-align:center;color:var(--mut);font-size:12px;padding:20px}
 
 <!-- 地図 -->
 <section id="s-map">
-  <h2>大陸の地図 <span class="note">100×100区画（1区画＝1km四方）</span></h2>
+  <h2>大陸の地図 <span class="note">160×160区画（1区画＝1km四方）</span></h2>
   <div style="position:relative">
     <input id="mapq" placeholder="🔍 国民・お店・場所をさがす（例：ゆうと、湖、No.3）" autocomplete="off" style="margin:0 0 8px">
     <div id="mapqRes" class="card" style="display:none;position:absolute;left:0;right:0;top:46px;z-index:5;margin:0;padding:6px 10px;max-height:240px;overflow:auto"></div>
@@ -172,6 +172,10 @@ footer{text-align:center;color:var(--mut);font-size:12px;padding:20px}
 <section id="s-rank">
   <h2>お金持ちランキング</h2>
   <div class="card" id="rankMoney"></div>
+  <h2>🛍️ お買い物ランキング</h2>
+  <div class="card" id="rankShop"></div>
+  <h2>🍽️ いろんなお店ランキング</h2>
+  <div class="card" id="rankVariety"></div>
   <h2>建国の歴史</h2>
   <div class="card" id="historyList"><div class="note">はじめての〇〇は、ここにずっと残ります。</div></div>
 </section>
@@ -183,6 +187,7 @@ footer{text-align:center;color:var(--mut);font-size:12px;padding:20px}
     <p><b>1. 国民になる</b>：サイトの「国民になる」で、インスタのID か YouTubeのハンドルを入れるとすぐ国民に。そのあと本人確認（インスタはフォローしてDM、YouTubeは動画にコメント）。国民名は、そのIDがそのまま使われます。国民番号は先着順で一生変わりません。1〜10番は「建国の父・母」として記念碑に名前がきざまれます。</p>
     <p><b>2. 土地を買う</b>：「土地 （海・森・山・川・平地・砂漠・雪原）」。今はどこでも50万円。国民が増えるほど値上がりします。</p>
     <p><b>3. お店を開く</b>：「お店 （店の名前）」。5万円。ほかの人は「（店の名前）で買う」で応援できます。</p>
+    <p><b>🛍️ 人のお店で買うと</b>：値段の10%がすぐ戻ってくる・スタンプが1つたまる（10個で5万円）・買った物が「持ち物」に並ぶ・いろんなお店で買うと「グルメ」「常連さん」などのバッジ。お買い物ランキングにものります。</p>
     <p class="note">※円は国の中だけのお金です。本物のお金で買ったり交換したりはできません。フォローや登録でお金がもらえることもありません。</p>
   </div>
   <h2>国民が増えると解放</h2>
@@ -243,7 +248,7 @@ footer{text-align:center;color:var(--mut);font-size:12px;padding:20px}
       <input id="qShopPrice" type="number" inputmode="numeric" min="500" max="50000" step="100" value="1000">
       <button class="btn sec wide" id="qShopGo">お店を開く</button>
       <div class="small" id="qMsg"></div>
-      <p class="note">1人1店まで。ほかの国民がお店で「買う」と、その値段の売上がすぐあなたのお金に入ります。</p>
+      <p class="note">お店はいくつでも開けます（1店ごとに開店費）。ほかの国民がお店で「買う」たびに、その値段の売上がすぐあなたのお金に入ります。</p>
     </div>
     <h2>🔐 合言葉（別のスマホでログインする用）</h2>
     <div class="card" id="passCard">
@@ -330,7 +335,7 @@ document.addEventListener("click", e => { const g = e.target.closest("[data-go]"
 $("meChip").onclick = () => showTab("me");
 
 // ---------- 大陸をつくる（毎回同じ形になる） ----------
-const N = 100, SEED = 20261125;
+const N = 160, SEED = 20261125, K = N / 100; // 大陸を1.6倍に（地形の形は同じで、区画が細かく多くなる）
 function rng(seed) { let s = seed >>> 0; return () => { s = (s * 1664525 + 1013904223) >>> 0; return s / 4294967296; }; }
 function makeNoise(seed) {
   const r = rng(seed), G = 17, g = [];
@@ -351,9 +356,10 @@ function buildContinent() {
   const elev = new Float32Array(N * N), wet = new Float32Array(N * N), t = new Uint8Array(N * N);
   for (let y = 0; y < N; y++) for (let x = 0; x < N; x++) {
     const nx = x / N - 0.5, ny = y / N - 0.5, d = Math.sqrt(nx * nx * 1.1 + ny * ny) * 2;
-    const h = n1(x / 9, y / 9) * 0.55 + n1(x / 4.5 + 31, y / 4.5 + 17) * 0.3 + n1(x / 2.2 + 5, y / 2.2 + 9) * 0.15;
+    const ux = x / K, uy = y / K;
+    const h = n1(ux / 9, uy / 9) * 0.55 + n1(ux / 4.5 + 31, uy / 4.5 + 17) * 0.3 + n1(ux / 2.2 + 5, uy / 2.2 + 9) * 0.15 + (n1(ux * 1.3 + 71, uy * 1.3 + 3) - .5) * 0.04;
     elev[y * N + x] = h - Math.pow(d, 1.6) * 0.75 + 0.24 - Math.max(0, d - 0.78) * 2.2;
-    wet[y * N + x] = n2(x / 11, y / 11) * 0.7 + n3(x / 5, y / 5) * 0.3;
+    wet[y * N + x] = n2(ux / 11, uy / 11) * 0.7 + n3(ux / 5, uy / 5) * 0.3;
   }
   const landE = []; for (let i = 0; i < N * N; i++) if (elev[i] >= 0) landE.push(elev[i]);
   landE.sort((a, b) => a - b); const MT = landE[Math.floor(landE.length * 0.88)] || 1, HILL = landE[Math.floor(landE.length * 0.76)] || 1;
@@ -363,22 +369,22 @@ function buildContinent() {
     const x = i % N, y = (i / N) | 0, e = elev[i];
     if (e < 0) { t[i] = T.SEA; continue; }
     if (e > MT) t[i] = T.MOUNT;
-    else if (y < 20 + n2(x / 6 + 40, 3) * 10) t[i] = T.SNOW;
-    else if (wet[i] < DRY && y > 50) t[i] = T.DESERT;
+    else if (y / K < 20 + n2(x / K / 6 + 40, 3) * 10) t[i] = T.SNOW;
+    else if (wet[i] < DRY && y / K > 50) t[i] = T.DESERT;
     else if (e > HILL) t[i] = T.FOREST; // 森は山のまわりだけ
     else t[i] = T.PLAIN;
   }
   // 湖
   const r = rng(SEED + 99);
-  for (let k = 0; k < 2; k++) { const cx = 35 + (r() * 30 | 0), cy = 35 + (r() * 30 | 0);
-    for (let y = -3; y <= 3; y++) for (let x = -4; x <= 4; x++) { const i = (cy + y) * N + cx + x; if (x * x / 16 + y * y / 9 <= 1 && t[i] !== T.SEA) t[i] = T.LAKE; } }
+  for (let k = 0; k < 2; k++) { const cx = Math.round((35 + (r() * 30 | 0)) * K), cy = Math.round((35 + (r() * 30 | 0)) * K), RX = Math.round(4 * K), RY = Math.round(3 * K);
+    for (let y = -RY; y <= RY; y++) for (let x = -RX; x <= RX; x++) { const i = (cy + y) * N + cx + x; if (x * x / (RX * RX) + y * y / (RY * RY) <= 1 && t[i] !== T.SEA) t[i] = T.LAKE; } }
   // 川（山から海へ一番低い方に流れる）
   const peaks = []; for (let i = 0; i < N * N; i++) if (t[i] === T.MOUNT) peaks.push(i);
   for (let k = 0; k < 4 && peaks.length; k++) {
     let i = peaks[(r() * peaks.length) | 0], steps = 0; const path = []; RIVERS.push(path);
-    while (steps++ < 300) { const x = i % N, y = (i / N) | 0; path.push(i); if (t[i] === T.SEA || t[i] === T.LAKE) break; if (steps > 3) t[i] = T.RIVER;
-      let best = -1, be = elev[i] - Math.hypot(x - 50, y - 50) * 0.012 + 0.02;
-      for (const [dx, dy] of [[1, 0], [-1, 0], [0, 1], [0, -1]]) { const xx = x + dx, yy = y + dy; if (xx < 0 || yy < 0 || xx >= N || yy >= N) continue; const j = yy * N + xx; const ee = elev[j] - Math.hypot(xx - 50, yy - 50) * 0.012 + (r() - 0.5) * 0.02; if (ee < be) { be = ee; best = j; } }
+    while (steps++ < 300 * K) { const x = i % N, y = (i / N) | 0; path.push(i); if (t[i] === T.SEA || t[i] === T.LAKE) break; if (steps > 3) t[i] = T.RIVER;
+      let best = -1, be = elev[i] - Math.hypot(x - N / 2, y - N / 2) * 0.012 / K + 0.02;
+      for (const [dx, dy] of [[1, 0], [-1, 0], [0, 1], [0, -1]]) { const xx = x + dx, yy = y + dy; if (xx < 0 || yy < 0 || xx >= N || yy >= N) continue; const j = yy * N + xx; const ee = elev[j] - Math.hypot(xx - N / 2, yy - N / 2) * 0.012 / K + (r() - 0.5) * 0.02; if (ee < be) { be = ee; best = j; } }
       if (best < 0) { elev[i] -= 0.05; continue; } i = best; }
   }
   // 海沿い
@@ -392,6 +398,12 @@ function buildContinent() {
 let ELEV = null; const RIVERS = [];
 const LAND = buildContinent();
 const isBuyable = (tt) => tt !== T.SEA && tt !== T.LAKE;
+// お店はその社長の土地に建つ（土地の順に1店ずつ。土地が足りないお店は地図には出ない）
+function shopPlaces() { const byOwner = new Map(), out = new Map(); for (const sh of S.shops) { if (!byOwner.has(sh.owner)) byOwner.set(sh.owner, []); byOwner.get(sh.owner).push(sh); }
+  for (const list of byOwner.values()) list.sort((a, b) => (a.id === "s" + a.owner ? -1 : 0) - (b.id === "s" + b.owner ? -1 : 0) || String(a.id).localeCompare(String(b.id)));
+  const lands = [...S.lands.values()].sort((a, b) => (a.owner - b.owner) || ((a.y * N + a.x) - (b.y * N + b.x))), used = new Map();
+  for (const L of lands) { const list = byOwner.get(L.owner) || [], k = used.get(L.owner) || 0; if (k < list.length) { out.set(`${L.x}_${L.y}`, list[k]); used.set(L.owner, k + 1); } }
+  return out; }
 $("legend").innerHTML = TNAME.map((n, i) => `<span><i style="background:${TCOL[i]}"></i>${n}</span>`).join("");
 
 // ---------- 状態 ----------
@@ -404,9 +416,9 @@ function priceOf(tt, pop) {
 }
 
 // ---------- 地図（Googleマップ風・3D） ----------
-const SPX = 12; // 1区画あたりのテクスチャの画素数
+const SPX = 8; // 1区画あたりのテクスチャの画素数（大陸が広いので少しへらす）
 const SNOWE = (() => { const a = []; for (let i = 0; i < N * N; i++) if (LAND[i] === T.MOUNT) a.push(ELEV[i]); a.sort((x, y) => x - y); return a[Math.floor(a.length * .92)] || 1; })();
-const MON = (() => { let best = 0, bd = 1e9; for (let i = 0; i < N * N; i++) { const tt = LAND[i]; if (tt !== T.PLAIN && tt !== T.FOREST) continue; const d = (i % N - 50) ** 2 + ((i / N | 0) - 50) ** 2; if (d < bd) { bd = d; best = i; } } return { x: best % N, y: best / N | 0 }; })();
+const MON = (() => { let best = 0, bd = 1e9; for (let i = 0; i < N * N; i++) { const tt = LAND[i]; if (tt !== T.PLAIN && tt !== T.FOREST) continue; const d = (i % N - N / 2) ** 2 + ((i / N | 0) - N / 2) ** 2; if (d < bd) { bd = d; best = i; } } return { x: best % N, y: best / N | 0 }; })();
 const hex = h => [parseInt(h.slice(1, 3), 16), parseInt(h.slice(3, 5), 16), parseInt(h.slice(5, 7), 16)];
 const LCOL = TCOL.map(hex); LCOL[T.SEA] = hex("#E9D9A6"); LCOL[T.RIVER] = hex("#A9D27A"); LCOL[T.LAKE] = hex("#9ACD6B");
 function elevAt(fx, fy) { // 区画座標でなめらかな高さ
@@ -434,6 +446,8 @@ function pix(fx, fy, out) { // 区画座標(fx,fy)の色
     const ex = elevAt(fx + .25, fy) - elevAt(fx - .25, fy), ey = elevAt(fx, fy + .25) - elevAt(fx, fy - .25);
     let sh = Math.max(.55, Math.min(1.35, 1 - (ex + ey) * 3.0)) * (1 + mid * .10 + fine * .08);
     if ((tt === T.FOREST || tt === T.MOUNT) && fine > .08) sh *= .8; // 木のかたまり
+    const slope = Math.abs(ex) + Math.abs(ey); if (slope > .018 && e > .03) { const s2 = Math.min(1, (slope - .018) / .03); r += (126 - r) * s2 * .65; g += (120 - g) * s2 * .65; b += (110 - b) * s2 * .65; } // 急な斜面は岩はだ
+    if (tt === T.PLAIN || tt === T.COAST || tt === T.RIVER) { const f2 = DN1(fx * 5.1 + 9, fy * 5.1) - .5; r += f2 * 18; g += f2 * 22; b += f2 * 8; } // 草地のむら
     if (tt === T.MOUNT && e > SNOWE * .82) { const s = Math.min(1, (e - SNOWE * .82) / (SNOWE * .18)); r += (128 - r) * s * .7; g += (118 - g) * s * .7; b += (106 - b) * s * .7; } // 岩
     r *= sh; g *= sh; b *= sh;
     if (e > SNOWE) { const s = Math.min(1, (e - SNOWE) * 10 + mid * .15); if (s > 0) { r += (246 - r) * s; g += (248 - g) * s; b += (250 - b) * s; } }
@@ -466,7 +480,7 @@ function pumpTiles() { if (tileBusy || !TQ.length) return; tileBusy = true;
 // 地名（地形ごとのいちばん大きいかたまりの真ん中）
 const PLACES = (() => {
   const seen = new Uint8Array(N * N), out = [];
-  const name = (tt, cx, cy) => { const dir = cy < 35 ? "北" : cy > 65 ? "南" : cx < 35 ? "西" : cx > 65 ? "東" : "中央";
+  const name = (tt, cx, cy) => { const dir = cy < 35 * K ? "北" : cy > 65 * K ? "南" : cx < 35 * K ? "西" : cx > 65 * K ? "東" : "中央";
     return { [T.MOUNT]: dir + "山脈", [T.SNOW]: dir + "の雪原", [T.DESERT]: dir + "の砂漠", [T.FOREST]: dir + "の大森林", [T.LAKE]: "ゼロ湖", [T.PLAIN]: dir + "平原" }[tt]; };
   for (const tt of [T.MOUNT, T.SNOW, T.DESERT, T.FOREST, T.LAKE, T.PLAIN]) {
     const comps = [];
@@ -474,17 +488,17 @@ const PLACES = (() => {
       while (st.length) { const j = st.pop(); cells.push(j); const x = j % N, y = j / N | 0; for (const [dx, dy] of [[1, 0], [-1, 0], [0, 1], [0, -1]]) { const xx = x + dx, yy = y + dy, q = yy * N + xx; if (xx >= 0 && yy >= 0 && xx < N && yy < N && !seen[q] && LAND[q] === tt) { seen[q] = 1; st.push(q); } } }
       comps.push(cells); }
     comps.sort((a, b) => b.length - a.length);
-    for (const cells of comps.slice(0, tt === T.FOREST || tt === T.PLAIN ? 2 : 1)) { if (cells.length < 12) continue;
+    for (const cells of comps.slice(0, tt === T.FOREST || tt === T.PLAIN ? 2 : 1)) { if (cells.length < 12 * K * K) continue;
       let sx = 0, sy = 0; cells.forEach(j => { sx += j % N; sy += j / N | 0; }); let cx = sx / cells.length, cy = sy / cells.length;
       let best = cells[0], bd = 1e9; cells.forEach(j => { const dd = (j % N - cx) ** 2 + ((j / N | 0) - cy) ** 2; if (dd < bd) { bd = dd; best = j; } });
-      const nm = name(tt, best % N, best / N | 0); if (!out.some(o => o.name === nm)) out.push({ name: nm, x: best % N + .5, y: (best / N | 0) + .5, big: cells.length > 200 }); }
+      const nm = name(tt, best % N, best / N | 0); if (!out.some(o => o.name === nm)) out.push({ name: nm, x: best % N + .5, y: (best / N | 0) + .5, big: cells.length > 200 * K * K }); }
   }
   out.push({ name: "建国記念碑", x: MON.x + .5, y: MON.y + .5, big: false, mon: true });
   return out;
 })();
 
 // 3D（ななめから見た図）を前もって描いておく
-const ISO = { w: 26, hs: 240, img: [], X0: 0, Y0: 0 };
+const ISO = { w: Math.round(2600 / N), hs: 240, img: [], X0: 0, Y0: 0 };
 function rotXY(x, y, r) { return r === 0 ? [x, y] : r === 1 ? [N - 1 - y, x] : r === 2 ? [N - 1 - x, N - 1 - y] : [y, N - 1 - x]; }
 function unrotXY(a, b, r) { return r === 0 ? [a, b] : r === 1 ? [b, N - 1 - a] : r === 2 ? [N - 1 - a, N - 1 - b] : [N - 1 - b, a]; }
 const plotH = (x, y) => { const tt = LAND[y * N + x]; if (tt === T.SEA || tt === T.LAKE) return 0; return Math.max(1, ELEV[y * N + x] * ISO.hs + 3); };
@@ -609,7 +623,7 @@ $("mapq").addEventListener("input", () => {
   for (const p of PLACES) if (p.name.includes(q)) res.push({ label: "📍 " + p.name, x: p.x - .5, y: p.y - .5, z: 14 });
   const nq = q.replace(/^No\.?/i, "");
   for (const c of S.citizens) if (c.name.includes(q) || String(c.no) === nq) { const l = [...S.lands.values()].find(v => v.owner === c.no); res.push({ label: `${c.icon || "🙂"} ${c.name}（No.${c.no}）${l ? "" : "・土地なし"}`, x: l ? l.x : null, y: l ? l.y : null, z: 40, no: c.no }); }
-  for (const s of S.shops) if (s.name.includes(q)) { const l = [...S.lands.values()].find(v => v.owner === s.owner); res.push({ label: `${s.emoji || "🏪"} ${s.name}`, x: l ? l.x : null, y: l ? l.y : null, z: 40 }); }
+  const SPq = shopPlaces(); for (const s of S.shops) if (s.name.includes(q)) { const key = [...SPq.entries()].find(([k, v]) => v.id === s.id), l = key ? S.lands.get(key[0]) : [...S.lands.values()].find(v => v.owner === s.owner); res.push({ label: `${s.emoji || "🏪"} ${s.name}`, x: l ? l.x : null, y: l ? l.y : null, z: 40 }); }
   const m = q.match(/^(\d+)\s*-\s*(\d+)$/); if (m) res.push({ label: `区画 ${m[1]}-${m[2]}`, x: +m[1] - 1, y: +m[2] - 1, z: 40, plot: true });
   R.innerHTML = res.slice(0, 12).map((r, i) => `<div class="news" style="cursor:pointer" data-i="${i}">${esc(r.label)}</div>`).join("") || `<div class="note">見つかりませんでした</div>`;
   R.style.display = ""; R.onclick = e => { const d = e.target.closest("[data-i]"); if (!d) return; const r = res[+d.dataset.i]; R.style.display = "none"; $("mapq").blur();
@@ -618,23 +632,27 @@ $("mapq").addEventListener("input", () => {
 
 // ---------- 3D（WebGLでなめらかな地形と木） ----------
 const G3 = (() => {
-  const cv = $("map3d"), lc = $("map3dl"); let gl = null, ok = false, prog, tprog, terrain, tree, house, water, treeInst = 0, houseInst = 0, housesDirty = true;
-  const cam = { tx: 50, tz: 52, dist: 95, yaw: -0.6, pitch: 0.82 };
-  const HS = 11; // 高さの倍率
+  const cv = $("map3d"), lc = $("map3dl"); let gl = null, ok = false, prog, tprog, terrain, tree, bush, house, shopM, water, treeInst = 0, bushInst = 0, houseInst = 0, shopInst = 0, housesDirty = true, SHOPLBL = [];
+  const cam = { tx: N / 2, tz: N / 2 + 2, dist: 95 * K, yaw: -0.6, pitch: 0.82 };
+  const HS = 11 * K; // 高さの倍率
   const hAt = (fx, fy) => { const e = elevAt(fx, fy); if (e < 0) return Math.max(-1.2, e * 6); const l = lakeAt(fx, fy); return e * HS - Math.min(1, l * 1.6) * (e * HS + .15); };
   const rnd = rng(SEED + 404);
   function sh(src, type) { const s = gl.createShader(type); gl.shaderSource(s, src); gl.compileShader(s); if (!gl.getShaderParameter(s, gl.COMPILE_STATUS)) throw new Error(gl.getShaderInfoLog(s)); return s; }
   function mk(vs, fs) { const p = gl.createProgram(); gl.attachShader(p, sh(vs, gl.VERTEX_SHADER)); gl.attachShader(p, sh(fs, gl.FRAGMENT_SHADER)); gl.linkProgram(p); if (!gl.getProgramParameter(p, gl.LINK_STATUS)) throw new Error(gl.getProgramInfoLog(p)); return p; }
   const VS = `#version 300 es
   in vec3 p; in vec3 n; in vec3 c; in vec4 inst; in vec3 icol; uniform mat4 vp; uniform int useInst; out vec3 vn; out vec3 vc; out vec3 wp;
-  void main(){ vec3 q=p; vec3 col=c; if(useInst==1){ float s=inst.w; float a=inst.x*13.0+inst.z*7.0; q=vec3(p.x*cos(a)-p.z*sin(a), p.y, p.x*sin(a)+p.z*cos(a))*s; q+=inst.xyz; col=c*icol; }
+  void main(){ vec3 q=p; vec3 col=c; if(useInst>=1){ float s=inst.w; float a=useInst==1 ? inst.x*13.0+inst.z*7.0 : 0.0; q=vec3(p.x*cos(a)-p.z*sin(a), p.y, p.x*sin(a)+p.z*cos(a))*s; q+=inst.xyz; col = useInst==1 ? c*icol : (c.r>0.995&&c.g>0.995&&c.b>0.995 ? icol : c); }
     wp=q; vn=n; vc=col; gl_Position=vp*vec4(q,1.0); }`;
   const FS = `#version 300 es
-  precision highp float; in vec3 vn; in vec3 vc; in vec3 wp; uniform vec3 eye; uniform vec3 sky; uniform float alpha; out vec4 o;
+  precision highp float; in vec3 vn; in vec3 vc; in vec3 wp; uniform vec3 eye; uniform vec3 sky; uniform float alpha; uniform int isT; out vec4 o;
+  float h2(vec2 p){ return fract(sin(dot(p,vec2(127.1,311.7)))*43758.5453); }
+  float vn2(vec2 p){ vec2 i=floor(p), f=fract(p); f=f*f*(3.0-2.0*f); return mix(mix(h2(i),h2(i+vec2(1,0)),f.x),mix(h2(i+vec2(0,1)),h2(i+vec2(1,1)),f.x),f.y); }
   void main(){ vec3 N=normalize(vn); vec3 L=normalize(vec3(-0.5,0.85,-0.35)); float d=max(dot(N,L),0.0); float hemi=0.5+0.5*N.y;
-    vec3 col=vc*(0.42*hemi+0.78*d);
+    vec3 base=vc; if(isT==1){ float g=vn2(wp.xz*6.0)*0.55+vn2(wp.xz*23.0)*0.3+vn2(wp.xz*1.7)*0.35; float near=clamp(1.0-(length(eye-wp)-10.0)/90.0,0.0,1.0); base*=(1.0+(g-0.6)*0.32*near)*0.88; }
+    float d2=max(dot(N,normalize(vec3(0.45,0.35,0.7))),0.0);
+    vec3 col=base*(0.42*hemi+0.78*d+0.38*d2);
     if(alpha<1.0){ vec3 V=normalize(eye-wp); vec3 H=normalize(L+V); col+=vec3(1.0)*pow(max(dot(N,H),0.0),80.0)*0.6; }
-    float f=clamp((length(eye-wp)-60.0)/180.0,0.0,1.0); col=mix(col,sky,f*0.85); o=vec4(col,alpha); }`;
+    float f=clamp((length(eye-wp)-95.0)/290.0,0.0,1.0); col=mix(col,sky,f*0.85); o=vec4(col,alpha); }`;
   function buf(data, size, loc, divisor) { const b = gl.createBuffer(); gl.bindBuffer(gl.ARRAY_BUFFER, b); gl.bufferData(gl.ARRAY_BUFFER, data, gl.STATIC_DRAW); gl.enableVertexAttribArray(loc); gl.vertexAttribPointer(loc, size, gl.FLOAT, false, 0, 0); if (divisor) gl.vertexAttribDivisor(loc, 1); return b; }
   function mesh(pos, nor, col, idx, inst, icol) { const vao = gl.createVertexArray(); gl.bindVertexArray(vao); const L = n => gl.getAttribLocation(prog, n);
     buf(pos, 3, L("p")); buf(nor, 3, L("n")); buf(col, 3, L("c"));
@@ -643,7 +661,7 @@ const G3 = (() => {
     else { gl.disableVertexAttribArray(L("inst")); gl.vertexAttrib4f(L("inst"), 0, 0, 0, 1); gl.disableVertexAttribArray(L("icol")); gl.vertexAttrib3f(L("icol"), 1, 1, 1); }
     gl.bindVertexArray(null); return o; }
   function buildTerrain() {
-    const R = 3, M = N * R + 1, pos = new Float32Array(M * M * 3), nor = new Float32Array(M * M * 3), col = new Float32Array(M * M * 3), o = [0, 0, 0];
+    const R = 2.5, M = Math.round(N * R) + 1, pos = new Float32Array(M * M * 3), nor = new Float32Array(M * M * 3), col = new Float32Array(M * M * 3), o = [0, 0, 0];
     for (let j = 0; j < M; j++) for (let i = 0; i < M; i++) { const fx = i / R, fy = j / R, k = (j * M + i) * 3, y = hAt(fx, fy);
       pos[k] = fx; pos[k + 1] = y; pos[k + 2] = fy;
       const dx = hAt(fx + .3, fy) - hAt(fx - .3, fy), dz = hAt(fx, fy + .3) - hAt(fx, fy - .3); const nx = -dx / .6, nz = -dz / .6, l = Math.hypot(nx, 1, nz); nor[k] = nx / l; nor[k + 1] = 1 / l; nor[k + 2] = nz / l;
@@ -651,7 +669,7 @@ const G3 = (() => {
     const idx = new Uint32Array((M - 1) * (M - 1) * 6); let q = 0;
     for (let j = 0; j < M - 1; j++) for (let i = 0; i < M - 1; i++) { const a = j * M + i, b = a + 1, c2 = a + M, d = c2 + 1; idx[q++] = a; idx[q++] = c2; idx[q++] = b; idx[q++] = b; idx[q++] = c2; idx[q++] = d; }
     terrain = mesh(pos, nor, col, idx);
-    const wp = new Float32Array([-200, 0, -200, 300, 0, -200, -200, 0, 300, 300, 0, 300]), wn = new Float32Array([0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0]), wc = new Float32Array([.2, .5, .78, .2, .5, .78, .2, .5, .78, .2, .5, .78]);
+    const wp = new Float32Array([-300, 0, -300, 460, 0, -300, -300, 0, 460, 460, 0, 460]), wn = new Float32Array([0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0]), wc = new Float32Array([.2, .5, .78, .2, .5, .78, .2, .5, .78, .2, .5, .78]);
     water = mesh(wp, wn, wc, new Uint32Array([0, 2, 1, 1, 2, 3]));
   }
   function cone(P, Nn, C, I, y0, y1, r, col, seg) { const base = P.length / 3;
@@ -675,21 +693,62 @@ const G3 = (() => {
     const inst2 = new Float32Array(inst.length); for (let i = 0; i < inst.length; i += 4) { inst2[i] = inst[i]; inst2[i + 1] = inst[i + 1]; inst2[i + 2] = inst[i + 2]; inst2[i + 3] = inst[i + 3]; }
     treeInst = inst.length / 4;
     tree = mesh(new Float32Array(P), new Float32Array(Nn), new Float32Array(C), new Uint32Array(I), inst2, new Float32Array(icol));
+    // 広葉樹（丸い木）：平地・海沿い・川沿い・森のふち
+    const P2 = [], N2 = [], C2 = [], I2 = [];
+    cyl(P2, N2, C2, I2, 0, .38, .07, [.42, .28, .16], 6);
+    sphere(P2, N2, C2, I2, 0, .62, 0, .36, [.33, .6, .27]); sphere(P2, N2, C2, I2, .16, .5, .1, .24, [.38, .66, .3]); sphere(P2, N2, C2, I2, -.14, .54, -.08, .25, [.3, .56, .25]);
+    const bi = [], bc = [];
+    for (let y = 0; y < N; y++) for (let x = 0; x < N; x++) { const tt = LAND[y * N + x]; const n = tt === T.FOREST ? 2 : tt === T.PLAIN ? (rnd() < .16 ? 1 + (rnd() < .3 ? 1 : 0) : 0) : (tt === T.RIVER || tt === T.COAST) ? (rnd() < .12 ? 1 : 0) : 0;
+      for (let k = 0; k < n; k++) { const fx = x + rnd(), fy = y + rnd(), e = elevAt(fx, fy); if (e < 0.022 || lakeAt(fx, fy) > .3 || S.lands.has(`${x}_${y}`) || (x === MON.x && y === MON.y)) continue;
+        const sc = .35 + rnd() * .3; bi.push(fx, hAt(fx, fy) - .02, fy, sc); const t = .82 + rnd() * .3; bc.push(t * (.85 + rnd() * .3), t, t * (.8 + rnd() * .2)); } }
+    bushInst = bi.length / 4;
+    bush = bushInst ? mesh(new Float32Array(P2), new Float32Array(N2), new Float32Array(C2), new Uint32Array(I2), new Float32Array(bi), new Float32Array(bc)) : null;
   }
+  function sphere(P, Nn, C, I, cx, cy, cz, r, col) { const base = P.length / 3, A = 7, B = 5;
+    for (let j = 0; j <= B; j++) for (let i = 0; i <= A; i++) { const th = j / B * Math.PI, ph = i / A * Math.PI * 2, x = Math.sin(th) * Math.cos(ph), y = Math.cos(th), z = Math.sin(th) * Math.sin(ph); P.push(cx + x * r, cy + y * r * .9, cz + z * r); Nn.push(x, y, z); C.push(...col); }
+    for (let j = 0; j < B; j++) for (let i = 0; i < A; i++) { const a = base + j * (A + 1) + i, b = a + A + 1; I.push(a, b, a + 1, a + 1, b, b + 1); } }
+  function boxTo(P, Nn, C, I, x0, y0, z0, x1, y1, z1, col) { const f = [[[0, 1, 0], [[x0, y1, z0], [x0, y1, z1], [x1, y1, z1], [x1, y1, z0]]], [[0, -1, 0], [[x0, y0, z0], [x1, y0, z0], [x1, y0, z1], [x0, y0, z1]]], [[0, 0, -1], [[x0, y0, z0], [x0, y1, z0], [x1, y1, z0], [x1, y0, z0]]], [[0, 0, 1], [[x0, y0, z1], [x1, y0, z1], [x1, y1, z1], [x0, y1, z1]]], [[-1, 0, 0], [[x0, y0, z0], [x0, y0, z1], [x0, y1, z1], [x0, y1, z0]]], [[1, 0, 0], [[x1, y0, z0], [x1, y1, z0], [x1, y1, z1], [x1, y0, z1]]]];
+    for (const [n, v] of f) { const b = P.length / 3; v.forEach(p => { P.push(...p); Nn.push(...n); C.push(...col); }); I.push(b, b + 1, b + 2, b, b + 2, b + 3); } }
+  function quad(P, Nn, C, I, v, col) { const a = [v[1][0] - v[0][0], v[1][1] - v[0][1], v[1][2] - v[0][2]], b = [v[3][0] - v[0][0], v[3][1] - v[0][1], v[3][2] - v[0][2]];
+    let n = [a[1] * b[2] - a[2] * b[1], a[2] * b[0] - a[0] * b[2], a[0] * b[1] - a[1] * b[0]]; const l = Math.hypot(...n) || 1; n = n.map(q => q / l); if (n[1] < 0) n = n.map(q => -q);
+    const base = P.length / 3; v.forEach(p => { P.push(...p); Nn.push(...n); C.push(...col); }); I.push(base, base + 1, base + 2, base, base + 2, base + 3, base, base + 2, base + 1, base, base + 3, base + 2); }
+  function tri(P, Nn, C, I, v, n, col) { const base = P.length / 3; v.forEach(p => { P.push(...p); Nn.push(...n); C.push(...col); }); I.push(base, base + 1, base + 2, base, base + 2, base + 1); }
+  const WALL = [1, 1, 1], GLASS = [.55, .75, .9], DOOR = [.36, .22, .13], STONE = [.62, .6, .56], ROOF = [.55, .2, .16], BRICK = [.6, .3, .24];
+  function houseModel() { const P = [], Nn = [], C = [], I = [], B = (...a) => boxTo(P, Nn, C, I, ...a);
+    B(-.38, 0, -.32, .38, .05, .32, STONE);                 // 土台
+    B(-.32, .05, -.26, .32, .46, .26, WALL);                // かべ（持ち主の色）
+    tri(P, Nn, C, I, [[-.32, .46, -.26], [-.32, .46, .26], [-.32, .7, 0]], [-1, 0, 0], WALL); tri(P, Nn, C, I, [[.32, .46, -.26], [.32, .7, 0], [.32, .46, .26]], [1, 0, 0], WALL);
+    quad(P, Nn, C, I, [[-.37, .43, .31], [.37, .43, .31], [.37, .72, 0], [-.37, .72, 0]], ROOF); quad(P, Nn, C, I, [[-.37, .43, -.31], [-.37, .72, 0], [.37, .72, 0], [.37, .43, -.31]], ROOF); // 切妻屋根
+    B(.14, .5, -.16, .22, .8, -.08, BRICK);                 // えんとつ
+    B(-.07, .05, .258, .07, .3, .272, DOOR);                // ドア
+    for (const x of [-.22, .15]) if (x < 0) B(x - .05, .2, .258, x + .05, .34, .27, GLASS); B(.13, .2, .258, .25, .34, .27, GLASS);
+    for (const z of [-.12, .12]) { B(-.335, .2, z - .05, -.32, .34, z + .05, GLASS); B(.32, .2, z - .05, .335, .34, z + .05, GLASS); }
+    B(-.12, .05, .27, .12, .07, .36, STONE);                // げんかんの石
+    return [P, Nn, C, I]; }
+  function shopModel() { const P = [], Nn = [], C = [], I = [], B = (...a) => boxTo(P, Nn, C, I, ...a);
+    B(-.42, 0, -.34, .42, .04, .34, STONE);
+    B(-.38, .04, -.28, .38, .5, .28, WALL);                 // お店のかべ（お店の色）
+    B(-.41, .5, -.31, .41, .56, .31, [.3, .3, .32]);         // 平らな屋根
+    B(-.32, .1, .278, .1, .4, .292, GLASS);                 // 大きなショーウィンドウ
+    B(.15, .04, .278, .32, .38, .292, DOOR);                // ドア
+    for (let k = 0; k < 8; k++) { const x0 = -.38 + k * .095; quad(P, Nn, C, I, [[x0, .46, .28], [x0 + .095, .46, .28], [x0 + .095, .38, .43], [x0, .38, .43]], k % 2 ? [.96, .96, .93] : [.86, .18, .16]); } // しまのひさし
+    B(-.3, .56, .2, .3, .74, .25, [.98, .8, .22]);          // かんばん
+    B(-.26, .6, .251, .26, .7, .256, [.25, .17, .08]);      // かんばんの文字
+    B(-.36, .04, .3, -.3, .14, .38, [.55, .38, .2]); B(.33, .04, .36, .39, .12, .42, [.3, .55, .3]); // たる・植木ばち
+    return [P, Nn, C, I]; }
   function buildHouses() {
-    const P = [], Nn = [], C = [], I = [];
-    const box = (x0, y0, z0, x1, y1, z1, col) => { const f = [[[0, 1, 0], [[x0, y1, z0], [x1, y1, z0], [x1, y1, z1], [x0, y1, z1]]], [[0, 0, -1], [[x0, y0, z0], [x1, y0, z0], [x1, y1, z0], [x0, y1, z0]]], [[0, 0, 1], [[x0, y0, z1], [x0, y1, z1], [x1, y1, z1], [x1, y0, z1]]], [[-1, 0, 0], [[x0, y0, z0], [x0, y1, z0], [x0, y1, z1], [x0, y0, z1]]], [[1, 0, 0], [[x1, y0, z0], [x1, y0, z1], [x1, y1, z1], [x1, y1, z0]]]];
-      for (const [n, v] of f) { const b = P.length / 3; v.forEach(p => { P.push(...p); Nn.push(...n); C.push(...col); }); I.push(b, b + 1, b + 2, b, b + 2, b + 3); } };
-    box(-.32, 0, -.32, .32, .45, .32, [1, 1, 1]); cone(P, Nn, C, I, .45, .85, .48, [.75, .25, .2], 4);
-    const inst = [], icol = [];
-    for (const L of S.lands.values()) { const fx = L.x + .5, fy = L.y + .5; inst.push(fx, hAt(fx, fy), fy, .9); const h = hex(L.color || "#E8A317"); icol.push(h[0] / 255 + .2, h[1] / 255 + .2, h[2] / 255 + .2); }
-    const fx = MON.x + .5, fy = MON.y + .5; // 記念碑
-    houseInst = inst.length / 4;
-    house = houseInst ? mesh(new Float32Array(P), new Float32Array(Nn), new Float32Array(C), new Uint32Array(I), new Float32Array(inst), new Float32Array(icol)) : null;
+    const H = houseModel(), Sm = shopModel(), hi = [], hc = [], si = [], sc = []; SHOPLBL = [];
+    const SP = shopPlaces();
+    for (const L of S.lands.values()) { const fx = L.x + .5, fy = L.y + .5, y = hAt(fx, fy), sh = SP.get(`${L.x}_${L.y}`);
+      if (sh) { si.push(fx, y, fy, .95); const h = hex(sh.color || "#E8A317"); sc.push(.55 + h[0] / 255 * .45, .55 + h[1] / 255 * .45, .55 + h[2] / 255 * .45); SHOPLBL.push({ x: fx, y: fy, name: (sh.emoji || "🏪") + " " + sh.name }); }
+      else { hi.push(fx, y, fy, .9); const h = hex(L.color || "#E8A317"); hc.push(.6 + h[0] / 255 * .4, .6 + h[1] / 255 * .4, .6 + h[2] / 255 * .4); } }
+    houseInst = hi.length / 4; shopInst = si.length / 4;
+    house = houseInst ? mesh(new Float32Array(H[0]), new Float32Array(H[1]), new Float32Array(H[2]), new Uint32Array(H[3]), new Float32Array(hi), new Float32Array(hc)) : null;
+    shopM = shopInst ? mesh(new Float32Array(Sm[0]), new Float32Array(Sm[1]), new Float32Array(Sm[2]), new Uint32Array(Sm[3]), new Float32Array(si), new Float32Array(sc)) : null;
     housesDirty = false;
   }
   function mat() { // ビュー×プロジェクション
-    const W = cv.width, H = cv.height, a = W / H, f = 1 / Math.tan(0.5 * 0.9), nr = .3, fr = 600;
+    const W = cv.width, H = cv.height, a = W / H, f = 1 / Math.tan(0.5 * 0.9), nr = .2, fr = 900;
     const ex = cam.tx + Math.sin(cam.yaw) * Math.cos(cam.pitch) * cam.dist, ey = Math.sin(cam.pitch) * cam.dist, ez = cam.tz + Math.cos(cam.yaw) * Math.cos(cam.pitch) * cam.dist;
     const eye = [ex, ey, ez], ctr = [cam.tx, 0, cam.tz]; let zx = eye[0] - ctr[0], zy = eye[1] - ctr[1], zz = eye[2] - ctr[2], zl = Math.hypot(zx, zy, zz); zx /= zl; zy /= zl; zz /= zl;
     let xx = zz, xy = 0, xz = -zx, xl = Math.hypot(xx, xz); xx /= xl; xz /= xl; const yx = zy * xz - zz * xy, yy = zz * xx - zx * xz, yz = zx * xy - zy * xx;
@@ -707,14 +766,15 @@ const G3 = (() => {
     gl.viewport(0, 0, cv.width, cv.height); gl.clearColor(...sky, 1); gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT); gl.enable(gl.DEPTH_TEST);
     gl.useProgram(prog); gl.uniformMatrix4fv(gl.getUniformLocation(prog, "vp"), false, M); gl.uniform3fv(gl.getUniformLocation(prog, "eye"), eye); gl.uniform3fv(gl.getUniformLocation(prog, "sky"), sky);
     const U = gl.getUniformLocation(prog, "useInst"), A = gl.getUniformLocation(prog, "alpha");
-    const drawM = (m, inst, cnt) => { gl.bindVertexArray(m.vao); gl.uniform1i(U, inst ? 1 : 0); if (inst) gl.drawElementsInstanced(gl.TRIANGLES, m.n, gl.UNSIGNED_INT, 0, cnt); else gl.drawElements(gl.TRIANGLES, m.n, gl.UNSIGNED_INT, 0); };
-    gl.uniform1f(A, 1); drawM(terrain); drawM(tree, true, treeInst); if (house) drawM(house, true, houseInst);
+    const drawM = (m, inst, cnt) => { gl.bindVertexArray(m.vao); gl.uniform1i(U, inst === 2 ? 2 : inst ? 1 : 0); if (inst) gl.drawElementsInstanced(gl.TRIANGLES, m.n, gl.UNSIGNED_INT, 0, cnt); else gl.drawElements(gl.TRIANGLES, m.n, gl.UNSIGNED_INT, 0); };
+    const IT = gl.getUniformLocation(prog, "isT"); gl.uniform1f(A, 1); gl.uniform1i(IT, 1); drawM(terrain); gl.uniform1i(IT, 0); drawM(tree, true, treeInst); if (bush) drawM(bush, true, bushInst); if (house) drawM(house, 2, houseInst); if (shopM) drawM(shopM, 2, shopInst);
     gl.enable(gl.BLEND); gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA); gl.depthMask(false); gl.uniform1f(A, .72); drawM(water); gl.depthMask(true); gl.disable(gl.BLEND);
     // ラベル
     const c = lc.getContext("2d"), d = MAP.d || 1; c.clearRect(0, 0, lc.width, lc.height); c.textAlign = "center"; c.textBaseline = "middle";
     for (const p of PLACES) { const s = project(M, p.x, hAt(p.x, p.y) + 1.2, p.y); if (!s) continue; if (!p.big && !p.mon && cam.dist > 70) continue;
       if (p.mon) { c.font = `${18 * d}px "Noto Color Emoji","Apple Color Emoji",sans-serif`; c.fillText("🗿", s[0], s[1] - 10 * d); }
       c.font = `800 ${13 * d}px "Hiragino Sans","Noto Sans CJK JP",sans-serif`; c.lineWidth = 4 * d; c.strokeStyle = "rgba(255,255,255,.92)"; c.fillStyle = p.mon ? "#7A4E00" : "#33403F"; c.strokeText(p.name, s[0], s[1] + 6 * d); c.fillText(p.name, s[0], s[1] + 6 * d); }
+    if (cam.dist < 30) for (const L of SHOPLBL) { const s = project(M, L.x, hAt(L.x, L.y) + 1.0, L.y); if (!s) continue; c.font = `800 ${12 * d}px "Hiragino Sans","Noto Sans CJK JP",sans-serif`; const w = c.measureText(L.name).width + 12 * d; c.fillStyle = "rgba(255,255,255,.95)"; c.strokeStyle = "#E8A317"; c.lineWidth = 2 * d; c.beginPath(); c.roundRect ? c.roundRect(s[0] - w / 2, s[1] - 11 * d, w, 22 * d, 11 * d) : c.rect(s[0] - w / 2, s[1] - 11 * d, w, 22 * d); c.fill(); c.stroke(); c.fillStyle = "#3A2600"; c.fillText(L.name, s[0], s[1] + 1 * d); }
     if (MAP.sel) { const s = project(M, MAP.sel.x + .5, hAt(MAP.sel.x + .5, MAP.sel.y + .5) + .2, MAP.sel.y + .5); if (s) { c.fillStyle = "#D9534F"; c.strokeStyle = "#fff"; c.lineWidth = 2 * d; c.beginPath(); c.arc(s[0], s[1] - 18 * d, 9 * d, Math.PI * .85, Math.PI * .15); c.lineTo(s[0], s[1]); c.closePath(); c.fill(); c.stroke(); } }
     $("mapInfo").textContent = "3D：1本指で移動、2本指で拡大・回転";
   }
@@ -722,7 +782,7 @@ const G3 = (() => {
     const { M, eye } = mat(); const inv = invert(M); if (!inv) return null;
     const un = (x, y, z) => { const X = inv[0] * x + inv[4] * y + inv[8] * z + inv[12], Y = inv[1] * x + inv[5] * y + inv[9] * z + inv[13], Z = inv[2] * x + inv[6] * y + inv[10] * z + inv[14], W = inv[3] * x + inv[7] * y + inv[11] * z + inv[15]; return [X / W, Y / W, Z / W]; };
     const nx = px / cv.width * 2 - 1, ny = 1 - py / cv.height * 2, a = un(nx, ny, -1), b = un(nx, ny, 1); const dir = [b[0] - a[0], b[1] - a[1], b[2] - a[2]], L = Math.hypot(...dir); dir.forEach((v, i) => dir[i] = v / L);
-    let p = [...eye]; for (let t = 0; t < 1500; t++) { p = [p[0] + dir[0] * .25, p[1] + dir[1] * .25, p[2] + dir[2] * .25]; const g = Math.max(0, hAt(p[0], p[2])); if (p[1] <= g) return [Math.floor(p[0]), Math.floor(p[2])]; if (p[1] < -5) break; }
+    let p = [...eye]; for (let t = 0; t < 3000; t++) { p = [p[0] + dir[0] * .25, p[1] + dir[1] * .25, p[2] + dir[2] * .25]; const g = Math.max(0, hAt(p[0], p[2])); if (p[1] <= g) return [Math.floor(p[0]), Math.floor(p[2])]; if (p[1] < -5) break; }
     return null;
   }
   function invert(m) { const a = m, inv = new Float32Array(16);
@@ -753,19 +813,19 @@ const G3 = (() => {
       cv.addEventListener("pointermove", e => { if (!P.has(e.pointerId)) return; const p = pt(e), o = P.get(e.pointerId); P.set(e.pointerId, p);
         if (P.size === 1) { const dx = p.x - o.x, dy = p.y - o.y; moved += Math.abs(dx) + Math.abs(dy);
           if (e.buttons === 2 || e.shiftKey) { cam.yaw -= dx * .006; cam.pitch = Math.min(1.45, Math.max(.25, cam.pitch + dy * .004)); }
-          else { const s = cam.dist / cv.height * 1.1, s2 = s / Math.sin(cam.pitch), cy = Math.cos(cam.yaw), sy = Math.sin(cam.yaw); cam.tx += -cy * dx * s - sy * dy * s2; cam.tz += sy * dx * s - cy * dy * s2; cam.tx = Math.min(110, Math.max(-10, cam.tx)); cam.tz = Math.min(110, Math.max(-10, cam.tz)); }
+          else { const s = cam.dist / cv.height * 1.1, s2 = s / Math.sin(cam.pitch), cy = Math.cos(cam.yaw), sy = Math.sin(cam.yaw); cam.tx += -cy * dx * s - sy * dy * s2; cam.tz += sy * dx * s - cy * dy * s2; cam.tx = Math.min(N + 10, Math.max(-10, cam.tx)); cam.tz = Math.min(N + 10, Math.max(-10, cam.tz)); }
           draw(); }
         else { const [a, b] = [...P.values()], dd = Math.hypot(a.x - b.x, a.y - b.y), ang = Math.atan2(b.y - a.y, b.x - a.x), my = (a.y + b.y) / 2;
-          if (last) { cam.dist = Math.min(220, Math.max(8, cam.dist * last.d / dd)); cam.yaw -= (ang - last.ang); cam.pitch = Math.min(1.45, Math.max(.25, cam.pitch + (my - last.my) * .004)); draw(); } last = { d: dd, ang, my }; moved = 99; } });
+          if (last) { cam.dist = Math.min(220 * K, Math.max(6, cam.dist * last.d / dd)); cam.yaw -= (ang - last.ang); cam.pitch = Math.min(1.45, Math.max(.25, cam.pitch + (my - last.my) * .004)); draw(); } last = { d: dd, ang, my }; moved = 99; } });
       const up = e => { const p = P.get(e.pointerId); P.delete(e.pointerId); last = null; if (p && moved < 8 && P.size === 0) { const r = pick(p.x, p.y); if (r && r[0] >= 0 && r[1] >= 0 && r[0] < N && r[1] < N) openPlot(r[0], r[1]); } };
       cv.addEventListener("pointerup", up); cv.addEventListener("pointercancel", e => { P.delete(e.pointerId); last = null; });
       cv.addEventListener("contextmenu", e => e.preventDefault());
-      cv.addEventListener("wheel", e => { e.preventDefault(); cam.dist = Math.min(220, Math.max(8, cam.dist * (e.deltaY < 0 ? 1 / 1.12 : 1.12))); draw(); }, { passive: false });
+      cv.addEventListener("wheel", e => { e.preventDefault(); cam.dist = Math.min(220 * K, Math.max(6, cam.dist * (e.deltaY < 0 ? 1 / 1.12 : 1.12))); draw(); }, { passive: false });
       return true; } catch (e) { console.warn("3D", e); return false; } }
   function resize() { const r = cv.getBoundingClientRect(), d = MAP.d || devicePixelRatio || 1; cv.width = lc.width = r.width * d; cv.height = lc.height = r.height * d; }
   function anim(to, ms = 700) { const from = { ...cam }, t0 = performance.now(), id = ++flyAnim; const step = now => { if (id !== flyAnim) return; const t = Math.min(1, (now - t0) / ms), e = t < .5 ? 2 * t * t : 1 - (-2 * t + 2) ** 2 / 2; for (const k in to) cam[k] = from[k] + (to[k] - from[k]) * e; render(); if (t < 1) requestAnimationFrame(step); }; requestAnimationFrame(step); }
   return { init, resize, draw, dirty() { housesDirty = true; draw(); },
-    zoom(f) { anim({ dist: Math.min(220, Math.max(8, cam.dist / f)) }, 300); }, home() { anim({ tx: 50, tz: 52, dist: 95, pitch: .82 }); },
+    zoom(f) { anim({ dist: Math.min(220 * K, Math.max(6, cam.dist / f)) }, 300); }, home() { anim({ tx: N / 2, tz: N / 2 + 2, dist: 95 * K, pitch: .82 }); },
     rotate() { anim({ yaw: cam.yaw + Math.PI / 4 }, 400); }, fly(x, y) { anim({ tx: x + .5, tz: y + .5, dist: 18, pitch: .7 }); }, get ok() { return ok; } };
 })();
 
@@ -795,7 +855,15 @@ function openPlot(x, y) {
 }
 
 // ---------- 表示を作る ----------
-function badgesOf(c) { const b = []; if (!c.verified && c.via === "site") b.push(`<span class="badge" style="background:#EEE;color:#666">確認中</span>`); if (c.verified) b.push(`<span class="badge" style="background:#DFF3E6;color:#1E6B3A">✅ 本人確認ずみ</span>`); if (c.verified && c.no <= 10) b.push(`<span class="badge f">建国の父・母</span>`); if (c.verified && c.no <= 100) b.push(`<span class="badge">建国メンバー</span>`); if (c.both) b.push(`<span class="badge" style="background:#E7E3FF;color:#4B3DB0">🔗 インスタ＋YouTube</span>`); if (c.via === "ai") b.push(`<span class="badge">🤖</span>`); return b.join(""); }
+const STAMP_N = 10, STAMP_BONUS = 50000;
+const bagOf = c => c && c.bag && typeof c.bag === "object" ? c.bag : {};
+function shopperBadges(c) { const n = c.nbuy || 0, k = Object.keys(bagOf(c)).length, b = [];
+  if (k >= 10) b.push("🏆 町のグルメ王"); else if (k >= 5) b.push("🍽️ グルメ"); else if (k >= 3) b.push("🚶 お店めぐり");
+  if (n >= 50) b.push("💎 VIPのお客さん"); else if (n >= 20) b.push("⭐ 常連さん"); else if (n >= 5) b.push("🛍️ お買い物好き");
+  return b; }
+function bagHtml(c) { const bag = bagOf(c), ids = Object.keys(bag); if (!ids.length) return `<span class="note">まだ何も買っていません</span>`;
+  return ids.sort((a, b) => bag[b] - bag[a]).map(id => { const sh = S.shops.find(v => v.id === id); return `<span class="badge" style="background:#FFF4D6;color:#6B4A00">${esc(sh ? (sh.emoji || "🏪") + " " + (sh.what || sh.name) : "🎁 閉店したお店")} ×${bag[id]}</span>`; }).join(" "); }
+function badgesOf(c) { const b = []; if (!c.verified && c.via === "site") b.push(`<span class="badge" style="background:#EEE;color:#666">確認中</span>`); if (c.verified) b.push(`<span class="badge" style="background:#DFF3E6;color:#1E6B3A">✅ 本人確認ずみ</span>`); if (c.verified && c.no <= 10) b.push(`<span class="badge f">建国の父・母</span>`); if (c.verified && c.no <= 100) b.push(`<span class="badge">建国メンバー</span>`); if (c.both) b.push(`<span class="badge" style="background:#E7E3FF;color:#4B3DB0">🔗 インスタ＋YouTube</span>`); if (c.via === "ai") b.push(`<span class="badge">🤖</span>`); for (const t of shopperBadges(c)) b.push(`<span class="badge" style="background:#FFE9D6;color:#8A3B00">${t}</span>`); return b.join(""); }
 function czCard(c) { return `<div class="cz" data-no="${c.no}"><div class="ic" style="background:${esc(c.color || "#2F7FB5")}">${esc(c.icon || "🙂")}</div><div class="nm">${esc(c.name)}</div><div class="no">国民No.${c.no}・${yen(c.money)}</div>${badgesOf(c)}</div>`; }
 function renderTop() {
   const p = S.pop; $("popNow").textContent = p + "人";
@@ -817,7 +885,7 @@ $("peopleGrid").onclick = e => { const c = e.target.closest(".cz"); if (c) openC
 function openCitizen(no) { const c = S.citizens.find(v => v.no === no); if (!c) return;
   const lands = [...S.lands.values()].filter(l => l.owner === no), shops = S.shops.filter(s => s.owner === no);
   sheet(`<div class="row" style="align-items:center"><div style="flex:0 0 56px" class="cz"><div class="ic" style="background:${esc(c.color)}">${esc(c.icon || "🙂")}</div></div><div><h3 style="margin:0">${esc(c.name)}</h3><div class="note">国民No.${c.no}</div>${badgesOf(c)}</div></div>
-  <p>${esc(c.bio || "")}</p><p>持っているお金：<b>${yen(c.money)}</b><br>土地：${lands.length}区画<br>お店：${shops.map(s => esc(s.name)).join("、") || "なし"}</p>`); }
+  <p>${esc(c.bio || "")}</p><p>持っているお金：<b>${yen(c.money)}</b><br>土地：${lands.length}区画<br>お店：${shops.map(s => esc(s.name)).join("、") || "なし"}<br>お買い物：${c.nbuy || 0}回・${Object.keys(bagOf(c)).length}店</p><p class="small" style="margin:0 0 4px"><b>🎒 持ち物</b></p><div>${bagHtml(c)}</div>`); }
 function renderShops() {
   $("shopGrid").innerHTML = S.shops.map(s => `<div class="cz" data-id="${esc(s.id)}"><div class="ic" style="background:${esc(s.color || "#E8A317")}">${esc(s.emoji || "🏪")}</div><div class="nm">${esc(s.name)}</div><div class="no">${esc(s.catch || s.what || "")}</div>${s.official ? '<span class="badge">運営の会社</span>' : ""}</div>`).join("") || "";
 }
@@ -827,24 +895,33 @@ function openShop(id) { const s = S.shops.find(v => v.id === id); if (!s) return
   <p>${esc(s.catch || "")}</p><p class="small">${esc(s.desc || s.what || "")}</p>
   ${(s.items || []).map(it => `<div class="rank"><span>${esc(it.name)}</span><span class="v">${yen(it.price)}</span></div>`).join("")}
   <p class="small">商品の値段：<b>${yen(s.price || 1000)}</b>／売上：${yen(s.sales || 0)}</p>
-  <button class="btn wide" id="buyBtn">${S.myNo ? "このお店で買う（1日1回）" : "コメント「" + esc(s.name) + "で買う」をコピー"}</button><div class="small" id="buyMsg"></div>`);
+  <button class="btn wide" id="buyBtn">${S.myNo ? "このお店で買う（10%還元＋スタンプ）" : "コメント「" + esc(s.name) + "で買う」をコピー"}</button><div class="small" id="buyMsg"></div>`);
   $("buyBtn").onclick = async () => { const m = $("buyMsg");
     if (!S.myNo) { try { await navigator.clipboard.writeText(`${s.name}で買う`); m.innerHTML = `<span class="okm">コピーしました！動画のコメントにはってね</span>`; } catch { m.textContent = `「${s.name}で買う」とコメントしてね`; } return; }
     if (s.owner === S.myNo) { m.innerHTML = `<span class="note">自分のお店では買えません</span>`; return; }
     try { const d = todayJST();
       await runTransaction(db, async tx => {
-        const bs = await tx.get(doc(db, "buys", `${S.myNo}_${d}`)); if (bs.exists()) throw new Error("今日はもう買いました（1日1回）");
         const sh = await tx.get(doc(db, "shops", s.id)), me = await tx.get(doc(db, "citizens", String(S.myNo))), ow = await tx.get(doc(db, "citizens", String(sh.data().owner)));
+        if (sh.data().owner === S.myNo) throw new Error("自分のお店では買えません");
         const price = sh.data().price || 1000; if (me.data().money < price) throw new Error("お金が足りません");
-        tx.set(doc(db, "buys", `${S.myNo}_${d}`), { no: S.myNo, shop: s.id, day: d, at: serverTimestamp() });
+        const nb = (me.data().nbuy || 0) + 1, back = (price - price % 10) / 10, bonus = nb % STAMP_N === 0 ? STAMP_BONUS : 0;
+        const bag = { ...(me.data().bag || {}) }; bag[s.id] = (bag[s.id] || 0) + 1;
+        tx.set(doc(db, "buys", `${S.myNo}_b${nb}`), { no: S.myNo, shop: s.id, day: d, at: serverTimestamp() });
         tx.update(doc(db, "shops", s.id), { sales: (sh.data().sales || 0) + price });
         tx.update(doc(db, "citizens", String(sh.data().owner)), { money: ow.data().money + price });
-        tx.update(doc(db, "citizens", String(S.myNo)), { money: me.data().money - price });
+        tx.update(doc(db, "citizens", String(S.myNo)), { money: me.data().money - price + back + bonus, nbuy: nb, bag, spent: (me.data().spent || 0) + price });
+        window.__lastBuy = { back, bonus, nb };
       });
-      m.innerHTML = `<span class="okm">買いました！${esc(s.name)}に売上が入りました</span>`; }
+      const lb = window.__lastBuy || {}; m.innerHTML = `<span class="okm">買いました！ ${yen(lb.back || 0)}還元＋スタンプ1つ（${(lb.nb || 0) % STAMP_N || STAMP_N}/${STAMP_N}）${lb.bonus ? `<br>🎉 スタンプ${STAMP_N}個たまった！ ${yen(lb.bonus)}ゲット！` : ""}</span>`; }
     catch (e) { m.innerHTML = `<span class="err">${esc(e.code ? errText(e) : e.message)}</span>`; } };
 }
-function renderRank() {
+function renderRank2() {
+  const row = (c, i, v) => `<div class="rank"><span class="r">${i + 1}</span><span>${esc(c.icon || "🙂")} ${esc(c.name)} <span class="note">No.${c.no}</span></span><span class="v">${v}</span></div>`;
+  const a = [...S.citizens].filter(c => (c.spent || 0) > 0).sort((x, y) => (y.spent || 0) - (x.spent || 0)).slice(0, 10);
+  $("rankShop").innerHTML = a.map((c, i) => row(c, i, `${yen(c.spent)}（${c.nbuy || 0}回）`)).join("") || `<div class="note">まだだれも買っていません。人のお店で買うとのります</div>`;
+  const b = [...S.citizens].filter(c => Object.keys(bagOf(c)).length).sort((x, y) => Object.keys(bagOf(y)).length - Object.keys(bagOf(x)).length).slice(0, 10);
+  $("rankVariety").innerHTML = b.map((c, i) => row(c, i, `${Object.keys(bagOf(c)).length}店`)).join("") || `<div class="note">まだだれもいません</div>`; }
+function renderRank() { try { renderRank2(); } catch {}
   const top = [...S.citizens].sort((a, b) => (b.money || 0) - (a.money || 0)).slice(0, 10);
   $("rankMoney").innerHTML = top.map((c, i) => `<div class="rank"><span class="r">${i + 1}</span><span>${esc(c.icon || "🙂")} ${esc(c.name)} <span class="note">No.${c.no}</span></span><span class="v">${yen(c.money)}</span></div>`).join("") || `<div class="note">まだだれもいません</div>`;
 }
@@ -860,7 +937,7 @@ function listen() {
   onSnapshot(doc(db, "meta", "counter"), s => { S.pop = Math.max(0, ((s.data() || {}).next || 1) - 1); renderTop(); });
   onSnapshot(doc(db, "meta", "prices"), s => { const p = s.data(); if (p && p.land) { S.prices = { land: p.land, shop: p.shop || 50000 }; $("shopCost").textContent = yen(S.prices.shop); } }, () => {});
   onSnapshot(query(collection(db, "citizens"), orderBy("no"), limit(500)), q => { S.citizens = q.docs.map(d => d.data()); renderPeople(); renderRank(); renderMe(); renderTop(); });
-  onSnapshot(collection(db, "shops"), q => { S.shops = q.docs.map(d => ({ id: d.id, ...d.data() })); renderShops(); });
+  onSnapshot(collection(db, "shops"), q => { S.shops = q.docs.map(d => ({ id: d.id, ...d.data() })); renderShops(); try { if (G3.ok) G3.dirty(); } catch {} });
   onSnapshot(collection(db, "lands"), q => { S.lands = new Map(q.docs.map(d => [d.id, d.data()])); ISO.img = []; if (G3.ok) G3.dirty(); if ($("s-map").classList.contains("on")) drawMap(); });
   onSnapshot(query(collection(db, "news"), orderBy("at", "desc"), limit(10)), q => { if (!q.empty) $("newsList").innerHTML = q.docs.map(d => { const n = d.data(); const t = n.at && n.at.toDate ? n.at.toDate() : null; return `<div class="news"><time>${t ? (t.getMonth() + 1) + "/" + t.getDate() : ""}</time>${esc(n.text)}</div>`; }).join(""); }, () => {});
   onSnapshot(query(collection(db, "history"), orderBy("at"), limit(50)), q => { if (!q.empty) $("historyList").innerHTML = q.docs.map(d => `<div class="news">🏁 ${esc(d.data().text)}</div>`).join(""); }, () => {});
@@ -877,7 +954,9 @@ function renderMe() {
   if (!me) return;
   $("myCard").innerHTML = `<div class="row" style="align-items:center"><div style="flex:0 0 60px"><div class="ic" style="width:56px;height:56px;border-radius:50%;display:grid;place-items:center;font-size:30px;background:${esc(me.color)}">${esc(me.icon || "🙂")}</div></div>
     <div><div class="big" style="font-size:22px">${esc(me.name)}</div><div class="note">国民No.${me.no}</div>${badgesOf(me)}</div></div>
-    <p style="margin:10px 0 0">持っているお金：<b class="big" style="font-size:22px">${yen(me.money)}</b></p><p class="note">※国の中だけのお金です</p>`;
+    <p style="margin:10px 0 0">持っているお金：<b class="big" style="font-size:22px">${yen(me.money)}</b></p><p class="note">※国の中だけのお金です</p>
+    <p class="small" style="margin:10px 0 4px"><b>🎫 お買い物スタンプ</b>（人のお店で買うたびに1つ。${STAMP_N}個で${yen(STAMP_BONUS)}！）</p><div style="font-size:22px;letter-spacing:2px">${"●".repeat((me.nbuy || 0) % STAMP_N)}<span style="color:#DDD">${"○".repeat(STAMP_N - (me.nbuy || 0) % STAMP_N)}</span></div>
+    <p class="small" style="margin:10px 0 4px"><b>🎒 持ち物</b>（${me.nbuy || 0}回・${Object.keys(bagOf(me)).length}店）</p><div>${bagHtml(me)}</div>`;
   $("igCard").style.display = me.verified ? "none" : ""; $("igForm").style.display = "none"; if (!me.verified) showIgPending();
   S.me = me; drawLinkCard();
   if (document.activeElement !== $("eBio")) $("eBio").value = me.bio || "";
@@ -1022,9 +1101,8 @@ $("qLandGo").onclick = () => showTab("map");
 $("qShopGo").onclick = async () => { const n = $("qShop").value.trim(), w = $("qShopWhat").value.trim(), M = $("qMsg");
   if (!n) return M.innerHTML = `<span class="err">お店の名前を入れてね</span>`; if (hasNG(n + w)) return M.innerHTML = `<span class="err">使えない言葉が入っています</span>`;
   const price = Math.round(Number($("qShopPrice").value)); if (!(price >= 500 && price <= 50000)) return M.innerHTML = `<span class="err">値段は500円〜5万円にしてね</span>`;
-  try { const cost = S.prices.shop, sid = "s" + S.myNo;
+  try { const cost = S.prices.shop, sid = "s" + S.myNo + "_" + Date.now().toString(36);
     await runTransaction(db, async tx => {
-      const ss = await tx.get(doc(db, "shops", sid)); if (ss.exists()) throw new Error("お店はもう持っています（1人1店）");
       const cs = await tx.get(doc(db, "citizens", String(S.myNo))); const money = cs.data().money; if (money < cost) throw new Error("お金が足りません");
       tx.set(doc(db, "shops", sid), { name: n, what: w, owner: S.myNo, emoji: "🏪", color: cs.data().color || "#E8A317", catch: "", desc: w, items: [], price, sales: 0, at: serverTimestamp() });
       tx.update(doc(db, "citizens", String(S.myNo)), { money: money - cost });
