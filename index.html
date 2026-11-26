@@ -162,7 +162,7 @@ nav.tabs a[aria-current=page]{background:#fff;color:var(--wood2);text-shadow:non
  </div>
 </header>
 <nav class="tabs" aria-label="島のページ"><div class="wrap">
- <a href="#top" data-go="top">トップ</a><a href="#map" data-go="map">島を見る</a><a href="#people" data-go="people">島民</a><a href="#vote" data-go="vote">投票と記録</a><a href="#events" data-go="events">イベント</a><a href="#guide" data-go="guide">はじめての方へ</a>
+ <a href="#top" data-go="top">トップ</a><a href="#map" data-go="map">島を見る</a><a href="#ranking" data-go="ranking">ランキング</a><a href="#people" data-go="people">島民</a><a href="#vote" data-go="vote">投票と記録</a><a href="#events" data-go="events">イベント</a><a href="#guide" data-go="guide">はじめての方へ</a>
 </div></nav>
 <main>
  <div class="wrap">
@@ -192,10 +192,15 @@ nav.tabs a[aria-current=page]{background:#fff;color:var(--wood2);text-shadow:non
     <div class="card"><b class="k">島民のようす</b><div class="v" id="tJob">–</div><a href="#map" data-go="map" style="font-size:14px">島で見る</a></div>
    </div>
   </section>
+  <section data-tab="top" id="top5">
+   <h2>島民<em>ランキング</em></h2>
+   <div class="card"><ol id="top5list" style="margin:0;padding-left:1.6em;font-weight:800;line-height:2"></ol><a href="#ranking" data-go="ranking">ランキングをぜんぶ見る</a></div>
+  </section>
   <section data-tab="top" id="where">
    <h2>どこから<em>見る？</em></h2>
    <div class="go">
     <a href="#map" data-go="map"><i>🏝️</i><b>島を見る</b><span>3Dの島を回して、自分の名前で島民をさがせる</span></a>
+    <a href="#ranking" data-go="ranking"><i>🏆</i><b>ランキング</b><span>ポイントとレベルの順位。自分が何位かわかる</span></a>
     <a href="#people" data-go="people"><i>🪪</i><b>島民</b><span>島民カード・しごと・ランキング・アイコンのこうかん</span></a>
     <a href="#vote" data-go="vote"><i>🗳️</i><b>投票と記録</b><span>今日のお題の途中経過、みんなのアイデア、島のあゆみ</span></a>
     <a href="#events" data-go="events"><i>🎉</i><b>イベント</b><span>YouTube登録者が節目をこえると島で何かが起きる</span></a>
@@ -261,7 +266,7 @@ nav.tabs a[aria-current=page]{background:#fff;color:var(--wood2);text-shadow:non
    <h2>今日のお題の<em>途中経過</em></h2>
    <div class="card vote" id="voteBox"></div>
   </section>
-  <section data-tab="people" id="ranking">
+  <section data-tab="ranking" id="ranking">
    <h2>島民<em>ランキング</em></h2>
    <p class="lead" id="rankLead"></p>
    <div class="card scroll"><table><thead><tr><th>順位</th><th>島民</th><th class="hide-sm">いましていること</th><th class="r">レベル</th><th class="r">ポイント</th></tr></thead><tbody id="rankBody"></tbody></table></div>
@@ -566,9 +571,10 @@ function renderTop(){const pop=(D.islanders.youtube||0)+(D.islanders.instagram||
  const tl=D.timeline||[];const last=tl[tl.length-1];$('tNow').textContent=last?(last.day+'日目：'+last.text):'島のはじまり';
  const q=D.question;if(q){const tot=q.choices.reduce((a,c)=>a+(c[2]||0),0);const top=[...q.choices].sort((a,b)=>(b[2]||0)-(a[2]||0))[0];$('tQ').textContent=q.text+(tot?'（いまは '+top[0]+' '+top[1]+' がリード）':'')}
  const busy=D.residents.filter(r=>r.job).slice(-60);const pick=busy.length?busy[(new Date().getHours()*7)%busy.length]:null;$('tJob').textContent=pick?pick.name+'さんは「'+pick.job+'」':'–';
- const say=['ようこそ！ この島は、きみのコメントで動いているよ。','島の上の検索らんに名前を入れると、自分がなにしてるか見られるよ。','しごとをえらぶと、島でのすがたが変わるんだ。','YouTubeの登録者が節目をこえると、島でイベントが起きるよ。'];$('karin').textContent=say[new Date().getMinutes()%say.length];}
-const TABS=['top','map','people','vote','events','guide'];
-const SEC2TAB={card:'people',jobs:'people',shop:'people',ranking:'people',ideas:'vote',history:'vote',rules:'guide',join:'guide',hero:'top',rank:'top',today:'top',where:'top'};
+ const say=['ようこそ！ この島は、きみのコメントで動いているよ。','島の上の検索らんに名前を入れると、自分がなにしてるか見られるよ。','しごとをえらぶと、島でのすがたが変わるんだ。','YouTubeの登録者が節目をこえると、島でイベントが起きるよ。'];$('karin').textContent=say[new Date().getMinutes()%say.length];
+ const rk=[...D.residents].sort((a,b)=>(b.points||0)-(a.points||0)).slice(0,5);$('top5list').innerHTML=rk.map(r=>'<li>'+esc(r.name)+' <span style="color:var(--soft);font-weight:700">Lv'+r.level+'・'+(r.points||0)+'pt</span></li>').join('');}
+const TABS=['top','map','ranking','people','vote','events','guide'];
+const SEC2TAB={card:'people',jobs:'people',shop:'people',ranking:'ranking',ideas:'vote',history:'vote',rules:'guide',join:'guide',hero:'top',rank:'top',today:'top',where:'top'};
 function showTab(t,scrollTo){if(!TABS.includes(t))t='top';document.querySelectorAll('[data-tab]').forEach(el=>{el.hidden=!el.dataset.tab.split(' ').includes(t)});
  document.querySelectorAll('nav.tabs a').forEach(a=>a.setAttribute('aria-current',a.dataset.go===t?'page':'false'));
  if(W0)setTimeout(()=>req(false),30);
