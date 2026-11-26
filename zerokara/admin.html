@@ -19,6 +19,9 @@ table{border-collapse:collapse;width:100%;background:#fff;margin:8px 0 24px}td,t
 <table><thead><tr><th>国民No.</th><th>サービス</th><th>ID</th><th>コード</th><th>登録</th><th>経過</th><th></th></tr></thead><tbody id="pend"></tbody></table>
 <h3>国民一覧</h3>
 <table><thead><tr><th>No.</th><th>名前</th><th>確認</th><th>両方</th><th>お金</th><th>ID</th><th>登録</th><th></th></tr></thead><tbody id="cits"></tbody></table>
+<h3>📜 お店ルールの申請 <button id="reload3">更新</button></h3>
+<p class="small">承認するとお店のページに「✅ 採用」、却下すると「見送り」と出ます。メモに書いたことは「運営より：」としてお店のページに表示されます。</p>
+<div class="wrap"><table><thead><tr><th>状態</th><th>お店</th><th>店長</th><th>ルール</th><th>メモ（理由）</th><th></th></tr></thead><tbody id="ruleT"></tbody></table></div>
 <h3>ぜんぶ見る（売上・お金・お店など） <button id="reload2">更新</button> <span class="small" id="asof"></span></h3>
 <div class="cards" id="sum"></div>
 <details open><summary>🏪 お店ごとの売上</summary><div class="wrap"><table><thead><tr><th>店ID</th><th>お店</th><th>店長</th><th class="n">商品数</th><th class="n">売れた回数</th><th class="n">お客の売上</th><th class="n">今日</th><th class="n">日次売上(受取計)</th><th class="n">バイト</th><th class="n">時給</th><th class="n">バイト割</th><th>ルール</th><th>開店</th></tr></thead><tbody id="shopT"></tbody></table></div></details>
@@ -158,7 +161,19 @@ async function drawAll() {
   $("reqT").innerHTML = reqs.sort(byT).slice(0, 200).map(r => `<tr><td class="small">${dt(ms(r.at))}</td><td>${nm(r.no)}</td><td>${esc(r.type)}</td><td class="small">${esc(JSON.stringify(r.payload ?? "")).slice(0, 80)}</td><td>${esc(r.status || "")}</td></tr>`).join("") || `<tr><td colspan="5">なし</td></tr>`;
   $("asof").textContent = new Date().toLocaleTimeString("ja-JP") + " 時点";
 }
+
+async function drawRules() {
+  const [rs, cs] = await Promise.all([ZK.rules(), ZK.citizens()]);
+  const nm = no => { const c = cs.find(x => x.no == no); return c ? `No.${no} ${esc(c.name)}` : `No.${esc(no)}`; };
+  const ord = { pending: 0, ng: 1, ok: 2 }; rs.sort((a, b) => (ord[a.st] ?? 0) - (ord[b.st] ?? 0));
+  const lab = { pending: "⏳ 申請中", ok: "✅ 承認", ng: "❌ 却下" };
+  $("ruleT").innerHTML = rs.map(r => `<tr><td>${lab[r.st] || esc(r.st)}</td><td>${esc(r.name)}<div class="small">${esc(r.what || "")}</div></td><td>${nm(r.owner)}</td><td style="white-space:normal;min-width:220px">${esc(r.rule)}</td><td><input data-note="${esc(r.id)}" value="${esc(r.note)}" maxlength="120" placeholder="（任意）" style="font:inherit;width:180px"></td><td><button class="p" data-ok="${esc(r.id)}">承認</button> <button class="d" data-ng="${esc(r.id)}">却下</button></td></tr>`).join("") || `<tr><td colspan="6">申請はありません</td></tr>`;
+  const note = id => document.querySelector(`[data-note="${CSS.escape(id)}"]`)?.value || "";
+  document.querySelectorAll("[data-ok]").forEach(b => b.onclick = async () => { try { await ZK.ruleReview(b.dataset.ok, "ok", note(b.dataset.ok)); await drawRules(); } catch (e) { log("失敗: " + e.message); } });
+  document.querySelectorAll("[data-ng]").forEach(b => b.onclick = async () => { if (!note(b.dataset.ng) && !confirm("理由なしで却下しますか？")) return; try { await ZK.ruleReview(b.dataset.ng, "ng", note(b.dataset.ng)); await drawRules(); } catch (e) { log("失敗: " + e.message); } });
+}
 async function draw() {
+  drawRules().catch(e => log("ルール 失敗: " + e.message));
   drawAll().catch(e => log("ぜんぶ見る 失敗: " + e.message));
   const [p, cs] = await Promise.all([ZK.pending(), ZK.citizens()]);
   $("pend").innerHTML = p.map(x => `<tr><td>${x.no}</td><td>${x.sv === "yt" ? "▶️YouTube" : "📷インスタ"}</td><td>@${esc(x.ig)}</td><td><b>${esc(x.code)}</b></td><td>${new Date(x.at).toLocaleString("ja-JP")}</td><td>${x.hours}時間</td><td><button class="p" data-v="${esc(x.key)}">確認ずみにする</button></td></tr>`).join("") || `<tr><td colspan="7">なし</td></tr>`;
@@ -169,6 +184,7 @@ async function draw() {
 const prov = new GoogleAuthProvider(); prov.setCustomParameters({ login_hint: ADMIN, prompt: "select_account" });
 $("login").onclick = () => signInWithPopup(auth, prov).catch(() => signInWithRedirect(auth, prov));
 $("logout").onclick = () => signOut(auth);
+$("reload3").onclick = () => drawRules().catch(e => log("失敗: " + e.message));
 $("reload2").onclick = () => drawAll().catch(e => log("失敗: " + e.message));
 $("reload").onclick = () => draw().catch(e => log("失敗: " + e.message));
 getRedirectResult(auth).catch(e => log("ログイン失敗: " + e.message));
