@@ -968,6 +968,19 @@ async function autoCollect() { if (!S.myNo || collecting) return; const me = S.c
   collecting = false; if (sum > 0) toast(`👷 バイト代 ${yen(sum)}（${hrs}時間ぶん）が入りました`); }
 function toast(t) { let el = $("zkToast"); if (!el) { el = document.createElement("div"); el.id = "zkToast"; el.style.cssText = "position:fixed;left:50%;bottom:24px;transform:translateX(-50%);background:#2B2F4A;color:#fff;padding:12px 18px;border-radius:14px;font-weight:800;z-index:9999;box-shadow:0 6px 20px rgba(0,0,0,.25);max-width:90%;text-align:center"; document.body.appendChild(el); } el.textContent = t; el.style.display = "block"; clearTimeout(el._t); el._t = setTimeout(() => el.style.display = "none", 4500); }
 setInterval(autoCollect, 4 * 60e3);
+// お店の1日の売上（バイトの人数で決まる）を自動で受けとる。今日と、開店してからの最大6日前まで（受けとりわすれも入る）
+let claiming = false;
+async function autoClaim() { if (!S.myNo || claiming) return; const mine = S.shops.filter(s => s.owner === S.myNo); if (!mine.length) return; claiming = true; let got = 0;
+  try { const done = new Set((await getDocs(query(collection(db, "dsales"), where("no", "==", S.myNo)))).docs.map(d => d.id)), d0 = todayJST();
+    for (const s of mine) { const open = s.at?.toMillis ? Math.floor((s.at.toMillis() + 9 * 3600e3) / 86400e3) : d0, amount = dailySales(s); if (amount <= 0) continue;
+      for (let d = Math.max(d0 - 6, open); d <= d0; d++) { if (done.has(`${s.id}_${d}`)) continue;
+        try { await runTransaction(db, async tx => { const ds = await tx.get(doc(db, "dsales", `${s.id}_${d}`)); if (ds.exists()) throw new Error("x");
+            const me = await tx.get(doc(db, "citizens", String(S.myNo)));
+            tx.set(doc(db, "dsales", `${s.id}_${d}`), { shop: s.id, no: S.myNo, amount, day: d, at: serverTimestamp() });
+            tx.update(doc(db, "citizens", String(S.myNo)), { money: me.data().money + amount, cl: s.id, cld: d }); }); got += amount; } catch (e) { } } } }
+  finally { claiming = false; }
+  if (got) toast(`🏪 お店の売上 ${yen(got)} が自動で入りました！`); }
+setInterval(autoClaim, 4 * 60e3);
 async function setJob(s, join, M) {
   if (!join) { try { const r = await collectPay(s.id); if (r.got) toast(`最後のバイト代 ${yen(r.got)} を受けとりました`); } catch {} }
   try { await runTransaction(db, async tx => {
@@ -1026,7 +1039,7 @@ async function sendItemReq(s) { const t = ($("rqText").value || "").trim(), M = 
   try { await addDoc(collection(db, "itemreqs"), { no: S.myNo, shop: s.id, text: t.slice(0, 40), at: serverTimestamp() }); $("rqText").value = ""; M.innerHTML = `<span class="okm">社長に送りました！</span>`; drawReqs(s); }
   catch (e) { M.innerHTML = `<span class="err">${esc(e.code ? errText(e) : e.message)}</span>`; } }
 function ownerPanel(s) { return `<hr style="border:0;border-top:1px dashed #ddd;margin:14px 0"><h4 style="margin:0 0 6px">🔧 店長メニュー</h4>
-  <button class="btn wide" id="clBtn">今日の売上を受けとる（${yen(dailySales(s))}）</button><div class="small" id="clMsg"></div>
+  <div class="card small" style="margin:0 0 6px">💰 このお店の1日の売上 <b>${yen(dailySales(s))}</b> は、毎日<b>自動で</b>あなたのお金に入ります（サイトを開いたときにまとめて。受けとりわすれも6日前まで入ります）</div><div class="small" id="clMsg"></div>
   <p class="note">1日の売上 ＝ 5,000円 ×（人のバイト×2 ＋ AIバイト）。バイトが多いほど売上がふえます。</p>
   <label>お店の名前</label><input id="seName" maxlength="16" value="${esc(s.name)}">
   <label>何のお店？</label><input id="seWhat" maxlength="30" value="${esc(s.what || "")}">
@@ -1041,7 +1054,7 @@ function ownerPanel(s) { return `<hr style="border:0;border-top:1px dashed #ddd;
   <button class="btn sec wide" id="seGo">保存する</button><div class="small" id="seMsg"></div>
   <button class="btn sec wide" id="seDel" style="margin-top:10px;background:#FDECEA;color:#B3261E">このお店をしめる（消す）</button><div class="small" id="sdMsg"></div>`; }
 function bindOwner(s) {
-  $("clBtn").onclick = () => claimSales(s, $("clMsg"));
+  if ($("clBtn")) $("clBtn").onclick = () => claimSales(s, $("clMsg"));
   $("seGo").onclick = async () => { const M = $("seMsg"), name = $("seName").value.trim(), what = $("seWhat").value.trim(), ct = $("seCatch").value.trim(), rule = $("seRule").value.trim(), em = $("seEmoji").value.trim() || "🏪", price = Math.round(Number($("sePrice").value)), wage = Math.round(Number($("seWage").value)), bdisc = Math.round(Number($("seBdisc").value));
     const items = []; for (const ln of $("seItems").value.split("\n")) { const m = ln.trim().match(/^(.+?)[\s　,、]+([0-9０-９]+)\s*円?$/); if (!ln.trim()) continue; if (!m) return M.innerHTML = `<span class="err">「${esc(ln.trim())}」は「商品名 値段」の形で書いてね</span>`; const pr = Number(m[2].replace(/[０-９]/g, d => "０１２３４５６７８９".indexOf(d))); if (!(pr >= 1 && pr <= 1000000)) return M.innerHTML = `<span class="err">「${esc(m[1])}」の値段は1円〜100万円にしてね</span>`; items.push({ name: m[1].slice(0, 20), price: pr }); }
     if (items.length > 20) return M.innerHTML = `<span class="err">商品は20個までです</span>`; if (!(bdisc >= 0 && bdisc <= 50)) return M.innerHTML = `<span class="err">バイト割引は0〜50％にしてね</span>`; if (hasNG(items.map(i => i.name).join(""))) return M.innerHTML = `<span class="err">商品名に使えない言葉が入っています</span>`;
@@ -1122,7 +1135,7 @@ function listen() {
 function passInfo() { const P = $("passInfo"), B = $("pGo"); if (!P) return; P.innerHTML = S.hasPass ? `✅ 合言葉はつくってあります。別のスマホでは「国民番号 ${S.myNo}」＋合言葉でログインできます。変えるときは下に新しい合言葉を入れてね。` : "合言葉をつくると、別のスマホやパソコンでも「国民番号＋合言葉」でログインできます。だれにも教えないでね。"; B.textContent = S.hasPass ? "合言葉を変える" : "合言葉を保存"; }
 async function checkLink(user) {
   try { const l = await getDoc(doc(db, "links", user.uid)); S.myNo = l.exists() ? l.data().no : null; S.hasPass = !!(l.exists() && l.data().h); } catch { S.myNo = null; }
-  renderMe(); if (S.myNo) loadMyReqs(); passInfo(); setTimeout(autoCollect, 2500);
+  renderMe(); if (S.myNo) loadMyReqs(); passInfo(); setTimeout(autoCollect, 2500); setTimeout(autoClaim, 4000);
 }
 function renderMe() {
   const me = S.myNo ? S.citizens.find(c => c.no === S.myNo) : null;
