@@ -1,14 +1,14 @@
 {
- "updated": "2026-11-25 19:05",
- "day": 2,
+ "updated": "2026-11-26 18:30",
+ "day": 3,
  "island_name": "？？？島",
  "islanders": {
-  "youtube": 15,
-  "instagram": 43
+  "youtube": 29,
+  "instagram": 51
  },
  "next_event": {
-  "at": 20,
-  "name": "旅人が流れ着く",
+  "at": 30,
+  "name": "森の奥で遺跡を発見",
   "counts": "youtube"
  },
  "levels": [
@@ -115,7 +115,7 @@
  ],
  "question": {
   "day": 3,
-  "text": "旅人の地図。探検隊はどこへ行く？",
+  "text": "探検隊はどこへ行く？",
   "choices": [
    [
     "A",
@@ -224,7 +224,7 @@
    "day": 2,
    "by": "りきや",
    "text": "小屋を建てて備蓄する",
-   "status": "候補"
+   "status": "採用"
   },
   {
    "day": 2,
@@ -236,7 +236,7 @@
    "day": 2,
    "by": "ren_05",
    "text": "探検家のリーダーをしたい",
-   "status": "候補"
+   "status": "採用"
   },
   {
    "day": 2,
@@ -254,7 +254,7 @@
    "day": 2,
    "by": "ゆきまろ",
    "text": "小屋を作って魚を保存する",
-   "status": "候補"
+   "status": "採用"
   },
   {
    "day": 2,
@@ -275,6 +275,12 @@
    "status": "候補"
   },
   {
+   "day": 2,
+   "by": "tstar348a",
+   "text": "大工さんになりたい",
+   "status": "候補"
+  },
+  {
    "day": 3,
    "by": "りきや",
    "text": "キノコか鉱石を見つける",
@@ -289,22 +295,29 @@
   {
    "day": 2,
    "text": "つりざおが21票中12票で1位。浜辺に木の桟橋ができて魚がつれた。非常食用のひよこが仲間になり、chun0327さんのアイデアで魚の水槽ができた"
+  },
+  {
+   "day": 3,
+   "text": "小屋が17票中11票で1位。大工3人が浜辺の小屋を完成させ、りきやさん・ゆきまろさんのアイデアで食べ物の倉庫もできた。登録者20人をこえて旅人が流れ着き、ren_05さんがリーダーの探検隊ができた"
   }
  ],
  "built": [
   "木の桟橋",
   "魚の水槽（chun0327さんのアイデア）",
   "ひよこたち",
-  "魚の干し場"
+  "魚の干し場",
+  "小屋（みんなの投票で決定）",
+  "食べ物の倉庫（りきやさん・ゆきまろさんのアイデア）",
+  "旅人のいかだ"
  ],
  "residents": [
   {
    "id": "ren050554",
    "platform": "ig",
    "name": "ren_05",
-   "points": 5,
-   "level": 2,
-   "job": "カフェオレさんと森で動物たちと遊んでいる",
+   "points": 10,
+   "level": 3,
+   "job": "探検隊のリーダーになり、森の入り口で地図を見ている",
    "wish": "動物になりたい",
    "history": [
     "1日目：投票B",
@@ -312,16 +325,17 @@
     "1日目：いいね",
     "1日目：とうろく",
     "2日目：投票A",
-    "2日目：アイデア「探検家のリーダーをしたい」"
+    "2日目：アイデア「探検家のリーダーをしたい」",
+    "3日目：アイデア「探検家のリーダーをしたい」が採用"
    ],
    "since_day": 1,
    "work": null,
    "work_days": 0,
-   "coins": 5,
+   "coins": 10,
    "icon": "palm",
    "frame": "wood",
    "owned": [],
-   "appeared": 0,
+   "appeared": 1,
    "rewarded_level": 0,
    "code_reg": "bf2039"
   },
@@ -375,25 +389,26 @@
    "id": "yy368313",
    "platform": "ig",
    "name": "yy368313",
-   "points": 3,
+   "points": 4,
    "level": 2,
-   "job": "島に着いたばかり。浜辺で寝床をさがし中",
+   "job": "探検隊の副隊長になり、探検に出る準備をしている",
    "wish": "島民になりたい",
    "history": [
     "1日目：投票B",
     "1日目：アイデア「島民になりたい」",
     "1日目：とうろく",
     "2日目：アイデア「探検隊の隊長になりたい」",
-    "2日目：しごと「探検家」"
+    "2日目：しごと「探検家」",
+    "3日目：探検家で働いた"
    ],
    "since_day": 1,
    "work": "探検家",
-   "work_days": 0,
-   "coins": 3,
+   "work_days": 1,
+   "coins": 4,
    "icon": "palm",
    "frame": "wood",
    "owned": [],
-   "appeared": 0,
+   "appeared": 1,
    "rewarded_level": 0,
    "code_reg": "e30d2d"
   },
@@ -622,24 +637,25 @@
    "id": "@ゆきまろ-f9x",
    "platform": "yt",
    "name": "ゆきまろ",
-   "points": 4,
-   "level": 2,
-   "job": "rin_rin2423さんと家を建てはじめた",
+   "points": 9,
+   "level": 3,
+   "job": "小屋の倉庫に魚を保存している",
    "wish": "家を建てたい",
    "history": [
     "1日目：投票A",
     "1日目：アイデア「家を建てる」",
     "2日目：投票A",
-    "2日目：アイデア「小屋を作って魚を保存する」"
+    "2日目：アイデア「小屋を作って魚を保存する」",
+    "3日目：アイデア「小屋を作って魚を保存する」が採用"
    ],
    "since_day": 1,
    "work": null,
    "work_days": 0,
-   "coins": 4,
+   "coins": 9,
    "icon": "fish",
    "frame": "wood",
    "owned": [],
-   "appeared": 0,
+   "appeared": 1,
    "rewarded_level": 0
   },
   {
@@ -683,7 +699,7 @@
    "icon": "shell",
    "frame": "wood",
    "owned": [],
-   "appeared": 0,
+   "appeared": 1,
    "rewarded_level": 0
   },
   {
@@ -712,25 +728,26 @@
    "id": "chun0327",
    "platform": "ig",
    "name": "chun0327",
-   "points": 8,
+   "points": 9,
    "level": 3,
-   "job": "つった魚を浜辺の水槽に入れている",
+   "job": "桟橋で魚をつって、小屋の倉庫に入れている",
    "wish": "魚を釣って水槽に入れたい",
    "history": [
     "1日目：投票B",
     "1日目：アイデア「お魚をたくさん釣って水槽に入れたい」",
     "1日目：しごと「漁師」",
     "2日目：漁師で働いた",
-    "2日目：アイデア「魚を水槽に入れたい」が採用"
+    "2日目：アイデア「魚を水槽に入れたい」が採用",
+    "3日目：漁師で働いた"
    ],
    "since_day": 1,
    "work": "漁師",
-   "work_days": 1,
-   "coins": 8,
+   "work_days": 2,
+   "coins": 9,
    "icon": "palm",
    "frame": "wood",
    "owned": [],
-   "appeared": 1,
+   "appeared": 2,
    "rewarded_level": 0
   },
   {
@@ -832,7 +849,7 @@
    "name": "kure_0122",
    "points": 1,
    "level": 1,
-   "job": "雪山と砂漠のあいだを調べている",
+   "job": "探検隊に入って、旅人の地図を調べている",
    "wish": null,
    "history": [
     "1日目（あそび方）：コメント「思ってたより島広い」",
@@ -853,23 +870,24 @@
    "id": "hamduck.gwa98",
    "platform": "ig",
    "name": "hamduck.gwa98",
-   "points": 1,
+   "points": 2,
    "level": 1,
-   "job": "浜辺の近くで畑をたがやしている",
+   "job": "畑で作物を育てて、小屋の倉庫に運んでいる",
    "wish": null,
    "history": [
     "1日目：しごと「畑係」",
     "1日目（まとめ#1）：とうろく",
-    "2日目：畑係で働いた"
+    "2日目：畑係で働いた",
+    "3日目：畑係で働いた"
    ],
    "since_day": 1,
    "work": "畑係",
-   "work_days": 1,
-   "coins": 1,
+   "work_days": 2,
+   "coins": 2,
    "icon": "fish",
    "frame": "wood",
    "owned": [],
-   "appeared": 0,
+   "appeared": 1,
    "rewarded_level": 0,
    "code_reg": "8945f2"
   },
@@ -944,7 +962,7 @@
    "name": "katorui1120",
    "points": 1,
    "level": 1,
-   "job": "雪山と砂漠のあいだを調べている",
+   "job": "探検隊に入って、旅人の地図を調べている",
    "wish": null,
    "history": [
     "1日目（まとめ#1）：しごと「探検家」",
@@ -966,7 +984,7 @@
    "name": "hamu_2152",
    "points": 1,
    "level": 1,
-   "job": "雪山と砂漠のあいだを調べている",
+   "job": "探検隊に入って、旅人の地図を調べている",
    "wish": null,
    "history": [
     "1日目（まとめ#1）：しごと「探検家」",
@@ -1104,23 +1122,24 @@
    "id": "otouhu04",
    "platform": "ig",
    "name": "otouhu04",
-   "points": 1,
+   "points": 2,
    "level": 1,
-   "job": "大工道具をそろえて小屋づくりを待っている",
+   "job": "浜辺の小屋を建てて、ついに完成させた",
    "wish": null,
    "history": [
     "2日目：投票A",
     "2日目：しごと「大工」",
-    "2日目：とうろく"
+    "2日目：とうろく",
+    "3日目：大工で働いた"
    ],
    "since_day": 3,
    "work": "大工",
-   "work_days": 0,
-   "coins": 1,
+   "work_days": 1,
+   "coins": 2,
    "icon": "fish",
    "frame": "wood",
    "owned": [],
-   "appeared": 0,
+   "appeared": 1,
    "rewarded_level": 0,
    "code_reg": "b7ed19"
   },
@@ -1128,68 +1147,72 @@
    "id": "a.san.0523",
    "platform": "ig",
    "name": "a.san.0523",
-   "points": 1,
+   "points": 2,
    "level": 1,
-   "job": "畑にする場所を探している",
+   "job": "畑で作物を育てて、小屋の倉庫に運んでいる",
    "wish": null,
    "history": [
     "2日目：投票A",
-    "2日目：しごと「畑係」"
+    "2日目：しごと「畑係」",
+    "3日目：畑係で働いた"
    ],
    "since_day": 3,
    "work": "畑係",
-   "work_days": 0,
-   "coins": 1,
+   "work_days": 1,
+   "coins": 2,
    "icon": "palm",
    "frame": "wood",
    "owned": [],
-   "appeared": 0,
+   "appeared": 1,
    "rewarded_level": 0
   },
   {
    "id": "azu68512",
    "platform": "ig",
    "name": "azu68512",
-   "points": 1,
+   "points": 2,
    "level": 1,
-   "job": "木材を運んで小屋の準備をしている",
+   "job": "小屋のかべをはって、完成させた",
    "wish": null,
    "history": [
     "2日目：投票A",
-    "2日目：しごと「大工」"
+    "2日目：しごと「大工」",
+    "3日目：大工で働いた"
    ],
    "since_day": 3,
    "work": "大工",
-   "work_days": 0,
-   "coins": 1,
+   "work_days": 1,
+   "coins": 2,
    "icon": "shell",
    "frame": "wood",
    "owned": [],
-   "appeared": 0,
+   "appeared": 1,
    "rewarded_level": 0
   },
   {
    "id": "@りきや-e6x",
    "platform": "yt",
    "name": "りきや",
-   "points": 3,
-   "level": 2,
-   "job": "小屋に食べ物をたくわえる計画を立てている",
+   "points": 9,
+   "level": 3,
+   "job": "小屋を建てて、倉庫に食べ物をたくわえている",
    "wish": null,
    "history": [
     "2日目：投票A",
     "2日目：アイデア「小屋を建てて備蓄する」",
     "2日目：しごと「大工」",
+    "3日目：アイデア「小屋を建てて備蓄する」が採用",
+    "3日目：大工で働いた",
     "3日目：アイデア「キノコか鉱石を見つける」"
    ],
    "since_day": 3,
    "work": "大工",
-   "work_days": 0,
-   "coins": 3,
+   "work_days": 1,
+   "coins": 9,
    "icon": "fish",
    "frame": "wood",
    "owned": [],
-   "appeared": 0,
+   "appeared": 1,
    "rewarded_level": 0
   },
   {
@@ -1231,7 +1254,7 @@
    "icon": "shell",
    "frame": "wood",
    "owned": [],
-   "appeared": 0,
+   "appeared": 1,
    "rewarded_level": 0
   },
   {
@@ -1254,7 +1277,7 @@
    "icon": "fish",
    "frame": "wood",
    "owned": [],
-   "appeared": 0,
+   "appeared": 1,
    "rewarded_level": 0
   },
   {
@@ -1275,7 +1298,7 @@
    "icon": "palm",
    "frame": "wood",
    "owned": [],
-   "appeared": 0,
+   "appeared": 1,
    "rewarded_level": 0
   },
   {
@@ -1296,8 +1319,32 @@
    "icon": "shell",
    "frame": "wood",
    "owned": [],
-   "appeared": 0,
+   "appeared": 1,
    "rewarded_level": 0
+  },
+  {
+   "id": "tstar348a",
+   "platform": "ig",
+   "name": "tstar348a",
+   "points": 2,
+   "coins": 2,
+   "level": 1,
+   "work": "大工",
+   "work_days": 0,
+   "appeared": 1,
+   "icon": "shell",
+   "frame": "wood",
+   "owned": [],
+   "rewarded_level": 0,
+   "linked": null,
+   "code_reg": null,
+   "job": "いかだで流れ着いて、大工として小屋づくりを手伝っている",
+   "invited_by": null,
+   "history": [
+    "2日目：投票A",
+    "2日目：アイデア「大工さんになりたい」",
+    "2日目：しごと「大工」"
+   ]
   },
   {
    "id": "@やませい-x2p",
@@ -1380,10 +1427,10 @@
  ],
  "resources": {
   "木材": 2,
-  "食べ物": 4,
-  "作物": 2,
-  "建物の進み": 2,
-  "見つけた場所": 3
+  "食べ物": 5,
+  "作物": 4,
+  "建物の進み": 5,
+  "見つけた場所": 4
  },
  "titles": [
   "新入り",
