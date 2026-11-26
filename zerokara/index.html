@@ -988,6 +988,43 @@ async function claimSales(s, M) { const amount = dailySales(s); if (amount <= 0)
       tx.update(doc(db, "citizens", String(S.myNo)), { money: me.data().money + amount, cl: s.id }); });
     M.innerHTML = `<span class="okm">今日の売上 ${yen(amount)} を受けとりました！</span>`; }
   catch (e) { M.innerHTML = `<span class="err">${esc(e.code ? errText(e) : e.message)}</span>`; } }
+// ---- 運営が採用したお店ルールの機能（shops.feats）：'stock' 株券、'req' 商品リクエスト ----
+const STK_MAX = 10, stockPrice = s => 10000 + Math.floor((s.sales || 0) / 10000) * 100;
+function featHtml(s) { const f = s.feats || [], hr = `<hr style="border:0;border-top:1px dashed #ddd;margin:14px 0">`; let h = "";
+  if (f.includes("stock")) h += hr + `<h4 style="margin:0 0 6px">📈 このお店の株券</h4><div class="small">1株 <b>${yen(stockPrice(s))}</b>（お店の売上が1万円ふえるごとに株価+100円）<br>株を買うと、そのお金は社長に入ります。売るときは<b>そのときの株価</b>で社長からお金がもらえます。お店がもうかるほど得します（1人${STK_MAX}株まで）。</div>
+    <div id="stkMine" class="small" style="margin:6px 0"></div>${S.myNo && s.owner !== S.myNo ? `<div style="display:flex;gap:8px"><button class="btn" id="stkBuy" style="flex:1">1株買う</button><button class="btn sec" id="stkSell" style="flex:1">1株売る</button></div>` : ""}<div class="small" id="stkMsg"></div><div id="stkHolders" class="small" style="margin-top:6px"></div>`;
+  if (f.includes("req")) h += hr + `<h4 style="margin:0 0 6px">📝 商品リクエスト</h4><div class="small">「こんな商品ほしい！」を社長に送れます（40文字まで）</div>
+    ${S.myNo && s.owner !== S.myNo ? `<div style="display:flex;gap:6px;margin:6px 0"><input id="rqText" maxlength="40" placeholder="例：メロンパン" style="flex:1;font:inherit;padding:8px;border:1px solid #ccc;border-radius:8px"><button class="btn" id="rqSend">送る</button></div>` : ""}<div class="small" id="rqMsg"></div><div id="rqList" class="small"></div>`;
+  return h; }
+async function bindFeat(s) { const f = s.feats || [];
+  if (f.includes("stock")) { if ($("stkBuy")) $("stkBuy").onclick = () => stockTrade(s, "buy"); if ($("stkSell")) $("stkSell").onclick = () => stockTrade(s, "sell"); drawStock(s); }
+  if (f.includes("req")) { if ($("rqSend")) $("rqSend").onclick = () => sendItemReq(s); drawReqs(s); } }
+async function drawStock(s) { try { const q = await getDocs(query(collection(db, "stocks"), where("shop", "==", s.id))), hs = q.docs.map(d => d.data()).filter(x => x.n > 0).sort((a, b) => b.n - a.n);
+    const mine = hs.find(x => x.no === S.myNo)?.n || 0, p = stockPrice(S.shops.find(v => v.id === s.id) || s);
+    if ($("stkMine")) $("stkMine").innerHTML = S.myNo ? `あなたの株：<b>${mine}株</b>（いま売ると ${yen(mine * p)}）` : "";
+    if ($("stkHolders")) $("stkHolders").innerHTML = hs.length ? "株主：" + hs.map(x => { const c = S.citizens.find(v => v.no === x.no); return `${esc(c ? c.name : "No." + x.no)} ${x.n}株`; }).join("、") : "まだ株主はいません"; } catch (e) { } }
+async function stockTrade(s, side) { const M = $("stkMsg"); M.textContent = "…";
+  try { let price = 0; await runTransaction(db, async tx => {
+      const sh = await tx.get(doc(db, "shops", s.id)), sd = sh.data(), me = await tx.get(doc(db, "citizens", String(S.myNo))), ow = await tx.get(doc(db, "citizens", String(sd.owner))), hr = doc(db, "stocks", `${S.myNo}_${s.id}`), h = await tx.get(hr);
+      if (!(sd.feats || []).includes("stock")) throw new Error("このお店は株券をあつかっていません");
+      if (sd.owner === S.myNo) throw new Error("自分のお店の株は売り買いできません");
+      price = stockPrice(sd); const n0 = h.exists() ? h.data().n : 0, n1 = n0 + (side === "buy" ? 1 : -1);
+      if (n1 < 0) throw new Error("このお店の株を持っていません"); if (n1 > STK_MAX) throw new Error(`1つのお店の株は${STK_MAX}株までです`);
+      if (side === "buy" && me.data().money < price) throw new Error("お金が足りません");
+      if (side === "sell" && ow.data().money < price) throw new Error("社長のお金が足りないので、いまは売れません");
+      const nt = (me.data().nstx || 0) + 1;
+      tx.set(doc(db, "stx", `${S.myNo}_t${nt}`), { no: S.myNo, shop: s.id, side, price, at: serverTimestamp() });
+      if (h.exists()) tx.update(hr, { n: n1 }); else tx.set(hr, { no: S.myNo, shop: s.id, n: n1 });
+      tx.update(doc(db, "citizens", String(S.myNo)), { money: me.data().money + (side === "buy" ? -price : price), nstx: nt });
+      tx.update(doc(db, "citizens", String(sd.owner)), { money: ow.data().money + (side === "buy" ? price : -price) }); });
+    M.innerHTML = `<span class="okm">${side === "buy" ? `1株 ${yen(price)} で買いました！` : `1株売って ${yen(price)} もらいました！`}</span>`; drawStock(s); }
+  catch (e) { M.innerHTML = `<span class="err">${esc(e.code ? errText(e) : e.message)}</span>`; } }
+async function drawReqs(s) { try { const q = await getDocs(query(collection(db, "itemreqs"), where("shop", "==", s.id))), rs = q.docs.map(d => ({ id: d.id, ...d.data() })).sort((a, b) => (b.at?.toMillis?.() || 0) - (a.at?.toMillis?.() || 0)).slice(0, 30);
+    if ($("rqList")) $("rqList").innerHTML = rs.length ? rs.map(r => { const c = S.citizens.find(v => v.no === r.no); return `<div class="rank"><span>「${esc(r.text)}」 <span class="note">${esc(c ? c.name : "No." + r.no)}</span></span>${S.myNo && (s.owner === S.myNo || r.no === S.myNo) ? `<button class="btn sec" style="padding:4px 10px" data-rqdel="${esc(r.id)}">${s.owner === S.myNo ? "対応した" : "消す"}</button>` : ""}</div>`; }).join("") : `<span class="note">まだリクエストはありません</span>`;
+    document.querySelectorAll("#sheet [data-rqdel]").forEach(b => b.onclick = async () => { try { await deleteDoc(doc(db, "itemreqs", b.dataset.rqdel)); drawReqs(s); } catch (e) { $("rqMsg").innerHTML = `<span class="err">${esc(e.message)}</span>`; } }); } catch (e) { } }
+async function sendItemReq(s) { const t = ($("rqText").value || "").trim(), M = $("rqMsg"); if (!t) return M.innerHTML = `<span class="err">ほしい商品を書いてね</span>`;
+  try { await addDoc(collection(db, "itemreqs"), { no: S.myNo, shop: s.id, text: t.slice(0, 40), at: serverTimestamp() }); $("rqText").value = ""; M.innerHTML = `<span class="okm">社長に送りました！</span>`; drawReqs(s); }
+  catch (e) { M.innerHTML = `<span class="err">${esc(e.code ? errText(e) : e.message)}</span>`; } }
 function ownerPanel(s) { return `<hr style="border:0;border-top:1px dashed #ddd;margin:14px 0"><h4 style="margin:0 0 6px">🔧 店長メニュー</h4>
   <button class="btn wide" id="clBtn">今日の売上を受けとる（${yen(dailySales(s))}）</button><div class="small" id="clMsg"></div>
   <p class="note">1日の売上 ＝ 5,000円 ×（人のバイト×2 ＋ AIバイト）。バイトが多いほど売上がふえます。</p>
@@ -1023,6 +1060,7 @@ function openShop(id) { const s = S.shops.find(v => v.id === id); if (!s) return
       + (isB && s.owner !== S.myNo ? `<p class="note">👷 あなたはここのバイトなので ${s.bdisc ?? 20}％引き！</p>` : `<p class="note">ここでバイトすると ${s.bdisc ?? 20}％引きで買えます</p>`); })()}
   <p class="small">商品の値段：<b>${yen(s.price || 1000)}</b>／売上：${yen(s.sales || 0)}</p>
   ${s.rule ? `<div class="card small" style="margin:6px 0"><b>📜 このお店のルール</b> <span class="badge" style="background:${s.ruleSt === "ok" ? "#DFF5E3;color:#1E7B34" : s.ruleSt === "ng" ? "#FDECEA;color:#B3261E" : "#FFF4D6;color:#6B4A00"}">${s.ruleSt === "ok" ? "✅ 採用" : s.ruleSt === "ng" ? "見送り" : "審査中"}</span><br>${esc(s.rule)}${s.ruleNote ? `<br><span class="note">運営より：${esc(s.ruleNote)}</span>` : ""}</div>` : ""}
+  ${featHtml(s)}
   ${S.myNo ? `<p class="note">買うと10%還元＋スタンプ1つ</p>` : `<button class="btn wide" id="buyBtn">コメント「${esc(s.name)}で買う」をコピー</button>`}<div class="small" id="buyMsg"></div>
   <hr style="border:0;border-top:1px dashed #ddd;margin:14px 0"><h4 style="margin:0 0 6px">👷 アルバイト（時給 ${yen(s.wage || 1000)}）</h4><div>${staffHtml(s)}</div>
   ${S.myNo && s.owner !== S.myNo ? (S.me && (S.me.jobs || []).includes(s.id) ? `<div class="small" style="margin-top:8px">✅ ここではたらいています。やめるまで、1時間ごとに ${yen(s.wage || 1000)} が自動で入ります（サイトを開いたときにまとめて受けとり・最大${JOB_CAP}時間ぶん）。</div><button class="btn sec wide" id="jobQuit" style="margin-top:6px">アルバイトをやめる</button>` : `<button class="btn sec wide" id="jobJoin" style="margin-top:8px">ここでアルバイトする（${(S.me && (S.me.jobs || []).length) || 0}/${JOB_MAX}）</button>`) : ""}
@@ -1030,6 +1068,7 @@ function openShop(id) { const s = S.shops.find(v => v.id === id); if (!s) return
   ${S.myNo && s.owner === S.myNo ? ownerPanel(s) : ""}`);
   if ($("jobQuit")) $("jobQuit").onclick = () => setJob(s, false, $("jobMsg")); if ($("jobJoin")) $("jobJoin").onclick = () => setJob(s, true, $("jobMsg"));
   if (S.myNo && s.owner === S.myNo) bindOwner(s);
+  bindFeat(s);
   document.querySelectorAll("#sheet [data-buy]").forEach(b => b.onclick = () => doBuy(Number(b.dataset.buy)));
   if ($("buyBtn")) $("buyBtn").onclick = () => doBuy(-1);
   async function doBuy(it) { const m = $("buyMsg");
