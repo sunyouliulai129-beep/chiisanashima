@@ -273,6 +273,12 @@
    "by": "zhuyun",
    "text": "竹で湖から本部まで水をつなげる",
    "status": "候補"
+  },
+  {
+   "day": 3,
+   "by": "りきや",
+   "text": "キノコか鉱石を見つける",
+   "status": "候補"
   }
  ],
  "timeline": [
@@ -1166,19 +1172,20 @@
    "id": "@りきや-e6x",
    "platform": "yt",
    "name": "りきや",
-   "points": 2,
-   "level": 1,
+   "points": 3,
+   "level": 2,
    "job": "小屋に食べ物をたくわえる計画を立てている",
    "wish": null,
    "history": [
     "2日目：投票A",
     "2日目：アイデア「小屋を建てて備蓄する」",
-    "2日目：しごと「大工」"
+    "2日目：しごと「大工」",
+    "3日目：アイデア「キノコか鉱石を見つける」"
    ],
    "since_day": 3,
    "work": "大工",
    "work_days": 0,
-   "coins": 2,
+   "coins": 3,
    "icon": "fish",
    "frame": "wood",
    "owned": [],
@@ -1286,6 +1293,27 @@
    "work_days": 0,
    "coins": 1,
    "icon": "shell",
+   "frame": "wood",
+   "owned": [],
+   "appeared": 0,
+   "rewarded_level": 0
+  },
+  {
+   "id": "@やませい-x2p",
+   "platform": "yt",
+   "name": "やませい",
+   "points": 0,
+   "level": 1,
+   "job": "浜辺に流れ着いたばかり。島を見回している",
+   "wish": null,
+   "history": [
+    "3日目：コメント「きっとでるよ」"
+   ],
+   "since_day": 3,
+   "work": null,
+   "work_days": 0,
+   "coins": 0,
+   "icon": "palm",
    "frame": "wood",
    "owned": [],
    "appeared": 0,
