@@ -85,6 +85,19 @@ const ZK = {
     if (!dry) for (const c of old) await ZK.removeCitizen(c.no);
     return old.map(c => ({ no: c.no, name: c.name, hours: Math.round((Date.now() - c.joinedAt) / 36e5) }));
   },
+  // ストーリーで @zerokara_kyowakoku をメンションしてくれた人に50万円（1人1回まで）。key = 'ig_ID'
+  async mentionBonus(key) {
+    const r = await runTransaction(db, async tx => {
+      const g = await tx.get(doc(db, "igids", key));
+      if (!g.exists()) return { key, skip: "国民じゃない" };
+      const cRef = doc(db, "citizens", String(g.data().no)), c = await tx.get(cRef);
+      if (!c.exists()) return { key, skip: "国民がいない" };
+      if (c.data().mention50) return { key, no: g.data().no, skip: "もうもらった" };
+      tx.update(cRef, { money: (c.data().money || 0) + 500000, mention50: true, mention50At: serverTimestamp() });
+      return { key, no: g.data().no, paid: 500000 };
+    });
+    log("メンション: " + JSON.stringify(r)); return r;
+  },
   async refresh() { await draw(); }
 };
 window.ZK = ZK;
