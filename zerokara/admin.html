@@ -20,6 +20,7 @@ table{border-collapse:collapse;width:100%;background:#fff;margin:8px 0 24px}td,t
 <h3>国民一覧</h3>
 <table><thead><tr><th>No.</th><th>名前</th><th>確認</th><th>両方</th><th>お金</th><th>ID</th><th>登録</th><th></th></tr></thead><tbody id="cits"></tbody></table>
 <h3>📜 お店ルールの申請 <button id="reload3">更新</button></h3>
+<p id="needLogin" style="display:none;background:#FDECEA;color:#B3261E;padding:10px;border-radius:8px;font-weight:700">⚠ いまは運営としてログインしていないので、承認できません。いちばん上の「Googleでログイン」を押してね（国民ページを開くとログインが切れることがあります）</p>
 <p class="small">承認するとお店のページに「✅ 採用」、却下すると「見送り」と出ます。メモに書いたことは「運営より：」としてお店のページに表示されます。</p>
 <div class="wrap"><table><thead><tr><th>承認する？</th><th>お店・ルール</th><th>メモ（理由）</th><th>つけた機能</th></tr></thead><tbody id="ruleT"></tbody></table></div>
 <h3>ぜんぶ見る（売上・お金・お店など） <button id="reload2">更新</button> <span class="small" id="asof"></span></h3>
@@ -171,6 +172,7 @@ async function drawRules() {
   const lab = { pending: "⏳ 申請中", ok: "✅ 承認", ng: "❌ 却下" };
   $("ruleT").innerHTML = rs.map(r => `<tr><td style="white-space:normal"><div>${lab[r.st] || esc(r.st)}</div><button class="p" data-ok="${esc(r.id)}" style="margin:4px 0;padding:10px 16px">承認</button><br><button class="d" data-ng="${esc(r.id)}" style="padding:10px 16px">却下</button></td><td style="white-space:normal;min-width:160px"><b>${esc(r.name)}</b> <span class="small">${esc(r.what || "")}・${nm(r.owner)}</span><div style="margin-top:4px;background:#faf6ee;padding:6px;border-radius:6px">${esc(r.rule)}</div></td><td><textarea data-note="${esc(r.id)}" maxlength="120" placeholder="（なくてもOK）" style="font:inherit;width:140px;height:70px">${esc(r.note)}</textarea></td><td style="white-space:normal" class="small"><label><input type="checkbox" data-feat="${esc(r.id)}" value="stock" ${r.feats.includes("stock") ? "checked" : ""}> 📈株券</label><br><label><input type="checkbox" data-feat="${esc(r.id)}" value="req" ${r.feats.includes("req") ? "checked" : ""}> 📝商品リクエスト</label><br>${r.built ? "🔧 機能づくり済み" : r.st === "ok" ? "⏳ 機能まだ" : ""}</td></tr>`).join("") || `<tr><td colspan="4">申請はありません</td></tr>`;
   const note = id => document.querySelector(`[data-note="${CSS.escape(id)}"]`)?.value || "";
+  document.querySelectorAll("[data-ok],[data-ng],[data-feat]").forEach(b => b.disabled = !ZK.ready);
   document.querySelectorAll("[data-feat]").forEach(c => c.onchange = async () => { const id = c.dataset.feat, f = [...document.querySelectorAll(`[data-feat="${CSS.escape(id)}"]`)].filter(x => x.checked).map(x => x.value); try { await ZK.setFeats(id, f); await drawRules(); } catch (e) { log("失敗: " + e.message); } });
   document.querySelectorAll("[data-ok]").forEach(b => b.onclick = async () => { try { await ZK.ruleReview(b.dataset.ok, "ok", note(b.dataset.ok)); await drawRules(); } catch (e) { log("失敗: " + e.message); } });
   document.querySelectorAll("[data-ng]").forEach(b => b.onclick = async () => { if (!note(b.dataset.ng) && !confirm("理由なしで却下しますか？")) return; try { await ZK.ruleReview(b.dataset.ng, "ng", note(b.dataset.ng)); await drawRules(); } catch (e) { log("失敗: " + e.message); } });
@@ -194,7 +196,7 @@ getRedirectResult(auth).catch(e => log("ログイン失敗: " + e.message));
 onAuthStateChanged(auth, async u => {
   ZK.user = u?.email || null; ZK.ready = !!u && u.email === ADMIN;
   $("who").textContent = u ? (u.email || "（匿名）") + (ZK.ready ? " ✅運営" : " ⚠運営ではありません") : "ログインしていません";
-  $("login").style.display = ZK.ready ? "none" : ""; $("logout").style.display = u ? "" : "none";
+  $("login").style.display = ZK.ready ? "none" : ""; $("needLogin").style.display = ZK.ready ? "none" : ""; document.querySelectorAll("[data-ok],[data-ng],[data-feat]").forEach(b => b.disabled = !ZK.ready); $("logout").style.display = u ? "" : "none";
   if (ZK.ready) draw().catch(e => log("読みこみ失敗: " + e.message));
 });
 </script>
