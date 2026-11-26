@@ -989,9 +989,9 @@ async function claimSales(s, M) { const amount = dailySales(s); if (amount <= 0)
     M.innerHTML = `<span class="okm">今日の売上 ${yen(amount)} を受けとりました！</span>`; }
   catch (e) { M.innerHTML = `<span class="err">${esc(e.code ? errText(e) : e.message)}</span>`; } }
 // ---- 運営が採用したお店ルールの機能（shops.feats）：'stock' 株券、'req' 商品リクエスト ----
-const STK_MAX = 10, stockPrice = s => 10000 + Math.floor((s.sales || 0) / 10000) * 100;
+const STK_MAX = 10, stkSales = (s, ow) => (s.feats || []).includes("stockAll") ? ((ow || S.citizens.find(c => c.no === s.owner) || {}).osales || 0) : (s.sales || 0), stockPrice = (s, ow) => 10000 + Math.floor(stkSales(s, ow) / 10000) * 100;
 function featHtml(s) { const f = s.feats || [], hr = `<hr style="border:0;border-top:1px dashed #ddd;margin:14px 0">`; let h = "";
-  if (f.includes("stock")) h += hr + `<h4 style="margin:0 0 6px">📈 このお店の株券</h4><div class="small">1株 <b>${yen(stockPrice(s))}</b>（お店の売上が1万円ふえるごとに株価+100円）<br>株を買うと、そのお金は社長に入ります。売るときは<b>そのときの株価</b>で社長からお金がもらえます。お店がもうかるほど得します（1人${STK_MAX}株まで）。</div>
+  if (f.includes("stock")) h += hr + `<h4 style="margin:0 0 6px">📈 このお店の株券</h4><div class="small">1株 <b>${yen(stockPrice(s))}</b>（${(s.feats || []).includes("stockAll") ? "社長のお店ぜんぶの売上" : "お店の売上"}が1万円ふえるごとに株価+100円）<br>株を買うと、そのお金は社長に入ります。売るときは<b>そのときの株価</b>で社長からお金がもらえます。お店がもうかるほど得します（1人${STK_MAX}株まで）。</div>
     <div id="stkMine" class="small" style="margin:6px 0"></div>${S.myNo && s.owner !== S.myNo ? `<div style="display:flex;gap:8px"><button class="btn" id="stkBuy" style="flex:1">1株買う</button><button class="btn sec" id="stkSell" style="flex:1">1株売る</button></div>` : ""}<div class="small" id="stkMsg"></div><div id="stkHolders" class="small" style="margin-top:6px"></div>`;
   if (f.includes("req")) h += hr + `<h4 style="margin:0 0 6px">📝 商品リクエスト</h4><div class="small">「こんな商品ほしい！」を社長に送れます（40文字まで）</div>
     ${S.myNo && s.owner !== S.myNo ? `<div style="display:flex;gap:6px;margin:6px 0"><input id="rqText" maxlength="40" placeholder="例：メロンパン" style="flex:1;font:inherit;padding:8px;border:1px solid #ccc;border-radius:8px"><button class="btn" id="rqSend">送る</button></div>` : ""}<div class="small" id="rqMsg"></div><div id="rqList" class="small"></div>`;
@@ -1008,7 +1008,7 @@ async function stockTrade(s, side) { const M = $("stkMsg"); M.textContent = "…
       const sh = await tx.get(doc(db, "shops", s.id)), sd = sh.data(), me = await tx.get(doc(db, "citizens", String(S.myNo))), ow = await tx.get(doc(db, "citizens", String(sd.owner))), hr = doc(db, "stocks", `${S.myNo}_${s.id}`), h = await tx.get(hr);
       if (!(sd.feats || []).includes("stock")) throw new Error("このお店は株券をあつかっていません");
       if (sd.owner === S.myNo) throw new Error("自分のお店の株は売り買いできません");
-      price = stockPrice(sd); const n0 = h.exists() ? h.data().n : 0, n1 = n0 + (side === "buy" ? 1 : -1);
+      price = stockPrice(sd, ow.data()); const n0 = h.exists() ? h.data().n : 0, n1 = n0 + (side === "buy" ? 1 : -1);
       if (n1 < 0) throw new Error("このお店の株を持っていません"); if (n1 > STK_MAX) throw new Error(`1つのお店の株は${STK_MAX}株までです`);
       if (side === "buy" && me.data().money < price) throw new Error("お金が足りません");
       if (side === "sell" && ow.data().money < price) throw new Error("社長のお金が足りないので、いまは売れません");
@@ -1085,7 +1085,7 @@ function openShop(id) { const s = S.shops.find(v => v.id === id); if (!s) return
         const bag = { ...(me.data().bag || {}) }; bag[s.id] = (bag[s.id] || 0) + 1;
         tx.set(doc(db, "buys", `${S.myNo}_b${nb}`), { no: S.myNo, shop: s.id, day: d, at: serverTimestamp(), it, base, pay: price });
         tx.update(doc(db, "shops", s.id), { sales: (sh.data().sales || 0) + price });
-        tx.update(doc(db, "citizens", String(sh.data().owner)), { money: ow.data().money + price });
+        tx.update(doc(db, "citizens", String(sh.data().owner)), { money: ow.data().money + price, osales: (ow.data().osales || 0) + price });
         tx.update(doc(db, "citizens", String(S.myNo)), { money: me.data().money - price + back + bonus, nbuy: nb, bag, spent: (me.data().spent || 0) + price });
         window.__lastBuy = { back, bonus, nb };
       });
