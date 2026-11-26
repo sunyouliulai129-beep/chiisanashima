@@ -279,6 +279,8 @@ const esc = (s) => String(s ?? "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<"
 const yen = (n) => (n >= 10000 ? (n / 10000).toLocaleString("ja-JP") + "万円" : Number(n || 0).toLocaleString("ja-JP") + "円");
 const COLORS = ["#E8A317", "#D9534F", "#2F7FB5", "#2E8B57", "#8E5BD0", "#E67EA4", "#1D2B2A", "#F07A2B"];
 const NG = ["死ね", "しね", "殺す", "ころす", "きもい", "キモい", "うざい", "ばか", "バカ", "あほ", "アホ", "ちんこ", "まんこ", "セックス", "sex", "http", "www.", ".com"];
+const okId = (sv, h) => sv === "ig" ? /^[a-z0-9._]{1,30}$/.test(h) : (h.length >= 1 && [...h].length <= 30 && !/[\/]/.test(h));
+const cleanId = v => String(v || "").normalize("NFKC").trim().replace(/^[@＠]+/, "").trim().toLowerCase();
 const hasNG = (s) => NG.some(w => String(s).toLowerCase().includes(w.toLowerCase()));
 const todayJST = () => Math.floor((Date.now() + 9 * 3600e3) / 86400e3);
 
@@ -907,10 +909,11 @@ async function drawLinkCard() {
     try { const d = await getDoc(doc(db, "igids", me.linkKey)); $("lkWait").innerHTML = d.exists() ? (d.data().verified ? "確認ずみ！もう少しで名前を変えられるようになります。" : pendingHtml(d.data()) + `<p class="note">インスタとYouTubeの両方が確認ずみになると、国民名を自由に決められます。</p>`) : ""; } catch { $("lkWait").textContent = ""; }
   } else {
     C.innerHTML = `<label>🔗 ${SVN[other]}もつなぐ</label><p class="small" style="margin:4px 0 8px">インスタとYouTubeの両方をこの国民につなぐと、<b>国民名を自由に決められる</b>ようになります（ふつうはIDがそのまま名前）。</p>
-      <input id="lkIn" placeholder="${other === "yt" ? "YouTubeのハンドル（@はいらない）" : "インスタのID（@はいらない）"}" autocomplete="off" autocapitalize="off" spellcheck="false">
+      <input id="lkIn" placeholder="${other === "yt" ? "YouTubeのハンドルかチャンネル名（日本語もOK）" : "インスタのID（@はいらない）"}" autocomplete="off" autocapitalize="off" spellcheck="false">
       <button class="btn sec wide" id="lkGo">つなぐ</button><div class="small" id="lkMsg"></div>`;
-    $("lkGo").onclick = async () => { const h = $("lkIn").value.trim().replace(/^@/, "").toLowerCase(), M = $("lkMsg");
-      if (!/^[a-z0-9._-]{1,30}$/.test(h)) return M.innerHTML = `<span class="err">IDを正しく入れてね（英数字と . _ - だけ）</span>`;
+    $("lkGo").onclick = async () => { const h = cleanId($("lkIn").value), M = $("lkMsg");
+      if (!okId(other, h)) return M.innerHTML = `<span class="err">${other === "ig" ? "インスタのIDを正しく入れてね（インスタのIDは英数字と . _ だけ）" : "YouTubeの名前を入れてね（30文字まで・/ は使えない）"}</span>`;
+      if (hasNG(h)) return M.innerHTML = `<span class="err">その名前は使えません</span>`;
       const key = other + "_" + h, code = String(Math.floor(1000 + Math.random() * 9000));
       try { await runTransaction(db, async tx => {
           const g = await tx.get(doc(db, "igids", key)); if (g.exists()) throw new Error("そのIDは、もうほかの国民とつながっています");
@@ -937,14 +940,14 @@ async function useClaim(user) {
 // 国民登録
 let SV = "ig";
 function setSv(v) { SV = v; $("svIg").style.background = v === "ig" ? "#E8A317" : ""; $("svIg").style.color = v === "ig" ? "#3A2600" : ""; $("svYt").style.background = v === "yt" ? "#E8A317" : ""; $("svYt").style.color = v === "yt" ? "#3A2600" : "";
-  $("rLabel").textContent = v === "ig" ? "あなたのインスタのID" : "あなたのYouTubeのハンドル（@から始まるID）";
-  $("rIg").placeholder = v === "ig" ? "例：yuto_123（@はいらない）" : "例：yuto-123（@はいらない）";
+  $("rLabel").textContent = v === "ig" ? "あなたのインスタのID" : "あなたのYouTubeのハンドルかチャンネル名（日本語もOK）";
+  $("rIg").placeholder = v === "ig" ? "例：yuto_123（@はいらない）" : "例：ゆうと / yuto-123";
   $("rNote").innerHTML = v === "ig" ? "インスタのIDが、そのまま国民名になります。押したらすぐ国民になって、土地やお店で遊べます。<br>そのあと @zerokara_kyowakoku をフォローして、DMでコードを送ると「✅本人確認ずみ」になります（1時間以内）。24時間たっても確認できない国民は消えます。"
-    : "YouTubeのハンドルが、そのまま国民名になります。押したらすぐ国民になって、土地やお店で遊べます。<br>そのあと、ゼロから共和国の動画のどれかに、そのアカウントでコードをコメントすると「✅本人確認ずみ」になります（1時間以内）。24時間たっても確認できない国民は消えます。"; }
+    : "入れた名前が、そのまま国民名になります。押したらすぐ国民になって、土地やお店で遊べます。<br>そのあと、ゼロから共和国の動画のどれかに、そのアカウントでコードをコメントすると「✅本人確認ずみ」になります（1時間以内）。24時間たっても確認できない国民は消えます。"; }
 if ($("svIg")) { $("svIg").onclick = () => setSv("ig"); $("svYt").onclick = () => setSv("yt"); setSv("ig"); }
 if ($("rGo")) $("rGo").onclick = async () => {
-  const h = $("rIg").value.trim().replace(/^@/, "").toLowerCase(), E = $("rErr"); E.textContent = "";
-  if (!/^[a-z0-9._-]{1,30}$/.test(h)) return E.textContent = SV === "ig" ? "インスタのIDを正しく入れてね（英数字と . _ だけ）" : "YouTubeのハンドルを正しく入れてね（英数字と . _ - だけ）";
+  const h = cleanId($("rIg").value), E = $("rErr"); E.textContent = "";
+  if (!okId(SV, h)) return E.textContent = SV === "ig" ? "インスタのIDを正しく入れてね（インスタのIDは英数字と . _ だけ）" : "YouTubeの名前を入れてね（30文字まで・/ は使えない）";
   if (hasNG(h)) return E.textContent = "そのIDは使えません";
   if (!auth.currentUser) return E.textContent = "通信の準備中です。少し待ってもう一度";
   $("rGo").disabled = true;
