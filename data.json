@@ -120,17 +120,17 @@
    [
     "A",
     "森の奥",
-    3
+    4
    ],
    [
     "B",
     "雪山の頂上",
-    2
+    3
    ],
    [
     "C",
     "砂漠の先",
-    1
+    2
    ]
   ],
   "note": "YouTubeとインスタの合計"
@@ -290,6 +290,18 @@
    "day": 3,
    "by": "hamduck.gwa98",
    "text": "雪山に登るとちゅうで島を見わたす",
+   "status": "候補"
+  },
+  {
+   "day": 3,
+   "by": "chun0327",
+   "text": "山菜とりをしてレストランをする",
+   "status": "候補"
+  },
+  {
+   "day": 3,
+   "by": "t9m_xar",
+   "text": "サッカー場を作る",
    "status": "候補"
   }
  ],
@@ -737,7 +749,7 @@
    "id": "chun0327",
    "platform": "ig",
    "name": "chun0327",
-   "points": 9,
+   "points": 11,
    "level": 3,
    "job": "桟橋で魚をつって、小屋の倉庫に入れている",
    "wish": "魚を釣って水槽に入れたい",
@@ -747,12 +759,14 @@
     "1日目：しごと「漁師」",
     "2日目：漁師で働いた",
     "2日目：アイデア「魚を水槽に入れたい」が採用",
-    "3日目：漁師で働いた"
+    "3日目：漁師で働いた",
+    "3日目：投票A",
+    "3日目：アイデア「山菜とりをしてレストランをする」"
    ],
    "since_day": 1,
    "work": "漁師",
    "work_days": 2,
-   "coins": 9,
+   "coins": 11,
    "icon": "palm",
    "frame": "wood",
    "owned": [],
@@ -1079,7 +1093,7 @@
    "id": "ha1u_u16",
    "platform": "ig",
    "name": "ha1u_u16",
-   "points": 3,
+   "points": 4,
    "level": 2,
    "job": "桟橋のとなりで小屋の柱を立てている",
    "wish": null,
@@ -1089,12 +1103,13 @@
     "2日目：大工で働いた",
     "2日目：投票A",
     "2日目：とうろく",
-    "2日目：YouTubeとつなぐ"
+    "2日目：YouTubeとつなぐ",
+    "3日目：投票C"
    ],
    "since_day": 2,
    "work": "大工",
    "work_days": 1,
-   "coins": 8,
+   "coins": 9,
    "icon": "shell",
    "frame": "wood",
    "owned": [
@@ -1440,6 +1455,28 @@
    "owned": [],
    "appeared": 0,
    "rewarded_level": 0
+  },
+  {
+   "id": "t9m_xar",
+   "platform": "ig",
+   "name": "t9m_xar",
+   "points": 2,
+   "level": 1,
+   "job": "浜辺に流れ着いたばかり。サッカー場をつくる場所をさがしている",
+   "wish": "サッカー場を作りたい",
+   "history": [
+    "3日目：投票B",
+    "3日目：アイデア「サッカー場を作る」"
+   ],
+   "since_day": 3,
+   "work": null,
+   "work_days": 0,
+   "coins": 2,
+   "icon": "shell",
+   "frame": "wood",
+   "owned": [],
+   "appeared": 0,
+   "rewarded_level": 0
   }
  ],
  "links": {
@@ -1634,6 +1671,6 @@
   "every": 5,
   "rule": "Lv5ごとに、そのレベルと同じ数のコイン（Lv5→5枚、Lv10→10枚…Lv100→100枚）"
  },
- "last_sync": "2026-11-26 23:03",
+ "last_sync": "2026-11-26 23:59",
  "events_rule": "YouTubeのチャンネル登録者だけで数える。節目と名前は events.js（20,30,50,70,100,150,200,300,500,700,1000…と終わりなし）"
 }
