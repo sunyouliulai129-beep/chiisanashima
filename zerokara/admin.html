@@ -22,7 +22,7 @@ table{border-collapse:collapse;width:100%;background:#fff;margin:8px 0 24px}td,t
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
 import { getAuth, GoogleAuthProvider, signInWithRedirect, signInWithPopup, getRedirectResult, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
-import { getFirestore, doc, getDoc, getDocs, deleteDoc, collection, query, where, runTransaction, writeBatch, serverTimestamp, increment } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+import { getFirestore, doc, getDoc, getDocs, deleteDoc, collection, query, where, runTransaction, writeBatch, updateDoc, serverTimestamp, increment } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 const app = initializeApp({ apiKey: "AIzaSyCk2v3ug6fbIMuVV06tUNlIuL6klPmkiZI", authDomain: "zerokara-kyowakoku.firebaseapp.com", projectId: "zerokara-kyowakoku", storageBucket: "zerokara-kyowakoku.firebasestorage.app", messagingSenderId: "495540611145", appId: "1:495540611145:web:bd56f007bef6618e3fb798" });
 const auth = getAuth(app), db = getFirestore(app);
 const ADMIN = "sunyouliulai129@gmail.com", BONUS = 2000000, FIRST = 50, HOURS = 24;
@@ -107,6 +107,9 @@ const ZK = {
     const b = writeBatch(db); for (const p of plan) b.delete(doc(db, "lands", p.from)); for (const p of plan) b.set(doc(db, "lands", p.to), p.data);
     b.set(doc(db, "meta", "map"), { scaled: true, n: 160, at: serverTimestamp() }); await b.commit(); log("土地の引っこし: " + plan.length + "件"); return plan.length;
   },
+  // お店のルールの審査：一覧 / 結果をつける（st は 'ok' か 'ng'）
+  async rules() { const s = await getDocs(collection(db, "shops")); return s.docs.map(d => ({ id: d.id, ...d.data() })).filter(x => x.rule).map(x => ({ id: x.id, name: x.name, what: x.what, owner: x.owner, rule: x.rule, st: x.ruleSt || "pending", note: x.ruleNote || "" })); },
+  async ruleReview(id, st, note = "") { await updateDoc(doc(db, "shops", id), { ruleSt: st, ruleNote: String(note).slice(0, 120) }); log("ルール審査: " + id + " → " + st); return true; },
   async refresh() { await draw(); }
 };
 window.ZK = ZK;

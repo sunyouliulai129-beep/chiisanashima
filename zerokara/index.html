@@ -187,8 +187,8 @@ footer{text-align:center;color:var(--mut);font-size:12px;padding:20px}
     <p><b>1. 国民になる</b>：サイトの「国民になる」で、インスタのID か YouTubeのハンドルを入れるとすぐ国民に。そのあと本人確認（インスタはフォローしてDM、YouTubeは動画にコメント）。国民名は、そのIDがそのまま使われます。国民番号は先着順で一生変わりません。1〜10番は「建国の父・母」として記念碑に名前がきざまれます。</p>
     <p><b>2. 土地を買う</b>：「土地 （海・森・山・川・平地・砂漠・雪原）」。今はどこでも50万円。国民が増えるほど値上がりします。</p>
     <p><b>3. お店を開く</b>：「お店 （店の名前）」。5万円。ほかの人は「（店の名前）で買う」で応援できます。</p>
-    <p><b>👷 アルバイト</b>：人のお店で3つまでかけもちできる。1時間に1回「シフトに入る」と、店長が決めた時給が店長から入る。バイトが多いお店ほど1日の売上がふえる（国民が少ないうちはAIのバイトも入ります）。</p>
-    <p><b>🔧 店長</b>：自分のお店をひらくと、名前・値段・時給を変えたり、お店をしめたりできる。</p>
+    <p><b>👷 アルバイト</b>：人のお店で3つまでかけもちできる。一度はじめたら、やめるまで1時間ごとに、店長が決めた時給が店長から自動で入る（サイトを開いたときにまとめて受けとり。最大72時間ぶん。店長のお金が足りないときは、払える分だけ）。バイトが多いお店ほど1日の売上がふえる（国民が少ないうちはAIのバイトも入ります）。</p>
+    <p><b>🔧 店長</b>：自分のお店をひらくと、名前・値段・時給を変えたり、お店をしめたりできる。「このお店だけのルール」を書くと、AIの運営が見て、大丈夫なら新しい機能としてサイトに追加する。</p>
     <p><b>🛍️ 人のお店で買うと</b>：値段の10%がすぐ戻ってくる・スタンプが1つたまる（10個で5万円）・買った物が「持ち物」に並ぶ・いろんなお店で買うと「グルメ」「常連さん」などのバッジ。お買い物ランキングにものります。</p>
     <p class="note">※円は国の中だけのお金です。本物のお金で買ったり交換したりはできません。フォローや登録でお金がもらえることもありません。</p>
   </div>
@@ -246,8 +246,8 @@ footer{text-align:center;color:var(--mut);font-size:12px;padding:20px}
       <label>お店を開く（<span id="shopCost">5万円</span>）</label>
       <input id="qShop" maxlength="16" placeholder="お店の名前">
       <input id="qShopWhat" maxlength="30" placeholder="何のお店？（例：たこ焼き）">
-      <label>商品の値段（500円〜5万円）</label>
-      <input id="qShopPrice" type="number" inputmode="numeric" min="500" max="50000" step="100" value="1000">
+      <label>いちばんの商品の値段（1円〜100万円。あとで商品をふやせます）</label>
+      <input id="qShopPrice" type="number" inputmode="numeric" min="1" max="1000000" step="1" value="1000">
       <button class="btn sec wide" id="qShopGo">お店を開く</button>
       <div class="small" id="qMsg"></div>
       <p class="note">お店はいくつでも開けます（1店ごとに開店費）。ほかの国民がお店で「買う」たびに、その値段の売上がすぐあなたのお金に入ります。</p>
@@ -400,6 +400,16 @@ function buildContinent() {
 let ELEV = null; const RIVERS = [];
 const LAND = buildContinent();
 const isBuyable = (tt) => tt !== T.SEA && tt !== T.LAKE;
+// お店の種類（名前と「何のお店」から見た目を決める）
+function shopType(sh) { const t = `${sh.name || ""} ${sh.what || ""}`;
+  if (/スーパー|マート|市場|デパート|モール/.test(t)) return "super";
+  if (/コンビニ|100均|ドラッグ|薬局/.test(t)) return "konbini";
+  if (/カフェ|喫茶|コーヒー|珈琲|スイーツ|ケーキ|パン|ベーカリー/.test(t)) return "cafe";
+  if (/映画|シアター|劇場|ゲーム|遊園|カラオケ|ボウリング|競馬|スタジアム|ホール/.test(t)) return "cinema";
+  if (/株|銀行|証券|保険|不動産|会社|オフィス|ICT|IT|運営/.test(t)) return "bank";
+  if (/食堂|料理|定食|ラーメン|寿司|焼肉|牛丼|バーガー|レストラン|弁当|屋台|居酒屋|うどん|そば/.test(t)) return "food";
+  if (/服|ファッション|アパレル|スポーツ|靴|雑貨|おもちゃ|本屋|書店|駄菓子|電化|家電/.test(t)) return "store";
+  return "store"; }
 // お店はその社長の土地に建つ（土地の順に1店ずつ。土地が足りないお店は地図には出ない）
 function shopPlaces() { const byOwner = new Map(), out = new Map(); for (const sh of S.shops) { if (!byOwner.has(sh.owner)) byOwner.set(sh.owner, []); byOwner.get(sh.owner).push(sh); }
   for (const list of byOwner.values()) list.sort((a, b) => (a.id === "s" + a.owner ? -1 : 0) - (b.id === "s" + b.owner ? -1 : 0) || String(a.id).localeCompare(String(b.id)));
@@ -681,6 +691,11 @@ const G3 = (() => {
   function cyl(P, Nn, C, I, y0, y1, r, col, seg) { const base = P.length / 3;
     for (let s = 0; s <= seg; s++) { const a = s / seg * Math.PI * 2, x = Math.cos(a), z = Math.sin(a); P.push(x * r, y0, z * r, x * r, y1, z * r); Nn.push(x, 0, z, x, 0, z); C.push(...col, ...col); }
     for (let s = 0; s < seg; s++) { const a = base + s * 2; I.push(a, a + 1, a + 2, a + 2, a + 1, a + 3); } }
+  function cylAt(P, Nn, C, I, cx, cz, y0, y1, r, col, seg = 8) { const base = P.length / 3;
+    for (let s = 0; s <= seg; s++) { const a = s / seg * Math.PI * 2, x = Math.cos(a), z = Math.sin(a); P.push(cx + x * r, y0, cz + z * r, cx + x * r, y1, cz + z * r); Nn.push(x, 0, z, x, 0, z); C.push(...col, ...col); }
+    for (let s = 0; s < seg; s++) { const a = base + s * 2; I.push(a, a + 1, a + 2, a + 2, a + 1, a + 3); }
+    const top = P.length / 3; P.push(cx, y1, cz); Nn.push(0, 1, 0); C.push(...col); for (let s = 0; s <= seg; s++) { const a = s / seg * Math.PI * 2; P.push(cx + Math.cos(a) * r, y1, cz + Math.sin(a) * r); Nn.push(0, 1, 0); C.push(...col); }
+    for (let s = 0; s < seg; s++) I.push(top, top + 1 + s, top + 2 + s, top, top + 2 + s, top + 1 + s); }
   function buildTrees() {
     // 木の形（幹＋葉3段）
     const P = [], Nn = [], C = [], I = [];
@@ -727,26 +742,53 @@ const G3 = (() => {
     for (const z of [-.12, .12]) { B(-.335, .2, z - .05, -.32, .34, z + .05, GLASS); B(.32, .2, z - .05, .335, .34, z + .05, GLASS); }
     B(-.12, .05, .27, .12, .07, .36, STONE);                // げんかんの石
     return [P, Nn, C, I]; }
-  function shopModel() { const P = [], Nn = [], C = [], I = [], B = (...a) => boxTo(P, Nn, C, I, ...a);
-    B(-.42, 0, -.34, .42, .04, .34, STONE);
-    B(-.38, .04, -.28, .38, .5, .28, WALL);                 // お店のかべ（お店の色）
-    B(-.41, .5, -.31, .41, .56, .31, [.3, .3, .32]);         // 平らな屋根
-    B(-.32, .1, .278, .1, .4, .292, GLASS);                 // 大きなショーウィンドウ
-    B(.15, .04, .278, .32, .38, .292, DOOR);                // ドア
-    for (let k = 0; k < 8; k++) { const x0 = -.38 + k * .095; quad(P, Nn, C, I, [[x0, .46, .28], [x0 + .095, .46, .28], [x0 + .095, .38, .43], [x0, .38, .43]], k % 2 ? [.96, .96, .93] : [.86, .18, .16]); } // しまのひさし
-    B(-.3, .56, .2, .3, .74, .25, [.98, .8, .22]);          // かんばん
-    B(-.26, .6, .251, .26, .7, .256, [.25, .17, .08]);      // かんばんの文字
-    B(-.36, .04, .3, -.3, .14, .38, [.55, .38, .2]); B(.33, .04, .36, .39, .12, .42, [.3, .55, .3]); // たる・植木ばち
+  function shopModel(type) { const P = [], Nn = [], C = [], I = [], B = (...a) => boxTo(P, Nn, C, I, ...a), Q = (v, c) => quad(P, Nn, C, I, v, c);
+    const awn = (x0, x1, y, depth, c1, c2, n) => { const w = (x1 - x0) / n; for (let k = 0; k < n; k++) Q([[x0 + k * w, y, .28], [x0 + (k + 1) * w, y, .28], [x0 + (k + 1) * w, y - .08, .28 + depth], [x0 + k * w, y - .08, .28 + depth]], k % 2 ? c2 : c1); };
+    if (type === "super") { // 横に広いスーパー：緑の看板・大きなガラス・カート置き場
+      B(-.46, 0, -.36, .46, .04, .4, STONE); B(-.44, .04, -.3, .44, .48, .28, WALL); B(-.46, .48, -.32, .46, .54, .3, [.32, .32, .34]);
+      B(-.4, .08, .278, .2, .4, .29, GLASS); B(.24, .04, .278, .4, .38, .29, [.55, .75, .9]);
+      B(-.42, .5, .24, .42, .66, .3, [.2, .6, .3]); B(-.36, .54, .301, .36, .62, .306, [.97, .97, .9]);
+      for (let k = 0; k < 4; k++) B(-.38 + k * .07, .04, .32, -.33 + k * .07, .1, .38, [.7, .7, .74]); }
+    else if (type === "konbini") { // コンビニ：白い箱に色の帯
+      B(-.4, 0, -.34, .4, .04, .36, STONE); B(-.36, .04, -.28, .36, .44, .28, [.97, .97, .97]);
+      B(-.37, .3, .279, .37, .36, .286, WALL); B(-.37, .38, .279, .37, .41, .286, [.3, .6, .9]);
+      B(-.3, .07, .282, .14, .28, .29, GLASS); B(.18, .04, .282, .3, .28, .29, [.5, .7, .85]); B(-.38, .44, -.3, .38, .48, .3, [.85, .85, .85]); }
+    else if (type === "cafe") { // カフェ：茶色いひさし・テラス席・パラソル
+      B(-.4, 0, -.34, .4, .04, .42, [.72, .6, .48]); B(-.32, .04, -.26, .32, .44, .24, WALL);
+      tri(P, Nn, C, I, [[-.32, .44, -.26], [-.32, .44, .24], [-.32, .62, -.01]], [-1, 0, 0], WALL); tri(P, Nn, C, I, [[.32, .44, -.26], [.32, .62, -.01], [.32, .44, .24]], [1, 0, 0], WALL);
+      Q([[-.36, .42, .29], [.36, .42, .29], [.36, .64, -.01], [-.36, .64, -.01]], [.42, .26, .16]); Q([[-.36, .42, -.31], [-.36, .64, -.01], [.36, .64, -.01], [.36, .42, -.31]], [.42, .26, .16]);
+      awn(-.3, .3, .36, .1, [.36, .22, .12], [.92, .86, .74], 6); B(-.24, .1, .238, .06, .3, .25, GLASS); B(.1, .04, .238, .24, .32, .25, DOOR);
+      for (const x of [-.24, .2]) { B(x - .01, .04, .34, x + .01, .26, .36, [.3, .3, .3]); cylAt(P, Nn, C, I, x, .35, .24, .26, .13, [.95, .45, .35]); B(x - .06, .1, .32, x + .06, .12, .38, [.9, .9, .9]); } }
+    else if (type === "cinema") { // 映画館・遊び場：背が高い・電球つき看板
+      B(-.44, 0, -.36, .44, .04, .4, STONE); B(-.4, .04, -.3, .4, .74, .28, WALL); B(-.42, .74, -.32, .42, .8, .3, [.25, .2, .3]);
+      B(-.34, .46, .28, .34, .68, .36, [.18, .14, .25]); for (let k = 0; k < 9; k++) B(-.32 + k * .08, .64, .36, -.3 + k * .08, .66, .37, [1, .9, .4]);
+      B(-.28, .5, .361, .28, .6, .366, [.98, .82, .25]); B(-.18, .04, .281, .18, .36, .29, [.5, .12, .14]); B(-.3, .1, .281, -.22, .36, .29, [.98, .82, .25]); B(.22, .1, .281, .3, .36, .29, [.98, .82, .25]); }
+    else if (type === "bank") { // 銀行・会社：柱と三角屋根
+      B(-.44, 0, -.36, .44, .06, .4, [.85, .83, .78]); B(-.4, .06, -.3, .4, .5, .24, WALL);
+      for (let k = 0; k < 5; k++) cylAt(P, Nn, C, I, -.32 + k * .16, .32, .06, .5, .035, [.95, .94, .9]);
+      B(-.42, .5, -.32, .42, .56, .38, [.9, .88, .84]);
+      tri(P, Nn, C, I, [[-.42, .56, .38], [.42, .56, .38], [0, .74, .38]], [0, 0, 1], [.9, .88, .84]); Q([[-.42, .56, .38], [0, .74, .38], [0, .74, -.32], [-.42, .56, -.32]], [.6, .6, .62]); Q([[.42, .56, .38], [.42, .56, -.32], [0, .74, -.32], [0, .74, .38]], [.6, .6, .62]);
+      B(-.07, .06, .241, .07, .32, .25, DOOR); }
+    else if (type === "food") { // 食べ物屋：のれん・ちょうちん・瓦屋根
+      B(-.4, 0, -.34, .4, .04, .38, STONE); B(-.34, .04, -.26, .34, .44, .26, WALL);
+      Q([[-.4, .4, .32], [.4, .4, .32], [.4, .62, 0], [-.4, .62, 0]], [.28, .3, .36]); Q([[-.4, .4, -.32], [-.4, .62, 0], [.4, .62, 0], [.4, .4, -.32]], [.28, .3, .36]);
+      tri(P, Nn, C, I, [[-.34, .44, -.26], [-.34, .44, .26], [-.34, .62, 0]], [-1, 0, 0], WALL); tri(P, Nn, C, I, [[.34, .44, -.26], [.34, .62, 0], [.34, .44, .26]], [1, 0, 0], WALL);
+      for (let k = 0; k < 4; k++) B(-.2 + k * .1, .22, .262, -.11 + k * .1, .38, .268, [.1, .16, .4]); B(-.2, .04, .258, .2, .22, .262, DOOR);
+      for (const x of [-.3, .3]) { cylAt(P, Nn, C, I, x, .3, .26, .38, .045, [.9, .2, .15]); } B(-.24, .45, .262, .24, .52, .27, [.98, .9, .7]); }
+    else { // ふつうのお店：しまのひさし・看板
+      B(-.42, 0, -.34, .42, .04, .34, STONE); B(-.38, .04, -.28, .38, .5, .28, WALL); B(-.41, .5, -.31, .41, .56, .31, [.3, .3, .32]);
+      B(-.32, .1, .278, .1, .4, .292, GLASS); B(.15, .04, .278, .32, .38, .292, DOOR); awn(-.38, .38, .46, .15, [.86, .18, .16], [.96, .96, .93], 8);
+      B(-.3, .56, .2, .3, .74, .25, [.98, .8, .22]); B(-.26, .6, .251, .26, .7, .256, [.25, .17, .08]); B(-.36, .04, .3, -.3, .14, .38, [.55, .38, .2]); B(.33, .04, .36, .39, .12, .42, [.3, .55, .3]); }
     return [P, Nn, C, I]; }
   function buildHouses() {
-    const H = houseModel(), Sm = shopModel(), hi = [], hc = [], si = [], sc = []; SHOPLBL = [];
+    const H = houseModel(), hi = [], hc = [], byT = {}; SHOPLBL = [];
     const SP = shopPlaces();
     for (const L of S.lands.values()) { const fx = L.x + .5, fy = L.y + .5, y = hAt(fx, fy), sh = SP.get(`${L.x}_${L.y}`);
-      if (sh) { si.push(fx, y, fy, .95); const h = hex(sh.color || "#E8A317"); sc.push(.55 + h[0] / 255 * .45, .55 + h[1] / 255 * .45, .55 + h[2] / 255 * .45); SHOPLBL.push({ x: fx, y: fy, name: (sh.emoji || "🏪") + " " + sh.name }); }
+      if (sh) { const ty = shopType(sh), g = byT[ty] || (byT[ty] = { i: [], c: [] }); g.i.push(fx, y, fy, .95); const h = hex(sh.color || "#E8A317"); g.c.push(.55 + h[0] / 255 * .45, .55 + h[1] / 255 * .45, .55 + h[2] / 255 * .45); SHOPLBL.push({ x: fx, y: fy, name: (sh.emoji || "🏪") + " " + sh.name }); }
       else { hi.push(fx, y, fy, .9); const h = hex(L.color || "#E8A317"); hc.push(.6 + h[0] / 255 * .4, .6 + h[1] / 255 * .4, .6 + h[2] / 255 * .4); } }
-    houseInst = hi.length / 4; shopInst = si.length / 4;
+    houseInst = hi.length / 4;
     house = houseInst ? mesh(new Float32Array(H[0]), new Float32Array(H[1]), new Float32Array(H[2]), new Uint32Array(H[3]), new Float32Array(hi), new Float32Array(hc)) : null;
-    shopM = shopInst ? mesh(new Float32Array(Sm[0]), new Float32Array(Sm[1]), new Float32Array(Sm[2]), new Uint32Array(Sm[3]), new Float32Array(si), new Float32Array(sc)) : null;
+    shopM = Object.entries(byT).map(([ty, g]) => { const M = shopModel(ty); return { m: mesh(new Float32Array(M[0]), new Float32Array(M[1]), new Float32Array(M[2]), new Uint32Array(M[3]), new Float32Array(g.i), new Float32Array(g.c)), n: g.i.length / 4 }; });
     housesDirty = false;
   }
   function mat() { // ビュー×プロジェクション
@@ -769,7 +811,7 @@ const G3 = (() => {
     gl.useProgram(prog); gl.uniformMatrix4fv(gl.getUniformLocation(prog, "vp"), false, M); gl.uniform3fv(gl.getUniformLocation(prog, "eye"), eye); gl.uniform3fv(gl.getUniformLocation(prog, "sky"), sky);
     const U = gl.getUniformLocation(prog, "useInst"), A = gl.getUniformLocation(prog, "alpha");
     const drawM = (m, inst, cnt) => { gl.bindVertexArray(m.vao); gl.uniform1i(U, inst === 2 ? 2 : inst ? 1 : 0); if (inst) gl.drawElementsInstanced(gl.TRIANGLES, m.n, gl.UNSIGNED_INT, 0, cnt); else gl.drawElements(gl.TRIANGLES, m.n, gl.UNSIGNED_INT, 0); };
-    const IT = gl.getUniformLocation(prog, "isT"); gl.uniform1f(A, 1); gl.uniform1i(IT, 1); drawM(terrain); gl.uniform1i(IT, 0); drawM(tree, true, treeInst); if (bush) drawM(bush, true, bushInst); if (house) drawM(house, 2, houseInst); if (shopM) drawM(shopM, 2, shopInst);
+    const IT = gl.getUniformLocation(prog, "isT"); gl.uniform1f(A, 1); gl.uniform1i(IT, 1); drawM(terrain); gl.uniform1i(IT, 0); drawM(tree, true, treeInst); if (bush) drawM(bush, true, bushInst); if (house) drawM(house, 2, houseInst); if (shopM) for (const g of shopM) drawM(g.m, 2, g.n);
     gl.enable(gl.BLEND); gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA); gl.depthMask(false); gl.uniform1f(A, .72); drawM(water); gl.depthMask(true); gl.disable(gl.BLEND);
     // ラベル
     const c = lc.getContext("2d"), d = MAP.d || 1; c.clearRect(0, 0, lc.width, lc.height); c.textAlign = "center"; c.textBaseline = "middle";
@@ -839,10 +881,13 @@ function openPlot(x, y) {
   let h = `<h3 style="margin:0 0 6px">区画 ${x + 1}-${y + 1}（${TNAME[tt]}）</h3>`;
   if (x === MON.x && y === MON.y) h += `<p>🗿 建国記念碑の場所です。1〜10番の国民の名前がきざまれます。</p>`;
   else if (!isBuyable(tt)) h += `<p class="note">${TNAME[tt]}なので、ここには住めません。</p>`;
-  else if (L) h += `<p>持ち主：<b>${esc(L.ownerName || ("国民No." + L.owner))}</b><br>${esc(L.building || "空き地")}</p>`;
+  else if (L) { const SPm = shopPlaces().get(id);
+    h += SPm ? `<p>${esc(SPm.emoji || "🏪")} <b>${esc(SPm.name)}</b>（${esc(SPm.what || "お店")}）<br>社長：${esc(L.ownerName || ("国民No." + L.owner))}</p><button class="btn wide" id="plotShop">お店のページを見る・買う・バイトする</button>`
+      : `<p>持ち主：<b>${esc(L.ownerName || ("国民No." + L.owner))}</b><br>${esc(L.building || "家")}</p>`; }
   else { h += `<p>空き地です。いまの値段：<b>${priceOf(tt, S.pop)}万円</b></p>`;
     h += S.myNo ? `<button class="btn wide" id="plotReq">この区画を買う（${priceOf(tt, S.pop)}万円）</button><div class="small" id="plotMsg"></div>` : `<button class="btn wide" data-go="me">国民になって買う</button>`; }
   sheet(h);
+  if ($("plotShop")) $("plotShop").onclick = () => openShop(shopPlaces().get(id).id);
   const b = $("plotReq"); if (b) b.onclick = async () => { b.disabled = true; const M = $("plotMsg");
     try { const price = S.prices.land, me = S.citizens.find(c => c.no === S.myNo);
       await runTransaction(db, async tx => {
@@ -893,36 +938,47 @@ function renderShops() {
 }
 $("shopGrid").onclick = e => { const c = e.target.closest(".cz"); if (c) openShop(c.dataset.id); };
 // ---------- アルバイト ----------
-const JOB_MAX = 3, hourNow = () => Math.floor(Date.now() / 3600e3);
+const JOB_MAX = 3, JOB_CAP = 72, hourNow = () => Math.floor((Date.now() - 90e3) / 3600e3);
 const hashN = str => { let h = 2166136261; for (const ch of String(str)) { h ^= ch.charCodeAt(0); h = Math.imul(h, 16777619) >>> 0; } return h; };
 const humansOf = s => S.citizens.filter(c => (c.jobs || []).includes(s.id) && c.no !== s.owner);
 function aiStaff(s) { if (S.pop >= 100) return 0; let n = 1 + hashN(s.id + ":" + todayJST()) % 3; if (S.pop >= 50) n = Math.min(n, 1); return Math.max(0, n - humansOf(s).length); }
 function dailySales(s) { const h = Math.min(humansOf(s).length, s.staffN || 0); return 5000 * (2 * h + aiStaff(s)); }
 function staffHtml(s) { const hs = humansOf(s), ai = aiStaff(s);
   return `${hs.map(c => `<span class="badge" style="background:#E3F1FF;color:#1B4F8A">${esc(c.icon || "🙂")} ${esc(c.name)}</span>`).join(" ")}${ai ? ` <span class="badge" style="background:#EEE;color:#555">🤖 AIバイト ×${ai}</span>` : ""}${!hs.length && !ai ? `<span class="note">まだだれもいません</span>` : ""}`; }
-async function workShift(s, M) {
-  try { const h = hourNow(); let got = 0;
-    await runTransaction(db, async tx => {
-      const me = await tx.get(doc(db, "citizens", String(S.myNo))), sh = await tx.get(doc(db, "shops", s.id)); if (!sh.exists()) throw new Error("このお店はもうありません");
-      const ow = await tx.get(doc(db, "citizens", String(sh.data().owner))), wage = sh.data().wage || 1000, md = me.data();
-      if (!(md.jobs || []).includes(s.id)) throw new Error("先にアルバイトに入ってね");
-      if ((md.wk || {})[s.id] === h) throw new Error("このお店のシフトは、次の時間まで待ってね（1時間に1回）");
-      if ((ow.data().money || 0) < wage) throw new Error("店長のお金が足りなくて、今はバイト代が出せません");
-      const nw = (md.nwork || 0) + 1, wk = { ...(md.wk || {}) }; wk[s.id] = h;
-      tx.set(doc(db, "works", `${S.myNo}_w${nw}`), { no: S.myNo, shop: s.id, h, at: serverTimestamp() });
-      tx.update(doc(db, "citizens", String(sh.data().owner)), { money: ow.data().money - wage });
-      tx.update(doc(db, "citizens", String(S.myNo)), { money: md.money + wage, nwork: nw, wk, earned: (md.earned || 0) + wage }); got = wage; });
-    M.innerHTML = `<span class="okm">おつかれさま！ バイト代 ${yen(got)} が入りました（次は1時間後）</span>`; }
-  catch (e) { M.innerHTML = `<span class="err">${esc(e.code ? errText(e) : e.message)}</span>`; } }
+// バイト代は1時間ごとにたまって、サイトを開いたとき（と開いている間は数分ごと）に自動で受けとる
+async function collectPay(sid) {
+  const h = hourNow(); let got = 0, hours = 0;
+  await runTransaction(db, async tx => {
+    const jr = doc(db, "jobs", `${S.myNo}_${sid}`), j = await tx.get(jr);
+    const sh = await tx.get(doc(db, "shops", sid)); if (!sh.exists()) return;
+    if (!j.exists()) { if (sh.data().owner !== S.myNo) tx.set(jr, { no: S.myNo, shop: sid, last: h }); return; } // 前のしくみで入っていた人は、今からカウント開始
+    const me = await tx.get(doc(db, "citizens", String(S.myNo))), ow = await tx.get(doc(db, "citizens", String(sh.data().owner)));
+    const wage = sh.data().wage || 1000, last = j.data().last; let k = Math.min(JOB_CAP, h - last);
+    if (k < 1) return; k = Math.min(k, Math.floor((ow.data().money || 0) / wage)); if (k < 1) return;
+    const nw = (me.data().nwork || 0) + 1;
+    tx.set(doc(db, "works", `${S.myNo}_w${nw}`), { no: S.myNo, shop: sid, k, at: serverTimestamp() });
+    tx.update(jr, { last: last + k });
+    tx.update(doc(db, "citizens", String(sh.data().owner)), { money: ow.data().money - wage * k });
+    tx.update(doc(db, "citizens", String(S.myNo)), { money: me.data().money + wage * k, nwork: nw, earned: (me.data().earned || 0) + wage * k });
+    got = wage * k; hours = k; });
+  return { got, hours }; }
+let collecting = false;
+async function autoCollect() { if (!S.myNo || collecting) return; const me = S.citizens.find(c => c.no === S.myNo); if (!me || !(me.jobs || []).length) return; collecting = true;
+  let sum = 0, hrs = 0; for (const sid of me.jobs) { try { const r = await collectPay(sid); sum += r.got; hrs += r.hours; } catch (e) { console.warn("pay", e); } }
+  collecting = false; if (sum > 0) toast(`👷 バイト代 ${yen(sum)}（${hrs}時間ぶん）が入りました`); }
+function toast(t) { let el = $("zkToast"); if (!el) { el = document.createElement("div"); el.id = "zkToast"; el.style.cssText = "position:fixed;left:50%;bottom:24px;transform:translateX(-50%);background:#2B2F4A;color:#fff;padding:12px 18px;border-radius:14px;font-weight:800;z-index:9999;box-shadow:0 6px 20px rgba(0,0,0,.25);max-width:90%;text-align:center"; document.body.appendChild(el); } el.textContent = t; el.style.display = "block"; clearTimeout(el._t); el._t = setTimeout(() => el.style.display = "none", 4500); }
+setInterval(autoCollect, 4 * 60e3);
 async function setJob(s, join, M) {
+  if (!join) { try { const r = await collectPay(s.id); if (r.got) toast(`最後のバイト代 ${yen(r.got)} を受けとりました`); } catch {} }
   try { await runTransaction(db, async tx => {
       const me = await tx.get(doc(db, "citizens", String(S.myNo))), sh = await tx.get(doc(db, "shops", s.id)); if (!sh.exists()) throw new Error("このお店はもうありません");
       const jobs = [...(me.data().jobs || [])].filter(id => S.shops.some(v => v.id === id) || id === s.id), has = jobs.includes(s.id);
       if (join) { if (has) throw new Error("もうここでバイトしています"); if (jobs.length >= JOB_MAX) throw new Error(`アルバイトは${JOB_MAX}つまでです（どれかをやめてね）`); if (sh.data().owner === S.myNo) throw new Error("自分のお店ではバイトできません"); jobs.push(s.id); }
       else { if (!has) throw new Error("ここではバイトしていません"); jobs.splice(jobs.indexOf(s.id), 1); }
       tx.update(doc(db, "citizens", String(S.myNo)), { jobs });
-      tx.update(doc(db, "shops", s.id), { staffN: Math.max(0, (sh.data().staffN || 0) + (join ? 1 : -1)) }); });
-    M.innerHTML = `<span class="okm">${join ? "アルバイトに入りました！ 1時間に1回「シフトに入る」でバイト代がもらえます" : "アルバイトをやめました"}</span>`; setTimeout(() => openShop(s.id), 900); }
+      tx.update(doc(db, "shops", s.id), { staffN: Math.max(0, (sh.data().staffN || 0) + (join ? 1 : -1)) });
+      if (join) tx.set(doc(db, "jobs", `${S.myNo}_${s.id}`), { no: S.myNo, shop: s.id, last: hourNow() }); else tx.delete(doc(db, "jobs", `${S.myNo}_${s.id}`)); });
+    M.innerHTML = `<span class="okm">${join ? "アルバイトに入りました！ やめるまで、1時間ごとに時給が自動で入ります" : "アルバイトをやめました"}</span>`; setTimeout(() => openShop(s.id), 900); }
   catch (e) { M.innerHTML = `<span class="err">${esc(e.code ? errText(e) : e.message)}</span>`; } }
 async function claimSales(s, M) { const amount = dailySales(s); if (amount <= 0) return M.innerHTML = `<span class="err">今日はまだ売上がありません（バイトがいると売上が出ます）</span>`;
   try { const d = todayJST(); await runTransaction(db, async tx => {
@@ -939,41 +995,56 @@ function ownerPanel(s) { return `<hr style="border:0;border-top:1px dashed #ddd;
   <label>何のお店？</label><input id="seWhat" maxlength="30" value="${esc(s.what || "")}">
   <label>ひとこと（30文字まで）</label><input id="seCatch" maxlength="30" value="${esc(s.catch || "")}">
   <label>アイコン（絵文字1つ）</label><input id="seEmoji" maxlength="4" value="${esc(s.emoji || "🏪")}">
-  <label>商品の値段（500円〜5万円）</label><input id="sePrice" type="number" inputmode="numeric" min="500" max="50000" step="100" value="${s.price || 1000}">
+  <label>いつもの商品の値段（1円〜100万円）</label><input id="sePrice" type="number" inputmode="numeric" min="1" max="1000000" step="1" value="${s.price || 1000}">
+  <label>🛒 商品リスト（1行に1つ「商品名 値段」・20個まで・1円から）</label><textarea id="seItems" rows="5" placeholder="メロンパン 120&#10;コーヒー 300">${esc((s.items || []).map(it => `${it.name} ${it.price}`).join("\n"))}</textarea>
+  <label>👷 アルバイト割引（バイトの人は何％引き？ 0〜50）</label><input id="seBdisc" type="number" inputmode="numeric" min="0" max="50" step="5" value="${s.bdisc ?? 20}">
   <label>アルバイトの時給（500円〜2万円）</label><input id="seWage" type="number" inputmode="numeric" min="500" max="20000" step="100" value="${s.wage || 1000}">
+  <label>📜 このお店だけのルール（200文字まで）</label><textarea id="seRule" maxlength="200" rows="3" placeholder="例：株券を買った人に、お店の売上の一部を配当として配る">${esc(s.rule || "")}</textarea>
+  <p class="note">書いたルールはAIの運営が見て、大丈夫そうなら新しい機能としてサイトに追加します（変えると「審査中」にもどります）。</p>
   <button class="btn sec wide" id="seGo">保存する</button><div class="small" id="seMsg"></div>
   <button class="btn sec wide" id="seDel" style="margin-top:10px;background:#FDECEA;color:#B3261E">このお店をしめる（消す）</button><div class="small" id="sdMsg"></div>`; }
 function bindOwner(s) {
   $("clBtn").onclick = () => claimSales(s, $("clMsg"));
-  $("seGo").onclick = async () => { const M = $("seMsg"), name = $("seName").value.trim(), what = $("seWhat").value.trim(), ct = $("seCatch").value.trim(), em = $("seEmoji").value.trim() || "🏪", price = Math.round(Number($("sePrice").value)), wage = Math.round(Number($("seWage").value));
-    if (!name) return M.innerHTML = `<span class="err">名前を入れてね</span>`; if (hasNG(name + what + ct)) return M.innerHTML = `<span class="err">使えない言葉が入っています</span>`;
-    if (!(price >= 500 && price <= 50000)) return M.innerHTML = `<span class="err">値段は500円〜5万円にしてね</span>`; if (!(wage >= 500 && wage <= 20000)) return M.innerHTML = `<span class="err">時給は500円〜2万円にしてね</span>`;
-    try { await updateDoc(doc(db, "shops", s.id), { name, what, catch: ct, emoji: em, price, wage }); M.innerHTML = `<span class="okm">保存しました！</span>`; } catch (e) { M.innerHTML = `<span class="err">${esc(errText(e))}</span>`; } };
+  $("seGo").onclick = async () => { const M = $("seMsg"), name = $("seName").value.trim(), what = $("seWhat").value.trim(), ct = $("seCatch").value.trim(), rule = $("seRule").value.trim(), em = $("seEmoji").value.trim() || "🏪", price = Math.round(Number($("sePrice").value)), wage = Math.round(Number($("seWage").value)), bdisc = Math.round(Number($("seBdisc").value));
+    const items = []; for (const ln of $("seItems").value.split("\n")) { const m = ln.trim().match(/^(.+?)[\s　,、]+([0-9０-９]+)\s*円?$/); if (!ln.trim()) continue; if (!m) return M.innerHTML = `<span class="err">「${esc(ln.trim())}」は「商品名 値段」の形で書いてね</span>`; const pr = Number(m[2].replace(/[０-９]/g, d => "０１２３４５６７８９".indexOf(d))); if (!(pr >= 1 && pr <= 1000000)) return M.innerHTML = `<span class="err">「${esc(m[1])}」の値段は1円〜100万円にしてね</span>`; items.push({ name: m[1].slice(0, 20), price: pr }); }
+    if (items.length > 20) return M.innerHTML = `<span class="err">商品は20個までです</span>`; if (!(bdisc >= 0 && bdisc <= 50)) return M.innerHTML = `<span class="err">バイト割引は0〜50％にしてね</span>`; if (hasNG(items.map(i => i.name).join(""))) return M.innerHTML = `<span class="err">商品名に使えない言葉が入っています</span>`;
+    if (!name) return M.innerHTML = `<span class="err">名前を入れてね</span>`; if (hasNG(name + what + ct + rule)) return M.innerHTML = `<span class="err">使えない言葉が入っています</span>`;
+    if (!(price >= 1 && price <= 1000000)) return M.innerHTML = `<span class="err">値段は1円〜100万円にしてね</span>`; if (!(wage >= 500 && wage <= 20000)) return M.innerHTML = `<span class="err">時給は500円〜2万円にしてね</span>`;
+    try { const up = { name, what, catch: ct, emoji: em, price, wage, items, bdisc }; if (rule !== (s.rule || "")) { up.rule = rule; up.ruleSt = "pending"; }
+      await updateDoc(doc(db, "shops", s.id), up); M.innerHTML = `<span class="okm">保存しました！${up.rule ? " ルールはAIの審査待ちです" : ""}</span>`; } catch (e) { M.innerHTML = `<span class="err">${esc(errText(e))}</span>`; } };
   $("seDel").onclick = async () => { const M = $("sdMsg"); if (!confirm(`「${s.name}」をしめますか？ 売上の記録も消えて、元にもどせません。開店費はもどりません。`)) return;
     try { await deleteDoc(doc(db, "shops", s.id)); M.innerHTML = `<span class="okm">お店をしめました</span>`; setTimeout(() => $("sheet").classList.remove("on"), 900); } catch (e) { M.innerHTML = `<span class="err">${esc(errText(e))}</span>`; } }; }
 function openShop(id) { const s = S.shops.find(v => v.id === id); if (!s) return; const owner = S.citizens.find(c => c.no === s.owner);
   sheet(`<h3 style="margin:0">${esc(s.emoji || "🏪")} ${esc(s.name)}</h3><div class="note">社長：${esc(owner ? owner.name : "国民No." + s.owner)}${s.official ? "（運営の会社）" : ""}</div>
   <p>${esc(s.catch || "")}</p><p class="small">${esc(s.desc || s.what || "")}</p>
-  ${(s.items || []).map(it => `<div class="rank"><span>${esc(it.name)}</span><span class="v">${yen(it.price)}</span></div>`).join("")}
+  ${(() => { const isB = S.myNo && S.me && (S.me.jobs || []).includes(s.id), dp = p => p - Math.floor(p * (s.bdisc ?? 20) / 100);
+    const list = (s.items || []).length ? s.items.map((it, i) => ({ i, name: it.name, price: it.price })) : [{ i: -1, name: "いつもの商品", price: s.price || 1000 }];
+    return `<h4 style="margin:10px 0 4px">🛒 商品</h4>` + list.map(it => `<div class="rank"><span>${esc(it.name)}</span><span class="v">${isB && s.owner !== S.myNo ? `<s class="note">${yen(it.price)}</s> ${yen(dp(it.price))}` : yen(it.price)}</span>${S.myNo && s.owner !== S.myNo ? `<button class="btn" style="padding:6px 12px;margin-left:8px" data-buy="${it.i}">買う</button>` : ""}</div>`).join("")
+      + (isB && s.owner !== S.myNo ? `<p class="note">👷 あなたはここのバイトなので ${s.bdisc ?? 20}％引き！</p>` : `<p class="note">ここでバイトすると ${s.bdisc ?? 20}％引きで買えます</p>`); })()}
   <p class="small">商品の値段：<b>${yen(s.price || 1000)}</b>／売上：${yen(s.sales || 0)}</p>
-  <button class="btn wide" id="buyBtn">${S.myNo ? "このお店で買う（10%還元＋スタンプ）" : "コメント「" + esc(s.name) + "で買う」をコピー"}</button><div class="small" id="buyMsg"></div>
+  ${s.rule ? `<div class="card small" style="margin:6px 0"><b>📜 このお店のルール</b> <span class="badge" style="background:${s.ruleSt === "ok" ? "#DFF5E3;color:#1E7B34" : s.ruleSt === "ng" ? "#FDECEA;color:#B3261E" : "#FFF4D6;color:#6B4A00"}">${s.ruleSt === "ok" ? "✅ 採用" : s.ruleSt === "ng" ? "見送り" : "審査中"}</span><br>${esc(s.rule)}${s.ruleNote ? `<br><span class="note">運営より：${esc(s.ruleNote)}</span>` : ""}</div>` : ""}
+  ${S.myNo ? `<p class="note">買うと10%還元＋スタンプ1つ</p>` : `<button class="btn wide" id="buyBtn">コメント「${esc(s.name)}で買う」をコピー</button>`}<div class="small" id="buyMsg"></div>
   <hr style="border:0;border-top:1px dashed #ddd;margin:14px 0"><h4 style="margin:0 0 6px">👷 アルバイト（時給 ${yen(s.wage || 1000)}）</h4><div>${staffHtml(s)}</div>
-  ${S.myNo && s.owner !== S.myNo ? (S.me && (S.me.jobs || []).includes(s.id) ? `<div class="row" style="margin-top:8px"><button class="btn" id="wkBtn">シフトに入る（+${yen(s.wage || 1000)}）</button><button class="btn sec" id="jobQuit">やめる</button></div>` : `<button class="btn sec wide" id="jobJoin" style="margin-top:8px">ここでアルバイトする（${(S.me && (S.me.jobs || []).length) || 0}/${JOB_MAX}）</button>`) : ""}
+  ${S.myNo && s.owner !== S.myNo ? (S.me && (S.me.jobs || []).includes(s.id) ? `<div class="small" style="margin-top:8px">✅ ここではたらいています。やめるまで、1時間ごとに ${yen(s.wage || 1000)} が自動で入ります（サイトを開いたときにまとめて受けとり・最大${JOB_CAP}時間ぶん）。</div><button class="btn sec wide" id="jobQuit" style="margin-top:6px">アルバイトをやめる</button>` : `<button class="btn sec wide" id="jobJoin" style="margin-top:8px">ここでアルバイトする（${(S.me && (S.me.jobs || []).length) || 0}/${JOB_MAX}）</button>`) : ""}
   <div class="small" id="jobMsg"></div>
   ${S.myNo && s.owner === S.myNo ? ownerPanel(s) : ""}`);
-  if ($("wkBtn")) $("wkBtn").onclick = () => workShift(s, $("jobMsg")); if ($("jobQuit")) $("jobQuit").onclick = () => setJob(s, false, $("jobMsg")); if ($("jobJoin")) $("jobJoin").onclick = () => setJob(s, true, $("jobMsg"));
+  if ($("jobQuit")) $("jobQuit").onclick = () => setJob(s, false, $("jobMsg")); if ($("jobJoin")) $("jobJoin").onclick = () => setJob(s, true, $("jobMsg"));
   if (S.myNo && s.owner === S.myNo) bindOwner(s);
-  $("buyBtn").onclick = async () => { const m = $("buyMsg");
+  document.querySelectorAll("#sheet [data-buy]").forEach(b => b.onclick = () => doBuy(Number(b.dataset.buy)));
+  if ($("buyBtn")) $("buyBtn").onclick = () => doBuy(-1);
+  async function doBuy(it) { const m = $("buyMsg");
     if (!S.myNo) { try { await navigator.clipboard.writeText(`${s.name}で買う`); m.innerHTML = `<span class="okm">コピーしました！動画のコメントにはってね</span>`; } catch { m.textContent = `「${s.name}で買う」とコメントしてね`; } return; }
     if (s.owner === S.myNo) { m.innerHTML = `<span class="note">自分のお店では買えません</span>`; return; }
     try { const d = todayJST();
       await runTransaction(db, async tx => {
         const sh = await tx.get(doc(db, "shops", s.id)), me = await tx.get(doc(db, "citizens", String(S.myNo))), ow = await tx.get(doc(db, "citizens", String(sh.data().owner)));
         if (sh.data().owner === S.myNo) throw new Error("自分のお店では買えません");
-        const price = sh.data().price || 1000; if (me.data().money < price) throw new Error("お金が足りません");
+        const items = sh.data().items || [], base = it >= 0 ? (items[it] || {}).price : (sh.data().price || 1000); if (!base) throw new Error("その商品はもうありません");
+        const job = await tx.get(doc(db, "jobs", `${S.myNo}_${s.id}`)), r = sh.data().bdisc ?? 20, price = job.exists() ? base - (base * r - (base * r) % 100) / 100 : base;
+        if (me.data().money < price) throw new Error("お金が足りません");
         const nb = (me.data().nbuy || 0) + 1, back = (price - price % 10) / 10, bonus = nb % STAMP_N === 0 ? STAMP_BONUS : 0;
         const bag = { ...(me.data().bag || {}) }; bag[s.id] = (bag[s.id] || 0) + 1;
-        tx.set(doc(db, "buys", `${S.myNo}_b${nb}`), { no: S.myNo, shop: s.id, day: d, at: serverTimestamp() });
+        tx.set(doc(db, "buys", `${S.myNo}_b${nb}`), { no: S.myNo, shop: s.id, day: d, at: serverTimestamp(), it, base, pay: price });
         tx.update(doc(db, "shops", s.id), { sales: (sh.data().sales || 0) + price });
         tx.update(doc(db, "citizens", String(sh.data().owner)), { money: ow.data().money + price });
         tx.update(doc(db, "citizens", String(S.myNo)), { money: me.data().money - price + back + bonus, nbuy: nb, bag, spent: (me.data().spent || 0) + price });
@@ -1004,7 +1075,7 @@ function listen() {
   onSnapshot(doc(db, "meta", "counter"), s => { S.pop = Math.max(0, ((s.data() || {}).next || 1) - 1); renderTop(); });
   onSnapshot(doc(db, "meta", "prices"), s => { const p = s.data(); if (p && p.land) { S.prices = { land: p.land, shop: p.shop || 50000 }; $("shopCost").textContent = yen(S.prices.shop); } }, () => {});
   onSnapshot(query(collection(db, "citizens"), orderBy("no"), limit(500)), q => { S.citizens = q.docs.map(d => d.data()); renderPeople(); renderRank(); renderMe(); renderTop(); });
-  onSnapshot(collection(db, "shops"), q => { S.shops = q.docs.map(d => ({ id: d.id, ...d.data() })); renderShops(); try { if (G3.ok) G3.dirty(); } catch {} });
+  onSnapshot(collection(db, "shops"), q => { S.shops = q.docs.map(d => ({ id: d.id, ...d.data() })); renderShops(); try { renderMe(); } catch {} try { if (G3.ok) G3.dirty(); } catch {} });
   onSnapshot(collection(db, "lands"), q => { S.lands = new Map(q.docs.map(d => [d.id, d.data()])); ISO.img = []; if (G3.ok) G3.dirty(); if ($("s-map").classList.contains("on")) drawMap(); });
   onSnapshot(query(collection(db, "news"), orderBy("at", "desc"), limit(10)), q => { if (!q.empty) $("newsList").innerHTML = q.docs.map(d => { const n = d.data(); const t = n.at && n.at.toDate ? n.at.toDate() : null; return `<div class="news"><time>${t ? (t.getMonth() + 1) + "/" + t.getDate() : ""}</time>${esc(n.text)}</div>`; }).join(""); }, () => {});
   onSnapshot(query(collection(db, "history"), orderBy("at"), limit(50)), q => { if (!q.empty) $("historyList").innerHTML = q.docs.map(d => `<div class="news">🏁 ${esc(d.data().text)}</div>`).join(""); }, () => {});
@@ -1012,7 +1083,7 @@ function listen() {
 function passInfo() { const P = $("passInfo"), B = $("pGo"); if (!P) return; P.innerHTML = S.hasPass ? `✅ 合言葉はつくってあります。別のスマホでは「国民番号 ${S.myNo}」＋合言葉でログインできます。変えるときは下に新しい合言葉を入れてね。` : "合言葉をつくると、別のスマホやパソコンでも「国民番号＋合言葉」でログインできます。だれにも教えないでね。"; B.textContent = S.hasPass ? "合言葉を変える" : "合言葉を保存"; }
 async function checkLink(user) {
   try { const l = await getDoc(doc(db, "links", user.uid)); S.myNo = l.exists() ? l.data().no : null; S.hasPass = !!(l.exists() && l.data().h); } catch { S.myNo = null; }
-  renderMe(); if (S.myNo) loadMyReqs(); passInfo();
+  renderMe(); if (S.myNo) loadMyReqs(); passInfo(); setTimeout(autoCollect, 2500);
 }
 function renderMe() {
   const me = S.myNo ? S.citizens.find(c => c.no === S.myNo) : null;
@@ -1023,6 +1094,7 @@ function renderMe() {
     <div><div class="big" style="font-size:22px">${esc(me.name)}</div><div class="note">国民No.${me.no}</div>${badgesOf(me)}</div></div>
     <p style="margin:10px 0 0">持っているお金：<b class="big" style="font-size:22px">${yen(me.money)}</b></p><p class="note">※国の中だけのお金です</p>
     <p class="small" style="margin:10px 0 4px"><b>🎫 お買い物スタンプ</b>（人のお店で買うたびに1つ。${STAMP_N}個で${yen(STAMP_BONUS)}！）</p><div style="font-size:22px;letter-spacing:2px">${"●".repeat((me.nbuy || 0) % STAMP_N)}<span style="color:#DDD">${"○".repeat(STAMP_N - (me.nbuy || 0) % STAMP_N)}</span></div>
+    <p class="small" style="margin:10px 0 4px"><b>🏪 自分のお店</b>（タップで編集・商品・時給・売上）</p><div>${S.shops.filter(v => v.owner === me.no).map(v => `<button class="badge" data-shop="${esc(v.id)}" style="border:0;background:#FFF4D6;color:#6B4A00;margin:2px">${esc(v.emoji || "🏪")} ${esc(v.name)} ✏️</button>`).join(" ") || `<span class="note">まだありません。下の「お店を開く」から開けます</span>`}</div>
     <p class="small" style="margin:10px 0 4px"><b>👷 アルバイト先</b>（${(me.jobs || []).length}/${JOB_MAX}・これまでのバイト代 ${yen(me.earned || 0)}）</p><div>${(me.jobs || []).map(id => { const sh = S.shops.find(v => v.id === id); return sh ? `<button class="badge" data-shop="${esc(id)}" style="border:0;background:#E3F1FF;color:#1B4F8A">${esc(sh.emoji || "🏪")} ${esc(sh.name)} ›</button>` : ""; }).join(" ") || `<span class="note">お店をひらいて「ここでアルバイトする」から入れます</span>`}</div>
     <p class="small" style="margin:10px 0 4px"><b>🎒 持ち物</b>（${me.nbuy || 0}回・${Object.keys(bagOf(me)).length}店）</p><div>${bagHtml(me)}</div>`;
   $("igCard").style.display = me.verified ? "none" : ""; $("igForm").style.display = "none"; if (!me.verified) showIgPending();
@@ -1168,7 +1240,7 @@ $("eGo").onclick = async () => {
 $("qLandGo").onclick = () => showTab("map");
 $("qShopGo").onclick = async () => { const n = $("qShop").value.trim(), w = $("qShopWhat").value.trim(), M = $("qMsg");
   if (!n) return M.innerHTML = `<span class="err">お店の名前を入れてね</span>`; if (hasNG(n + w)) return M.innerHTML = `<span class="err">使えない言葉が入っています</span>`;
-  const price = Math.round(Number($("qShopPrice").value)); if (!(price >= 500 && price <= 50000)) return M.innerHTML = `<span class="err">値段は500円〜5万円にしてね</span>`;
+  const price = Math.round(Number($("qShopPrice").value)); if (!(price >= 1 && price <= 1000000)) return M.innerHTML = `<span class="err">値段は1円〜100万円にしてね</span>`;
   try { const cost = S.prices.shop, sid = "s" + S.myNo + "_" + Date.now().toString(36);
     await runTransaction(db, async tx => {
       const cs = await tx.get(doc(db, "citizens", String(S.myNo))); const money = cs.data().money; if (money < cost) throw new Error("お金が足りません");
