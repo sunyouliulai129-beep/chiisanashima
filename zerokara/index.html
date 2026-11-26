@@ -996,7 +996,7 @@ function ownerPanel(s) { return `<hr style="border:0;border-top:1px dashed #ddd;
   <label>ひとこと（30文字まで）</label><input id="seCatch" maxlength="30" value="${esc(s.catch || "")}">
   <label>アイコン（絵文字1つ）</label><input id="seEmoji" maxlength="4" value="${esc(s.emoji || "🏪")}">
   <label>いつもの商品の値段（1円〜100万円）</label><input id="sePrice" type="number" inputmode="numeric" min="1" max="1000000" step="1" value="${s.price || 1000}">
-  <label>🛒 商品リスト（1行に1つ「商品名 値段」・20個まで・1円から）</label><textarea id="seItems" rows="5" placeholder="メロンパン 120&#10;コーヒー 300">${esc((s.items || []).map(it => `${it.name} ${it.price}`).join("\n"))}</textarea>
+  <label>🛒 商品リスト（1行に1つ・20個まで・1円から）</label><p class="note" style="margin:0 0 4px">⚠️ <b>商品名と値段のあいだに、スペース（空白）をあけてね。</b>例：「メロンパン 120」（「メロンパン120」だとエラーになります）</p><textarea id="seItems" rows="5" placeholder="メロンパン 120&#10;コーヒー 300">${esc((s.items || []).map(it => `${it.name} ${it.price}`).join("\n"))}</textarea>
   <label>👷 アルバイト割引（バイトの人は何％引き？ 0〜50）</label><input id="seBdisc" type="number" inputmode="numeric" min="0" max="50" step="5" value="${s.bdisc ?? 20}">
   <label>アルバイトの時給（500円〜2万円）</label><input id="seWage" type="number" inputmode="numeric" min="500" max="20000" step="100" value="${s.wage || 1000}">
   <label>📜 このお店だけのルール（200文字まで）</label><textarea id="seRule" maxlength="200" rows="3" placeholder="例：株券を買った人に、お店の売上の一部を配当として配る">${esc(s.rule || "")}</textarea>
