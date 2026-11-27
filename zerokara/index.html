@@ -948,7 +948,7 @@ function openCitizen(no) { const c = S.citizens.find(v => v.no === no); if (!c) 
   sheet(`<div class="row" style="align-items:center"><div style="flex:0 0 56px" class="cz"><div class="ic" style="background:${esc(c.color)}">${esc(c.icon || "🙂")}</div></div><div><h3 style="margin:0">${esc(c.name)}</h3><div class="note">国民No.${c.no}</div>${badgesOf(c)}</div></div>
   <p>${esc(c.bio || "")}</p><p>持っているお金：<b>${yen(c.money)}</b><br>土地：${lands.length}区画<br>お店：${shops.map(s => esc(s.name)).join("、") || "なし"}<br>お買い物：${c.nbuy || 0}回・${Object.keys(bagOf(c)).length}店</p><p class="small" style="margin:0 0 4px"><b>🎒 持ち物</b></p><div>${bagHtml(c)}</div>`); }
 function renderShops() {
-  $("shopGrid").innerHTML = S.shops.map(s => `<div class="cz" data-id="${esc(s.id)}"><div class="ic" style="background:${esc(s.color || "#E8A317")}">${esc(s.emoji || "🏪")}</div><div class="nm">${esc(s.name)}</div><div class="no">${esc(s.catch || s.what || "")}</div>${s.official ? '<span class="badge">運営の会社</span>' : ""}</div>`).join("") || "";
+  $("shopGrid").innerHTML = [...S.shops].sort((x, y) => (y.owner === 7) - (x.owner === 7)).map(s => `<div class="cz" data-id="${esc(s.id)}"><div class="ic" style="background:${esc(s.color || "#E8A317")}">${esc(s.emoji || "🏪")}</div><div class="nm">${esc(s.name)}</div><div class="no">${esc(s.catch || s.what || "")}</div>${s.official ? '<span class="badge">運営の会社</span>' : ""}</div>`).join("") || "";
 }
 $("shopGrid").onclick = e => { const c = e.target.closest(".cz"); if (c) openShop(c.dataset.id); };
 // ---------- アルバイト ----------
@@ -1222,7 +1222,7 @@ function renderMe() {
   $("meChip").textContent = S.myNo ? `国民No.${S.myNo}` : "国民になる";
   if (!me) return;
   $("myCard").innerHTML = `<div class="row" style="align-items:center"><div style="flex:0 0 60px"><div class="ic" style="width:56px;height:56px;border-radius:50%;display:grid;place-items:center;font-size:30px;background:${esc(me.color)}">${esc(me.icon || "🙂")}</div></div>
-    <div><div class="big" style="font-size:22px">${esc(me.name)}</div><div class="note">国民No.${me.no}</div>${badgesOf(me)}</div></div>
+    <div><div class="big" style="font-size:22px">${esc(me.name)}</div><div class="note">国民No.${me.no}</div>${badgesOf(me)}</div></div>${me.no === 7 ? `<a href="./admin.html" style="display:block;margin-top:10px;padding:10px;border-radius:12px;background:#1d2b2a;color:#fff;text-align:center;font-weight:800;text-decoration:none">🛠 運営ページをひらく</a>` : ""}
     <p style="margin:10px 0 0">持っているお金：<b class="big" style="font-size:22px">${yen(me.money)}</b></p><p class="note">※国の中だけのお金です</p>
     <p class="small" style="margin:10px 0 4px"><b>🎫 お買い物スタンプ</b>（人のお店で100円以上買うと1つ。1つのお店で1日1回まで。${STAMP_N}個で${yen(STAMP_BONUS)}！）</p><div style="font-size:22px;letter-spacing:2px">${"●".repeat((me.stamp ?? me.nbuy ?? 0) % STAMP_N)}<span style="color:#DDD">${"○".repeat(STAMP_N - (me.stamp ?? me.nbuy ?? 0) % STAMP_N)}</span></div>
     <p class="small" style="margin:10px 0 4px"><b>🏪 自分のお店</b>（タップで編集・商品・時給・売上）</p><div>${S.shops.filter(v => v.owner === me.no).map(v => `<button class="badge" data-shop="${esc(v.id)}" style="border:0;background:#FFF4D6;color:#6B4A00;margin:2px">${esc(v.emoji || "🏪")} ${esc(v.name)} ✏️</button>`).join(" ") || `<span class="note">まだありません。下の「お店を開く」から開けます</span>`}</div>
