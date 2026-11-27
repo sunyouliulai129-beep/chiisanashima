@@ -1216,6 +1216,22 @@ async function checkLink(user) {
   try { const l = await getDoc(doc(db, "links", user.uid)); S.myNo = l.exists() ? l.data().no : null; S.hasPass = !!(l.exists() && l.data().h); } catch { S.myNo = null; }
   renderMe(); if (S.myNo) loadMyReqs(); passInfo(); setTimeout(autoCollect, 2500); setTimeout(autoClaim, 4000);
 }
+let MS_CACHE = { t: 0, no: 0, rows: [] };
+async function loadMySales(me) {
+  const box = () => $("mySales"); if (!box()) return;
+  try {
+    if (MS_CACHE.no !== me.no || Date.now() - MS_CACHE.t > 60000) { MS_CACHE = { t: Date.now(), no: me.no, rows: (await getDocs(query(collection(db, "dsales"), where("no", "==", me.no)))).docs.map(d => d.data()) }; }
+    const mine = S.shops.filter(v => v.owner === me.no), d0 = todayJST(), rows = MS_CACHE.rows.filter(r => mine.some(v => v.id === r.shop));
+    const sum = f => rows.filter(f).reduce((a, r) => a + (r.amount || 0), 0), dTot = sum(() => true), dToday = sum(r => r.day === d0), cust = mine.reduce((a, v) => a + (v.sales || 0), 0);
+    const md = n => { const t = new Date((d0 - n) * 86400e3); return `${t.getUTCMonth() + 1}/${t.getUTCDate()}`; };
+    const days = [6, 5, 4, 3, 2, 1, 0].map(n => ({ n, v: sum(r => r.day === d0 - n) })), mx = Math.max(1, ...days.map(x => x.v));
+    let h = `<div class="card small" style="margin:0 0 6px;line-height:1.8">💰 売上の合計 <b class="big" style="font-size:20px">${yen(cust + dTot)}</b><br>🛍️ お客さんが買った分 <b>${yen(cust)}</b>／🏪 毎日の売上（バイト）<b>${yen(dTot)}</b><br>📅 今日の毎日の売上 <b>${yen(dToday)}</b>／いまのバイトで1日 <b>${yen(mine.reduce((a, v) => a + dailySales(v), 0))}</b></div>`;
+    h += `<div class="small" style="margin:6px 0 2px"><b>この7日間の毎日の売上</b></div>` + days.map(x => `<div style="display:flex;align-items:center;gap:6px;font-size:12px;margin:2px 0"><span style="width:38px">${md(x.n)}</span><span style="flex:1;background:#F2EDE3;border-radius:6px;height:12px;overflow:hidden"><span style="display:block;height:100%;width:${Math.round(x.v / mx * 100)}%;background:#E8A317"></span></span><span style="width:80px;text-align:right">${yen(x.v)}</span></div>`).join("");
+    h += `<div class="small" style="margin:10px 0 2px"><b>お店ごと</b>（タップでお店をひらく）</div>` + [...mine].sort((a, b) => ((b.sales || 0) + sum(r => r.shop === b.id)) - ((a.sales || 0) + sum(r => r.shop === a.id))).map(v => { const ds = sum(r => r.shop === v.id); return `<div class="rank" data-shop="${esc(v.id)}" style="cursor:pointer"><span>${esc(v.emoji || "🏪")} ${esc(v.name)}<br><span class="note">お客さん ${yen(v.sales || 0)}・毎日 ${yen(ds)}・1日 ${yen(dailySales(v))}／バイト${humansOf(v).length}人</span></span><span class="v" style="white-space:nowrap">${yen((v.sales || 0) + ds)}</span></div>`; }).join("");
+    h += `<p class="note" style="margin:6px 0 0">※「お客さんが買った分」はほかの国民がお店で買った合計、「毎日の売上」はバイトの人数で決まって毎日自動で入る分です。</p>`;
+    if (box()) box().innerHTML = h;
+  } catch (e) { if (box()) box().innerHTML = `<span class="err">売上を読みこめませんでした（${esc(e.code || e.message)}）</span>`; }
+}
 function renderMe() {
   const me = S.myNo ? S.citizens.find(c => c.no === S.myNo) : null;
   $("meOut").style.display = S.myNo ? "none" : ""; $("meIn").style.display = S.myNo ? "" : "none";
@@ -1227,7 +1243,8 @@ function renderMe() {
     <p class="small" style="margin:10px 0 4px"><b>🎫 お買い物スタンプ</b>（人のお店で100円以上買うと1つ。1つのお店で1日1回まで。${STAMP_N}個で${yen(STAMP_BONUS)}！）</p><div style="font-size:22px;letter-spacing:2px">${"●".repeat((me.stamp ?? me.nbuy ?? 0) % STAMP_N)}<span style="color:#DDD">${"○".repeat(STAMP_N - (me.stamp ?? me.nbuy ?? 0) % STAMP_N)}</span></div>
     <p class="small" style="margin:10px 0 4px"><b>🏪 自分のお店</b>（タップで編集・商品・時給・売上）</p><div>${S.shops.filter(v => v.owner === me.no).map(v => `<button class="badge" data-shop="${esc(v.id)}" style="border:0;background:#FFF4D6;color:#6B4A00;margin:2px">${esc(v.emoji || "🏪")} ${esc(v.name)} ✏️</button>`).join(" ") || `<span class="note">まだありません。下の「お店を開く」から開けます</span>`}</div>
     <p class="small" style="margin:10px 0 4px"><b>👷 アルバイト先</b>（${(me.jobs || []).length}/${JOB_MAX}・これまでのバイト代 ${yen(me.earned || 0)}）</p><div>${(me.jobs || []).map(id => { const sh = S.shops.find(v => v.id === id); return sh ? `<button class="badge" data-shop="${esc(id)}" style="border:0;background:#E3F1FF;color:#1B4F8A">${esc(sh.emoji || "🏪")} ${esc(sh.name)} ›</button>` : ""; }).join(" ") || `<span class="note">お店をひらいて「ここでアルバイトする」から入れます</span>`}</div>
-    <p class="small" style="margin:10px 0 4px"><b>🎒 持ち物</b>（${me.nbuy || 0}回・${Object.keys(bagOf(me)).length}店）</p><div>${bagHtml(me)}</div>`;
+    <p class="small" style="margin:10px 0 4px"><b>🎒 持ち物</b>（${me.nbuy || 0}回・${Object.keys(bagOf(me)).length}店）</p><div>${bagHtml(me)}</div>${S.shops.some(v => v.owner === me.no) ? `<p class="small" style="margin:12px 0 4px"><b>📊 売上の確認</b>（自分のお店）</p><div id="mySales"><span class="note">読みこみ中…</span></div>` : ""}`;
+  if (S.shops.some(v => v.owner === me.no)) loadMySales(me);
   $("igCard").style.display = me.verified ? "none" : ""; $("igForm").style.display = "none"; if (!me.verified) showIgPending();
   S.me = me; drawLinkCard();
   if (document.activeElement !== $("eBio")) $("eBio").value = me.bio || "";
