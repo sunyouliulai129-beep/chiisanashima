@@ -120,12 +120,12 @@
       [
         "A",
         "カギをさがす",
-        0
+        1
       ],
       [
         "B",
         "みんなで力を合わせて押す",
-        0
+        1
       ],
       [
         "C",
@@ -303,6 +303,24 @@
       "by": "t9m_xar",
       "text": "サッカー場を作る",
       "status": "採用"
+    },
+    {
+      "day": 4,
+      "by": "りきや",
+      "text": "光るキノコを毒見してみる",
+      "status": "候補"
+    },
+    {
+      "day": 4,
+      "by": "りきや",
+      "text": "危ない動物にそなえて弓を作る",
+      "status": "候補"
+    },
+    {
+      "day": 4,
+      "by": "りきや",
+      "text": "遺跡のとびらのカギを作る",
+      "status": "候補"
     }
   ],
   "timeline": [
@@ -717,7 +735,7 @@
       "id": "@おにぎり-o6z",
       "platform": "yt",
       "name": "おにぎり",
-      "points": 3,
+      "points": 4,
       "level": 2,
       "job": "初めてのお祭りで、やぐらのまわりをおどっている",
       "wish": null,
@@ -725,12 +743,13 @@
         "1日目（あそび方）：投票C",
         "2日目：投票C",
         "3日目：投票C",
-        "4日目：動画に登場"
+        "4日目：動画に登場",
+        "4日目：投票B"
       ],
       "since_day": 1,
       "work": null,
       "work_days": 0,
-      "coins": 3,
+      "coins": 4,
       "icon": "shell",
       "frame": "wood",
       "owned": [],
@@ -1236,7 +1255,7 @@
       "id": "@りきや-e6x",
       "platform": "yt",
       "name": "りきや",
-      "points": 14,
+      "points": 15,
       "level": 3,
       "job": "遺跡のそばで光るキノコと青い鉱石を調べている",
       "wish": null,
@@ -1248,12 +1267,13 @@
         "3日目：大工で働いた",
         "3日目：アイデア「キノコか鉱石を見つける」",
         "4日目：アイデア「キノコか鉱石を見つける」が採用",
-        "4日目：動画に登場"
+        "4日目：動画に登場",
+        "4日目：アイデア「キノコを毒見する・弓を作る・カギを作る」"
       ],
       "since_day": 3,
       "work": "大工",
       "work_days": 1,
-      "coins": 14,
+      "coins": 15,
       "icon": "fish",
       "frame": "wood",
       "owned": [],
@@ -1547,6 +1567,27 @@
       "owned": [],
       "appeared": 1,
       "rewarded_level": 0
+    },
+    {
+      "id": "@TigerTen-e7b",
+      "platform": "yt",
+      "name": "TigerTen",
+      "points": 1,
+      "level": 1,
+      "job": "浜辺に流れ着いたばかり。島を見回している",
+      "wish": null,
+      "history": [
+        "4日目：投票A"
+      ],
+      "since_day": 4,
+      "work": null,
+      "work_days": 0,
+      "coins": 1,
+      "icon": "palm",
+      "frame": "wood",
+      "owned": [],
+      "appeared": 0,
+      "rewarded_level": 0
     }
   ],
   "links": {
@@ -1741,6 +1782,6 @@
     "every": 5,
     "rule": "Lv5ごとに、そのレベルと同じ数のコイン（Lv5→5枚、Lv10→10枚…Lv100→100枚）"
   },
-  "last_sync": "2026-11-27 22:57",
+  "last_sync": "2026-11-28 01:00",
   "events_rule": "YouTubeのチャンネル登録者だけで数える。節目と名前は events.js（20,30,50,70,100,150,200,300,500,700,1000…と終わりなし）"
 }
