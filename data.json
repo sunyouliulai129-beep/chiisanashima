@@ -1481,6 +1481,27 @@
       "owned": [],
       "appeared": 0,
       "rewarded_level": 0
+    },
+    {
+      "id": "@放火魔",
+      "platform": "yt",
+      "name": "放火魔",
+      "points": 0,
+      "level": 1,
+      "job": "浜辺に流れ着いたばかり。島を見回している",
+      "wish": null,
+      "history": [
+        "3日目：コメント「なぜ非常食用のひよこに情けを与えたんですか」"
+      ],
+      "since_day": 3,
+      "work": null,
+      "work_days": 0,
+      "coins": 0,
+      "icon": "fish",
+      "frame": "wood",
+      "owned": [],
+      "appeared": 0,
+      "rewarded_level": 0
     }
   ],
   "links": {
@@ -1675,6 +1696,6 @@
     "every": 5,
     "rule": "Lv5ごとに、そのレベルと同じ数のコイン（Lv5→5枚、Lv10→10枚…Lv100→100枚）"
   },
-  "last_sync": "2026-11-27 06:58",
+  "last_sync": "2026-11-27 15:56",
   "events_rule": "YouTubeのチャンネル登録者だけで数える。節目と名前は events.js（20,30,50,70,100,150,200,300,500,700,1000…と終わりなし）"
 }
