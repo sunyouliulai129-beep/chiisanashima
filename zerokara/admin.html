@@ -208,8 +208,9 @@ $("reload2").onclick = () => drawAll().catch(e => log("失敗: " + e.message));
 $("reload").onclick = () => draw().catch(e => log("失敗: " + e.message));
 getRedirectResult(auth).catch(e => log("ログイン失敗: " + e.message));
 onAuthStateChanged(auth, async u => {
-  ZK.user = u?.email || null; ZK.ready = !!u && u.email === ADMIN;
-  $("who").textContent = u ? (u.email || "（匿名）") + (ZK.ready ? " ✅運営" : " ⚠運営ではありません") : "ログインしていません";
+  ZK.user = u?.email || null; ZK.ready = !!u && u.email === ADMIN; let no7 = false;
+  if (u && !ZK.ready) { try { const l = await getDoc(doc(db, "links", u.uid)); no7 = l.exists() && l.data().no === 7; ZK.ready = no7; } catch (e) { } }
+  $("who").textContent = u ? (no7 ? "国民No.7" : (u.email || "（匿名）")) + (ZK.ready ? " ✅運営" : " ⚠運営ではありません") : "ログインしていません";
   $("login").style.display = ZK.ready ? "none" : ""; $("needLogin").style.display = ZK.ready ? "none" : ""; document.querySelectorAll("[data-ok],[data-ng],[data-feat]").forEach(b => b.disabled = !ZK.ready); $("logout").style.display = u ? "" : "none";
   if (ZK.ready) draw().catch(e => log("読みこみ失敗: " + e.message));
 });
