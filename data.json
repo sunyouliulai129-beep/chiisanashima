@@ -120,7 +120,7 @@
       [
         "A",
         "旅人が泊まれる宿をつくる",
-        7
+        8
       ],
       [
         "B",
@@ -780,7 +780,7 @@
       "id": "@おにぎり-o6z",
       "platform": "yt",
       "name": "おにぎり",
-      "points": 4,
+      "points": 5,
       "level": 2,
       "job": "初めてのお祭りで、やぐらのまわりをおどっている",
       "wish": null,
@@ -789,12 +789,13 @@
         "2日目：投票C",
         "3日目：投票C",
         "4日目：動画に登場",
-        "4日目：投票B"
+        "4日目：投票B",
+        "5日目：投票A"
       ],
       "since_day": 1,
       "work": null,
       "work_days": 0,
-      "coins": 4,
+      "coins": 5,
       "icon": "shell",
       "frame": "wood",
       "owned": [],
@@ -1265,18 +1266,25 @@
         "3日目：畑係で働いた",
         "3日目：投票A",
         "5日目：投票C",
-        "5日目：とうろく"
+        "5日目：とうろく",
+        "5日目：YouTubeとつなぐ"
       ],
       "since_day": 3,
       "work": "畑係",
       "work_days": 1,
-      "coins": 4,
+      "coins": 9,
       "icon": "palm",
       "frame": "wood",
-      "owned": [],
+      "owned": [
+        "bridge"
+      ],
       "appeared": 1,
       "rewarded_level": 0,
-      "code_reg": "8d2780"
+      "code_reg": "8d2780",
+      "linked": {
+        "platform": "yt",
+        "id": "@Nanaki_Ao"
+      }
     },
     {
       "id": "azu68512",
@@ -1679,10 +1687,11 @@
       "job": "浜辺に流れ着いたばかり。島を見回している",
       "wish": null,
       "history": [
-        "5日目：投票A"
+        "5日目：投票A",
+        "5日目：しごと「木こり」"
       ],
       "since_day": 5,
-      "work": null,
+      "work": "木こり",
       "work_days": 0,
       "coins": 1,
       "icon": "palm",
@@ -1884,6 +1893,6 @@
     "every": 5,
     "rule": "Lv5ごとに、そのレベルと同じ数のコイン（Lv5→5枚、Lv10→10枚…Lv100→100枚）"
   },
-  "last_sync": "2026-11-28 21:58",
+  "last_sync": "2026-11-28 23:02",
   "events_rule": "YouTubeのチャンネル登録者だけで数える。節目と名前は events.js（20,30,50,70,100,150,200,300,500,700,1000…と終わりなし）"
 }
