@@ -1025,8 +1025,39 @@ function featHtml(s) { const f = s.feats || [], hr = `<hr style="border:0;border
   if (f.includes("slot")) h += hr + `<h4 style="margin:0 0 6px">🎰 スロット</h4><div class="small">商品を買うと、そのぶんスロットが回ります（「〇回転」の商品はその回数）。当たりのお金は国から出ます！<br>💎100倍 0.1％／👑50倍 0.3％／7️⃣10倍 1.2％／🍒4倍 1.5％／🔔3倍 2.5％／🍋2倍 5％／🍊1.5倍 6％／🍇1倍 11％<br>🎁 50回転ごとに5回無料！</div>
     ${S.myNo && s.owner === S.myNo ? `<div class="small" style="margin-top:6px"><b>店長も回せます</b>（はらったお金は国へ。スタンプ・還元はなし）<br>${(s.items || []).map((it, i) => `<button class="btn sec" style="padding:4px 10px;margin:2px" data-selfspin="${i}">${esc(it.name)}（${yen(it.price)}）</button>`).join("")}</div>` : ""}
     <div id="slotBox" style="margin:8px 0;padding:10px;border-radius:12px;background:#1d1433;color:#fff;min-height:40px;text-align:center;font-weight:800"></div><div id="slotMine" class="small"></div>`;
+  if (f.includes("bank")) h += hr + `<h4 style="margin:0 0 6px">🏦 預金（あずける）</h4><div class="small">1,000円単位で、1人100万円まで（1人1口）。<b>10日たつと10%ふえて</b>引き出せます（それより前に引き出すと、あずけた分だけもどります）。ふえた分は国から出ます。</div>
+    <div id="bankBox" class="small" style="margin:6px 0"></div><div class="small" id="bankMsg"></div>`;
+  if (f.includes("b2g1")) h += hr + `<div class="card small" style="margin:0">🍕 <b>ピザ2枚で1枚無料！</b> このお店で買うと、3回目ごとのピザが0円になります。<span id="b2Mine"></span></div>`;
   return h; }
+async function drawBank(s) { const B = $("bankBox"); if (!B) return; if (!S.myNo) { B.innerHTML = `<span class="note">国民になると使えます</span>`; return; }
+  try { const d = await getDoc(doc(db, "bank", String(S.myNo))), d0 = todayJST();
+    if (d.exists()) { const b = d.data(), left = b.day + 10 - d0, out = b.amt + (left <= 0 ? Math.floor(b.amt / 10) : 0);
+      B.innerHTML = `あずけている：<b>${yen(b.amt)}</b>（${left <= 0 ? `🎉 10%ふえました！ 引き出すと <b>${yen(out)}</b>` : `あと<b>${left}日</b>で ${yen(b.amt + Math.floor(b.amt / 10))} に`}）<br><button class="btn" id="bankOut" style="margin-top:6px">${left <= 0 ? `${yen(out)} を引き出す` : "いま引き出す（ふえません）"}</button>`;
+      $("bankOut").onclick = () => bankWithdraw(s); }
+    else { B.innerHTML = `<div style="display:flex;gap:6px"><input id="bankAmt" type="number" inputmode="numeric" min="1000" max="1000000" step="1000" value="10000" style="flex:1;font:inherit;padding:8px;border:1px solid #ccc;border-radius:8px"><button class="btn" id="bankIn">あずける</button></div>`;
+      $("bankIn").onclick = () => bankDeposit(s); } } catch (e) { B.innerHTML = `<span class="err">${esc(e.code ? errText(e) : e.message)}</span>`; } }
+async function bankDeposit(s) { const M = $("bankMsg"), amt = Math.round(Number($("bankAmt").value));
+  if (!(amt >= 1000 && amt <= 1000000 && amt % 1000 === 0)) return M.innerHTML = `<span class="err">1,000円単位で、1,000円〜100万円にしてね</span>`;
+  try { await runTransaction(db, async tx => { const cr = doc(db, "citizens", String(S.myNo)), me = (await tx.get(cr)).data(), br = doc(db, "bank", String(S.myNo));
+      if ((await tx.get(br)).exists()) throw new Error("もうあずけています（1人1口まで）"); if (me.money < amt) throw new Error("お金が足りません");
+      tx.set(br, { no: S.myNo, amt, day: todayJST(), shop: s.id }); tx.update(cr, { money: me.money - amt }); });
+    M.innerHTML = `<span class="okm">${yen(amt)} あずけました！10日後に10%ふえます</span>`; drawBank(s); }
+  catch (e) { M.innerHTML = `<span class="err">${esc(e.code ? errText(e) : e.message)}</span>`; } }
+async function bankWithdraw(s) { const M = $("bankMsg");
+  try { let out = 0; await runTransaction(db, async tx => { const cr = doc(db, "citizens", String(S.myNo)), me = (await tx.get(cr)).data(), br = doc(db, "bank", String(S.myNo)), bd = await tx.get(br);
+      if (!bd.exists()) throw new Error("あずけているお金はありません"); const b = bd.data(); out = b.amt + (todayJST() >= b.day + 10 ? Math.floor(b.amt / 10) : 0);
+      tx.delete(br); tx.update(cr, { money: me.money + out, nbank: (me.nbank || 0) + 1 }); });
+    M.innerHTML = `<span class="okm">${yen(out)} 引き出しました！</span>`; drawBank(s); }
+  catch (e) { M.innerHTML = `<span class="err">${esc(e.code ? errText(e) : e.message)}</span>`; } }
+// 買ったあとのお楽しみ（feats 'beni' 紅生姜／'jiro' 二郎のコール）。お金は動かない
+function afterBuyFun(s, m) { const f = s.feats || [];
+  const ask = (q, opts, done) => { const box = document.createElement("div"); box.className = "card small"; box.style.margin = "6px 0"; box.innerHTML = `<b>${q}</b><br>` + opts.map((o, i) => `<button class="btn sec" style="padding:4px 10px;margin:2px" data-fun="${i}">${o}</button>`).join(""); m.appendChild(box);
+    box.querySelectorAll("[data-fun]").forEach(b => b.onclick = () => { box.remove(); done(opts[Number(b.dataset.fun)]); }); };
+  if (f.includes("beni")) ask("🥢 紅生姜はどのくらい？（かけ放題！）", ["ふつう", "多め", "山盛り", "かけ放題MAX"], a => { const d = document.createElement("div"); d.className = "okm"; d.textContent = `紅生姜「${a}」でどうぞ！🥢`; m.appendChild(d); });
+  if (f.includes("jiro")) ask("🧄 ニンニク入れますか？", ["なし", "少なめ", "ふつう", "マシ", "マシマシ"], g => ask("アブラは？", ["少なめ", "ふつう", "マシ", "マシマシ"], a => ask("ヤサイは？", ["少なめ", "ふつう", "マシ", "マシマシ"], y => { const d = document.createElement("div"); d.className = "okm"; d.textContent = `ニンニク${g}・アブラ${a}・ヤサイ${y}、お待ち！🍜`; m.appendChild(d); }))); }
 async function bindFeat(s) { const f = s.feats || [];
+  if (f.includes("bank")) drawBank(s);
+  if (f.includes("b2g1") && S.me && $("b2Mine")) { const n = bagOf(S.me)[s.id] || 0; $("b2Mine").textContent = `（あなたはここで ${n}回 買い物。${n % 3 === 2 ? "次のピザは無料！" : `あと${2 - n % 3}回で次のピザが無料`}）`; }
   if (f.includes("slot")) { drawSlot(s); document.querySelectorAll("#sheet [data-selfspin]").forEach(b => b.onclick = () => slotSelf(s, Number(b.dataset.selfspin))); }
   if (f.includes("stock")) { if ($("stkBuy")) $("stkBuy").onclick = () => stockTrade(s, "buy"); if ($("stkSell")) $("stkSell").onclick = () => stockTrade(s, "sell"); drawStock(s); }
   if (f.includes("req")) { if ($("rqSend")) $("rqSend").onclick = () => sendItemReq(s); drawReqs(s); } }
@@ -1176,7 +1207,7 @@ function openShop(id) { const s = S.shops.find(v => v.id === id); if (!s) return
         const sh = await tx.get(doc(db, "shops", s.id)), me = await tx.get(doc(db, "citizens", String(S.myNo))), ow = await tx.get(doc(db, "citizens", String(sh.data().owner)));
         if (sh.data().owner === S.myNo) throw new Error("自分のお店では買えません");
         const items = sh.data().items || [], base = it >= 0 ? (items[it] || {}).price : (sh.data().price || 1000); if (!base) throw new Error("その商品はもうありません");
-        const job = await tx.get(doc(db, "jobs", `${S.myNo}_${s.id}`)), r = sh.data().bdisc ?? 20, price = job.exists() ? base - (base * r - (base * r) % 100) / 100 : base;
+        const job = await tx.get(doc(db, "jobs", `${S.myNo}_${s.id}`)), r = sh.data().bdisc ?? 20, free = (sh.data().feats || []).includes("b2g1") && it >= 0 && /ピザ/.test((items[it] || {}).name || "") && ((me.data().bag || {})[s.id] || 0) % 3 === 2, price = free ? 0 : job.exists() ? base - (base * r - (base * r) % 100) / 100 : base;
         if (me.data().money < price) throw new Error("お金が足りません");
         const nb = (me.data().nbuy || 0) + 1, back = (price - price % 10) / 10, stRef = doc(db, "stamps", `${S.myNo}_${s.id}_${d}`), stOk = price >= 100 && !(await tx.get(stRef)).exists();
         const st0 = me.data().stamp ?? me.data().nbuy ?? 0, st = stOk ? st0 + 1 : st0, bonus = stOk && st % STAMP_N === 0 ? STAMP_BONUS : 0;
@@ -1186,9 +1217,9 @@ function openShop(id) { const s = S.shops.find(v => v.id === id); if (!s) return
         tx.update(doc(db, "shops", s.id), { sales: (sh.data().sales || 0) + price });
         tx.update(doc(db, "citizens", String(sh.data().owner)), { money: ow.data().money + price, osales: (ow.data().osales || 0) + price });
         tx.update(doc(db, "citizens", String(S.myNo)), { money: me.data().money - price + back + bonus, nbuy: nb, bag, spent: (me.data().spent || 0) + price, ...(stOk ? { stamp: st } : {}) });
-        window.__lastBuy = { back, bonus, nb, st, stOk };
+        window.__lastBuy = { back, bonus, nb, st, stOk, free };
       });
-      const lb = window.__lastBuy || {}; if ((s.feats || []).includes("slot")) setTimeout(() => slotPlay(s, `${S.myNo}_b${lb.nb}`), 200); m.innerHTML = `<span class="okm">買いました！ ${yen(lb.back || 0)}還元${lb.stOk ? `＋スタンプ1つ（${(lb.st || 0) % STAMP_N || STAMP_N}/${STAMP_N}）` : "（スタンプは100円以上の買い物で、1つのお店1日1回まで）"}${lb.bonus ? `<br>🎉 スタンプ${STAMP_N}個たまった！ ${yen(lb.bonus)}ゲット！` : ""}</span>`; }
+      const lb = window.__lastBuy || {}; if ((s.feats || []).includes("slot")) setTimeout(() => slotPlay(s, `${S.myNo}_b${lb.nb}`), 200); m.innerHTML = `<span class="okm">${lb.free ? "🍕 3回目なのでピザが無料！ " : ""}買いました！ ${yen(lb.back || 0)}還元${lb.stOk ? `＋スタンプ1つ（${(lb.st || 0) % STAMP_N || STAMP_N}/${STAMP_N}）` : "（スタンプは100円以上の買い物で、1つのお店1日1回まで）"}${lb.bonus ? `<br>🎉 スタンプ${STAMP_N}個たまった！ ${yen(lb.bonus)}ゲット！` : ""}</span>`; afterBuyFun(S.shops.find(v => v.id === s.id) || s, m); }
     catch (e) { m.innerHTML = `<span class="err">${esc(e.code ? errText(e) : e.message)}</span>`; } };
 }
 function renderRank2() {
