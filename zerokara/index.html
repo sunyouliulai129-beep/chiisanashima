@@ -1107,7 +1107,7 @@ async function loadShopSales(s) {
   let ds = [], bs = null;
   try { ds = (await getDocs(query(collection(db, "dsales"), where("shop", "==", s.id)))).docs.map(d => d.data()); } catch (e) { }
   try { bs = (await getDocs(query(collection(db, "buys"), where("shop", "==", s.id)))).docs.map(d => d.data()); } catch (e) { bs = null; }
-  const dsum = f => ds.filter(f).reduce((a, r) => a + (r.amount || 0), 0), bsum = f => (bs || []).filter(f).reduce((a, r) => a + (r.pay || 0), 0);
+  const dsum = f => ds.filter(f).reduce((a, r) => a + (r.amount || 0), 0), bsum = f => (bs || []).filter(f).reduce((a, r) => a + (r.pay ?? r.base ?? (s.price || 0)), 0);
   const cust = s.sales || 0, dTot = dsum(() => true);
   let h = `<div class="card small" style="margin:0 0 6px;line-height:1.8">💰 売上の合計 <b class="big" style="font-size:20px">${yen(cust + dTot)}</b><br>🛍️ お客さんが買った分 <b>${yen(cust)}</b>／🏪 毎日の売上 <b>${yen(dTot)}</b>`;
   if (bs) { const who = new Set(bs.map(b => b.no)); h += `<br>📅 今日 <b>${yen(bsum(b => b.day === d0) + dsum(r => r.day === d0))}</b>（お客さん ${yen(bsum(b => b.day === d0))}）<br>🧾 買われた回数 <b>${bs.length}回</b>・お客さん <b>${who.size}人</b>`; }
@@ -1115,7 +1115,7 @@ async function loadShopSales(s) {
   const days = [6, 5, 4, 3, 2, 1, 0].map(n => ({ n, c: bs ? bsum(b => b.day === d0 - n) : 0, d: dsum(r => r.day === d0 - n) })), mx = Math.max(1, ...days.map(x => x.c + x.d));
   h += `<div class="small" style="margin:6px 0 2px"><b>この7日間</b>　<span style="color:#E07A1F">■お客さん</span>　<span style="color:#9AA7B4">■毎日の売上</span></div>` + days.map(x => `<div style="display:flex;align-items:center;gap:6px;font-size:12px;margin:2px 0"><span style="width:38px">${md(x.n)}</span><span style="flex:1;background:#F2EDE3;border-radius:6px;height:12px;overflow:hidden;display:flex"><span style="height:100%;width:${x.c / mx * 100}%;background:#E07A1F"></span><span style="height:100%;width:${x.d / mx * 100}%;background:#9AA7B4"></span></span><span style="width:80px;text-align:right">${yen(x.c + x.d)}</span></div>`).join("");
   if (bs && bs.length) { const items = s.items || [], cnt = {};
-    for (const b of bs) { const nm = b.it >= 0 ? ((items[b.it] || {}).name || "（今はない商品）") : "いつもの商品"; const o = cnt[nm] || (cnt[nm] = { n: 0, y: 0 }); o.n++; o.y += b.pay || 0; }
+    for (const b of bs) { const nm = b.it >= 0 ? ((items[b.it] || {}).name || "（今はない商品）") : "いつもの商品"; const o = cnt[nm] || (cnt[nm] = { n: 0, y: 0 }); o.n++; o.y += b.pay ?? b.base ?? (s.price || 0); }
     h += `<div class="small" style="margin:10px 0 2px"><b>よく売れている商品</b></div>` + Object.entries(cnt).sort((a, b) => b[1].y - a[1].y).slice(0, 8).map(([k, v], i) => `<div class="rank"><span class="r">${i + 1}</span><span>${esc(k)} <span class="note">${v.n}個</span></span><span class="v">${yen(v.y)}</span></div>`).join(""); }
   else if (bs) h += `<p class="note" style="margin:6px 0 0">まだお客さんに買われていません</p>`;
   if (box()) box().innerHTML = h;
