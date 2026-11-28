@@ -1101,8 +1101,28 @@ async function slotFree(s) { const box = $("slotBox"); box.textContent = "🎁 �
     if (x.win > 0) await runTransaction(db, async tx => { const me = await tx.get(doc(db, "citizens", String(S.myNo))); tx.set(doc(db, "slotfwin", fid), { no: S.myNo, win: x.win }); tx.update(doc(db, "citizens", String(S.myNo)), { money: me.data().money + x.win, sfw: fid }); }); }
   catch (e) { box.innerHTML = `<span style="color:#ff9c9c">${esc(e.code ? errText(e) : e.message)}</span>`; }
   setTimeout(() => drawSlot(s), 800); }
+async function loadShopSales(s) {
+  const box = () => $("shopSales"); if (!box()) return;
+  const d0 = todayJST(), md = n => { const t = new Date((d0 - n) * 86400e3); return `${t.getUTCMonth() + 1}/${t.getUTCDate()}`; };
+  let ds = [], bs = null;
+  try { ds = (await getDocs(query(collection(db, "dsales"), where("shop", "==", s.id)))).docs.map(d => d.data()); } catch (e) { }
+  try { bs = (await getDocs(query(collection(db, "buys"), where("shop", "==", s.id)))).docs.map(d => d.data()); } catch (e) { bs = null; }
+  const dsum = f => ds.filter(f).reduce((a, r) => a + (r.amount || 0), 0), bsum = f => (bs || []).filter(f).reduce((a, r) => a + (r.pay || 0), 0);
+  const cust = s.sales || 0, dTot = dsum(() => true);
+  let h = `<div class="card small" style="margin:0 0 6px;line-height:1.8">💰 売上の合計 <b class="big" style="font-size:20px">${yen(cust + dTot)}</b><br>🛍️ お客さんが買った分 <b>${yen(cust)}</b>／🏪 毎日の売上 <b>${yen(dTot)}</b>`;
+  if (bs) { const who = new Set(bs.map(b => b.no)); h += `<br>📅 今日 <b>${yen(bsum(b => b.day === d0) + dsum(r => r.day === d0))}</b>（お客さん ${yen(bsum(b => b.day === d0))}）<br>🧾 買われた回数 <b>${bs.length}回</b>・お客さん <b>${who.size}人</b>`; }
+  h += `</div>`;
+  const days = [6, 5, 4, 3, 2, 1, 0].map(n => ({ n, c: bs ? bsum(b => b.day === d0 - n) : 0, d: dsum(r => r.day === d0 - n) })), mx = Math.max(1, ...days.map(x => x.c + x.d));
+  h += `<div class="small" style="margin:6px 0 2px"><b>この7日間</b>　<span style="color:#E07A1F">■お客さん</span>　<span style="color:#9AA7B4">■毎日の売上</span></div>` + days.map(x => `<div style="display:flex;align-items:center;gap:6px;font-size:12px;margin:2px 0"><span style="width:38px">${md(x.n)}</span><span style="flex:1;background:#F2EDE3;border-radius:6px;height:12px;overflow:hidden;display:flex"><span style="height:100%;width:${x.c / mx * 100}%;background:#E07A1F"></span><span style="height:100%;width:${x.d / mx * 100}%;background:#9AA7B4"></span></span><span style="width:80px;text-align:right">${yen(x.c + x.d)}</span></div>`).join("");
+  if (bs && bs.length) { const items = s.items || [], cnt = {};
+    for (const b of bs) { const nm = b.it >= 0 ? ((items[b.it] || {}).name || "（今はない商品）") : "いつもの商品"; const o = cnt[nm] || (cnt[nm] = { n: 0, y: 0 }); o.n++; o.y += b.pay || 0; }
+    h += `<div class="small" style="margin:10px 0 2px"><b>よく売れている商品</b></div>` + Object.entries(cnt).sort((a, b) => b[1].y - a[1].y).slice(0, 8).map(([k, v], i) => `<div class="rank"><span class="r">${i + 1}</span><span>${esc(k)} <span class="note">${v.n}個</span></span><span class="v">${yen(v.y)}</span></div>`).join(""); }
+  else if (bs) h += `<p class="note" style="margin:6px 0 0">まだお客さんに買われていません</p>`;
+  if (box()) box().innerHTML = h;
+}
 function ownerPanel(s) { return `<hr style="border:0;border-top:1px dashed #ddd;margin:14px 0"><h4 style="margin:0 0 6px">🔧 店長メニュー</h4>
   <div class="card small" style="margin:0 0 6px">💰 このお店の1日の売上 <b>${yen(dailySales(s))}</b> は、毎日<b>自動で</b>あなたのお金に入ります（サイトを開いたときにまとめて。受けとりわすれの日の分も全部入ります）</div><div class="small" id="clMsg"></div>
+  <h4 style="margin:10px 0 6px">📊 このお店の売上</h4><div id="shopSales"><span class="note">読みこみ中…</span></div>
   <p class="note">1日の売上 ＝ 5,000円 ×（人のバイト×2 ＋ AIバイト）。バイトが多いほど売上がふえます。</p>
   <label>お店の名前</label><input id="seName" maxlength="16" value="${esc(s.name)}">
   <label>何のお店？</label><input id="seWhat" maxlength="30" value="${esc(s.what || "")}">
@@ -1118,6 +1138,7 @@ function ownerPanel(s) { return `<hr style="border:0;border-top:1px dashed #ddd;
   <button class="btn sec wide" id="seDel" style="margin-top:10px;background:#FDECEA;color:#B3261E">このお店をしめる（消す）</button><div class="small" id="sdMsg"></div>`; }
 function bindOwner(s) {
   if ($("clBtn")) $("clBtn").onclick = () => claimSales(s, $("clMsg"));
+  loadShopSales(s);
   $("seGo").onclick = async () => { const M = $("seMsg"), name = $("seName").value.trim(), what = $("seWhat").value.trim(), ct = $("seCatch").value.trim(), rule = $("seRule").value.trim(), em = $("seEmoji").value.trim() || "🏪", price = Math.round(Number($("sePrice").value)), wage = Math.round(Number($("seWage").value)), bdisc = Math.round(Number($("seBdisc").value));
     const items = []; for (const ln of $("seItems").value.split("\n")) { const m = ln.trim().match(/^(.+?)[\s　,、]+([0-9０-９]+)\s*円?$/); if (!ln.trim()) continue; if (!m) return M.innerHTML = `<span class="err">「${esc(ln.trim())}」は「商品名 値段」の形で書いてね</span>`; const pr = Number(m[2].replace(/[０-９]/g, d => "０１２３４５６７８９".indexOf(d))); if (!(pr >= 1 && pr <= 1000000)) return M.innerHTML = `<span class="err">「${esc(m[1])}」の値段は1円〜100万円にしてね</span>`; items.push({ name: m[1].slice(0, 20), price: pr }); }
     if (items.length > 20) return M.innerHTML = `<span class="err">商品は20個までです</span>`; if (!(bdisc >= 0 && bdisc <= 50)) return M.innerHTML = `<span class="err">バイト割引は0〜50％にしてね</span>`; if (hasNG(items.map(i => i.name).join(""))) return M.innerHTML = `<span class="err">商品名に使えない言葉が入っています</span>`;
